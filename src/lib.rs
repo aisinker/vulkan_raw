@@ -36,14 +36,38 @@ macro_rules! extern_c_functions {
             )*
         }
         impl Functions {
-            pub fn new(instance: VkInstance)-> Functions {
+            pub fn load_from_instance(instance: VkInstance)-> Functions {
                 use std::ffi::CStr;
                 use std::mem::transmute;
                 use crate::get_instance_proc_addr;
                 unsafe {
                     Functions {
                         $(
-                            $function_name: transmute(get_instance_proc_addr(instance, CStr::from_bytes_with_nul(concat!(stringify!($function_name), '\0').as_bytes()).unwrap()).unwrap()),
+                            $function_name: transmute(
+                                get_instance_proc_addr(
+                                    instance,
+                                    CStr::from_bytes_with_nul(concat!(stringify!($function_name), '\0').as_bytes())
+                                        .unwrap()
+                                ).expect(concat!("Load \"", stringify!($function_name), "\" failed!"))
+                            ),
+                        )*
+                    }
+                }
+            }
+            pub fn load_from_device(device: VkDevice)-> Functions {
+                use std::ffi::CStr;
+                use std::mem::transmute;
+                use crate::get_device_proc_addr;
+                unsafe {
+                    Functions {
+                        $(
+                            $function_name: transmute(
+                                get_device_proc_addr(
+                                    device,
+                                    CStr::from_bytes_with_nul(concat!(stringify!($function_name), '\0').as_bytes())
+                                        .unwrap()
+                                ).expect(concat!("Load \"", stringify!($function_name), "\" failed!"))
+                            ),
                         )*
                     }
                 }
@@ -76,8 +100,17 @@ impl Display for NonDispatchableHandle{
     }
 }
 
-pub fn get_instance_proc_addr(instance: VkInstance, name: &CStr)->Option<PFN_vkVoidFunction>{
+fn get_instance_proc_addr(instance: VkInstance, name: &CStr)->Option<PFN_vkVoidFunction>{
     let function_pointer = unsafe {vkGetInstanceProcAddr(instance, name.as_ptr())};
+    if function_pointer as usize == 0 {
+        None
+    }else {
+        Some(function_pointer)
+    }
+}
+
+fn get_device_proc_addr(device: VkDevice, name: &CStr)->Option<PFN_vkVoidFunction>{
+    let function_pointer = unsafe {vkGetDeviceProcAddr(device, name.as_ptr())};
     if function_pointer as usize == 0 {
         None
     }else {

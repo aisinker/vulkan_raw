@@ -3,7 +3,6 @@
 
 use std::os::raw::{c_char, c_void};
 use std::ffi::{CStr};
-use std::ptr;
 use std::fmt::{Display, Formatter, Error};
 
 use bitflags::bitflags;
@@ -2416,30 +2415,18 @@ pub struct VkImageBlit{
 
 #[repr(C)]
 pub struct VkMappedMemoryRange{
-    sType: VkStructureType,
-    pNext: *const c_void,
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
     pub memory: VkDeviceMemory,
     pub offset: VkDeviceSize,
     pub size: VkDeviceSize,
 }
 
-impl VkMappedMemoryRange {
-    pub fn new(memory: VkDeviceMemory, offset: VkDeviceSize, size: VkDeviceSize)->VkMappedMemoryRange{
-        VkMappedMemoryRange{
-            sType: VkStructureType::MAPPED_MEMORY_RANGE,
-            pNext: ptr::null(),
-            memory,
-            offset,
-            size,
-        }
-    }
-}
-
-
 #[cfg_attr(windows, link(name = "vulkan-1"))]
 #[cfg_attr(linux, link(name = "vulkan"))]
 extern "C" {
     pub fn vkGetInstanceProcAddr(instance: VkInstance, pName: *const c_char)->PFN_vkVoidFunction;
+    pub fn vkGetDeviceProcAddr(device: VkDevice, pName: *const c_char)->PFN_vkVoidFunction;
 
     pub fn vkEnumerateInstanceVersion(pApiVersion: *mut u32);
     pub fn vkCreateInstance(pCreateInfo: *const VkInstanceCreateInfo, pAllocator: *const VkAllocationCallbacks, pInstance: *mut VkInstance)->VkResult;
