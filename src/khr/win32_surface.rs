@@ -1,14 +1,26 @@
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
+#![allow(non_upper_case_globals)]
 
 use std::ffi::c_void;
 
-use super::super::core::*;
-use super::surface::*;
+use crate::*;
+use crate::khr::surface::*;
 
-use bitflags::bitflags;
+bitmasks!{
+    {
+        VkWin32SurfaceCreateFlagsKHR,
+        enum VkWin32SurfaceCreateFlagBitsKHR{
+            _RESERVED = 0,
+        }
+    }
+}
 
-reserved_flags!(VkWin32SurfaceCreateFlagsKHR);
+extend_enums!{
+    enum VkStructureType{
+        WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
+    },
+}
 
 #[repr(C)]
 pub struct VkWin32SurfaceCreateInfoKHR{
@@ -19,7 +31,7 @@ pub struct VkWin32SurfaceCreateInfoKHR{
     pub hwnd: HWND,
 }
 
-extern_c_functions! {
-    fn vkCreateWin32SurfaceKHR(instance: VkInstance, pCreateInfo: *const VkWin32SurfaceCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pSurface: *mut VkSurfaceKHR)->VkResult;
-    fn vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32)->VkBool32;
+extension_functions! {
+    fn vkCreateWin32SurfaceKHR(instance: VkInstance, pCreateInfo: *const VkWin32SurfaceCreateInfoKHR, pAllocator: *const core::VkAllocationCallbacks, pSurface: *mut VkSurfaceKHR)->VkResult;
+    fn vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice: core::VkPhysicalDevice, queueFamilyIndex: u32)->VkBool32;
 }

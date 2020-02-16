@@ -1,46 +1,61 @@
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
+#![allow(non_upper_case_globals)]
 
 use std::ffi::c_void;
 use std::os::raw::c_char;
 use std::fmt::{Display, Formatter, Error};
 
-use super::super::core::*;
-use super::super::NonDispatchableHandle;
-
-use bitflags::bitflags;
+use crate::*;
 
 handle!(VkDebugUtilsMessengerEXT, NonDispatchableHandle);
 
+bitmasks!{
+    {
+        VkDebugUtilsMessengerCreateFlagsEXT,
+        enum VkDebugUtilsMessengerCreateFlagBitsEXT{
+            _RESERVED = 0,
+        }
+    },
+    {
+        VkDebugUtilsMessengerCallbackDataFlagsEXT,
+        enum VkDebugUtilsMessengerCallbackDataFlagBitsEXT{
+            _RESERVED = 0,
+        }
+    },
+    {
+        VkDebugUtilsMessageSeverityFlagsEXT,
+        enum VkDebugUtilsMessageSeverityFlagBitsEXT{
+            VERBOSE_BIT_EXT = 0x00000001,
+            INFO_BIT_EXT = 0x00000010,
+            WARNING_BIT_EXT = 0x00000100,
+            ERROR_BIT_EXT = 0x00001000,
+        }
+    },
+    {
+        VkDebugUtilsMessageTypeFlagsEXT,
+        enum VkDebugUtilsMessageTypeFlagBitsEXT{
+            GENERAL_BIT_EXT = 0x00000001,
+            VALIDATION_BIT_EXT = 0x00000002,
+            PERFORMANCE_BIT_EXT = 0x00000004,
+        }
+    },
+}
+
+extend_enums!{
+    enum VkStructureType{
+        DEBUG_UTILS_OBJECT_NAME_INFO_EXT = 1000128000,
+        DEBUG_UTILS_OBJECT_TAG_INFO_EXT = 1000128001,
+        DEBUG_UTILS_LABEL_EXT = 1000128002,
+        DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT = 1000128003,
+        DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT = 1000128004,
+    },
+    enum VkResult{
+        ERROR_VALIDATION_FAILED_EXT = -1000011001,
+    },
+}
+
 pub type PFN_vkDebugUtilsMessengerCallbackEXT = extern "C" fn(messageSeverity: VkDebugUtilsMessageSeverityFlagBitsEXT, messageTypes: VkDebugUtilsMessageTypeFlagsEXT, pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT, pUserData: *mut c_void)->VkBool32;
-
-reserved_flags!(
-    VkDebugUtilsMessengerCreateFlagsEXT,
-    VkDebugUtilsMessengerCallbackDataFlagsEXT
-);
-
-pub type VkDebugUtilsMessageSeverityFlagsEXT = VkDebugUtilsMessageSeverityFlagBitsEXT;
-bitflags! {
-        #[repr(C)]
-	    #[derive(Default)]
-        pub struct VkDebugUtilsMessageSeverityFlagBitsEXT: u32 {
-    	    const VERBOSE_BIT_EXT = 0x00000001;
-            const INFO_BIT_EXT = 0x00000010;
-            const WARNING_BIT_EXT = 0x00000100;
-            const ERROR_BIT_EXT = 0x00001000;
-        }
-    }
-
-pub type VkDebugUtilsMessageTypeFlagsEXT = VkDebugUtilsMessageTypeFlagBitsEXT;
-bitflags! {
-        #[repr(C)]
-	    #[derive(Default)]
-        pub struct VkDebugUtilsMessageTypeFlagBitsEXT: u32 {
-    	    const GENERAL_BIT_EXT = 0x00000001;
-            const VALIDATION_BIT_EXT = 0x00000002;
-            const PERFORMANCE_BIT_EXT = 0x00000004;
-        }
-    }
 
 #[repr(C)]
 pub struct VkDebugUtilsObjectNameInfoEXT{
@@ -97,16 +112,16 @@ pub struct VkDebugUtilsMessengerCreateInfoEXT {
     pub pUserData: *mut c_void,
 }
 
-extern_c_functions! {
+extension_functions! {
     fn vkSetDebugUtilsObjectNameEXT(device: VkDevice, pNameInfo: *const VkDebugUtilsObjectNameInfoEXT)->VkResult;
     fn vkSetDebugUtilsObjectTagEXT(device: VkDevice, pTagInfo: *const VkDebugUtilsObjectTagInfoEXT)->VkResult;
-    fn vkQueueBeginDebugUtilsLabelEXT(queue: VkQueue, pLabelInfo: *const VkDebugUtilsLabelEXT);
-    fn vkQueueEndDebugUtilsLabelEXT(queue: VkQueue);
-    fn vkQueueInsertDebugUtilsLabelEXT(queue: VkQueue, pLabelInfo: *const VkDebugUtilsLabelEXT);
-    fn vkCmdBeginDebugUtilsLabelEXT(commandBuffer: VkCommandBuffer, pLabelInfo: *const VkDebugUtilsLabelEXT);
-    fn vkCmdEndDebugUtilsLabelEXT(commandBuffer: VkCommandBuffer);
-    fn vkCmdInsertDebugUtilsLabelEXT(commandBuffer: VkCommandBuffer, pLabelInfo: *const VkDebugUtilsLabelEXT);
-    fn vkCreateDebugUtilsMessengerEXT(instance: VkInstance, pCreateInfo: *const VkDebugUtilsMessengerCreateInfoEXT, pAllocator: *const VkAllocationCallbacks, pMessenger: *mut VkDebugUtilsMessengerEXT)->VkResult;
-    fn vkDestroyDebugUtilsMessengerEXT(instance: VkInstance, messenger: VkDebugUtilsMessengerEXT, pAllocator: *const VkAllocationCallbacks);
+    fn vkQueueBeginDebugUtilsLabelEXT(queue: core::VkQueue, pLabelInfo: *const VkDebugUtilsLabelEXT);
+    fn vkQueueEndDebugUtilsLabelEXT(queue: core::VkQueue);
+    fn vkQueueInsertDebugUtilsLabelEXT(queue: core::VkQueue, pLabelInfo: *const VkDebugUtilsLabelEXT);
+    fn vkCmdBeginDebugUtilsLabelEXT(commandBuffer: core::VkCommandBuffer, pLabelInfo: *const VkDebugUtilsLabelEXT);
+    fn vkCmdEndDebugUtilsLabelEXT(commandBuffer: core::VkCommandBuffer);
+    fn vkCmdInsertDebugUtilsLabelEXT(commandBuffer: core::VkCommandBuffer, pLabelInfo: *const VkDebugUtilsLabelEXT);
+    fn vkCreateDebugUtilsMessengerEXT(instance: VkInstance, pCreateInfo: *const VkDebugUtilsMessengerCreateInfoEXT, pAllocator: *const core::VkAllocationCallbacks, pMessenger: *mut VkDebugUtilsMessengerEXT)->VkResult;
+    fn vkDestroyDebugUtilsMessengerEXT(instance: VkInstance, messenger: VkDebugUtilsMessengerEXT, pAllocator: *const core::VkAllocationCallbacks);
     fn vkSubmitDebugUtilsMessageEXT(instance: VkInstance, messageSeverity: VkDebugUtilsMessageSeverityFlagBitsEXT, messageTypes: VkDebugUtilsMessageTypeFlagsEXT, pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT);
 }
