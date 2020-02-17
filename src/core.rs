@@ -1485,11 +1485,27 @@ pub struct VkPhysicalDeviceProperties{
     pub vendorID: u32,
     pub deviceID: u32,
     pub deviceType: VkPhysicalDeviceType,
-    pub deviceName: [i8; VK_MAX_PHYSICAL_DEVICE_NAME_SIZE],
+    pub deviceName: [c_char; VK_MAX_PHYSICAL_DEVICE_NAME_SIZE],
     pub pipelineCacheUUID: [u8; VK_UUID_SIZE],
     pub limits: VkPhysicalDeviceLimits,
     pub sparseProperties: VkPhysicalDeviceSparseProperties,
 }
+impl Default for VkPhysicalDeviceProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceProperties{
+            apiVersion: Default::default(),
+            driverVersion: Default::default(),
+            vendorID: Default::default(),
+            deviceID: Default::default(),
+            deviceType: Default::default(),
+            deviceName: [0; VK_MAX_PHYSICAL_DEVICE_NAME_SIZE],
+            pipelineCacheUUID: Default::default(),
+            limits: Default::default(),
+            sparseProperties: Default::default(),
+        }
+    }
+}
+
 
 #[repr(C)]
 pub struct VkExtensionProperties{
@@ -2721,8 +2737,8 @@ pub struct VkPhysicalDeviceDriverProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub driverID: VkDriverId,
-    pub driverName: [i8; VK_MAX_DRIVER_NAME_SIZE],
-    pub driverInfo: [i8; VK_MAX_DRIVER_NAME_SIZE],
+    pub driverName: [c_char; VK_MAX_DRIVER_NAME_SIZE],
+    pub driverInfo: [c_char; VK_MAX_DRIVER_NAME_SIZE],
     pub conformanceVersion: VkConformanceVersion,
 }
 
@@ -3747,8 +3763,8 @@ pub struct VkPhysicalDeviceVulkan12Properties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub driverID: VkDriverId,
-    pub driverName: [i8; VK_MAX_DRIVER_NAME_SIZE],
-    pub driverInfo: [i8; VK_MAX_DRIVER_INFO_SIZE],
+    pub driverName: [c_char; VK_MAX_DRIVER_NAME_SIZE],
+    pub driverInfo: [c_char; VK_MAX_DRIVER_INFO_SIZE],
     pub conformanceVersion: VkConformanceVersion,
     pub denormBehaviorIndependence: VkShaderFloatControlsIndependence,
     pub roundingModeIndependence: VkShaderFloatControlsIndependence,

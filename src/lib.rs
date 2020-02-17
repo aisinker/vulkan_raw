@@ -22,30 +22,6 @@ macro_rules! handle {
     }
 }
 
-macro_rules! enums{
-    (
-        $(
-            enum $enum_name:ident{
-                $($variant_name:ident = $value:literal),*$(,)?
-            }
-        ),*$(,)?
-    )=>{
-        $(
-            #[repr(C)]
-            #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
-            pub enum $enum_name{
-                $($variant_name = $value),*
-            }
-            impl $enum_name{
-                #[inline(always)]
-                pub fn value(self,)->i32{
-                    self as i32
-                }
-            }
-        )*
-    }
-}
-
 macro_rules! core_enums {
     (
         $(
@@ -57,33 +33,17 @@ macro_rules! core_enums {
         $(
             #[repr(transparent)]
             #[derive(Default, Copy, Clone, Eq, PartialEq, Debug, Hash)]
-            pub struct $enum_name(i32);
+            pub struct $enum_name(pub i32);
             impl $enum_name{
                 $(
-                    pub const $variant_name: i32 = $value;
+                    pub const $variant_name: $enum_name = $enum_name($value);
                 )*
-                #[inline(always)]
-                pub fn value(&self,)->i32{
-                    self.0
-                }
-            }
-            impl From<i32> for $enum_name{
-                #[inline(always)]
-                fn from(n: i32)->Self{
-                    $enum_name(n)
-                }
-            }
-            impl PartialEq<i32> for $enum_name{
-                #[inline(always)]
-                fn eq(&self, other: &i32) -> bool {
-                    self.value() == *other
-                }
             }
         )*
     }
 }
 
-macro_rules! extend_enums {
+macro_rules! extension_enums{
     (
         $(
             enum $enum_name:ident{
@@ -91,37 +51,33 @@ macro_rules! extend_enums {
             }
         ),*$(,)?
     )=>{
-        pub mod extend_enums{
         $(
             #[repr(C)]
             #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
             pub enum $enum_name{
                 $($variant_name = $value),*
             }
+        )*
+    }
+}
+
+macro_rules! extend_core_enums {
+    (
+        $(
+            enum $enum_name:ident{
+                $($variant_name:ident = $value:literal),*$(,)?
+            }
+        ),*$(,)?
+    )=>{
+        pub mod extend_core_enums{
+        $(
+            pub enum $enum_name{
+            }
             impl $enum_name{
-                #[inline(always)]
-                pub fn value(self,)->i32{
-                    self as i32
-                }
+                $(
+                    pub const $variant_name: crate::$enum_name = crate::$enum_name($value);
+                )*
             }
-            impl Into<crate::$enum_name> for $enum_name{
-                #[inline(always)]
-                fn into(self)->crate::$enum_name {
-                    crate::$enum_name::from(self as i32)
-                }
-            }
-            impl PartialEq<crate::$enum_name> for $enum_name{
-                #[inline(always)]
-                fn eq(&self, other: &crate::$enum_name) -> bool {
-                    (*self as i32) == other.value()
-                }
-            }
-//            impl PartialEq<$enum_name> for crate::$enum_name{
-//                #[inline(always)]
-//                fn eq(&self, other: &$enum_name) -> bool {
-//                     self.value() == (*other as i32)
-//                }
-//            }
         )*
         }
     }
@@ -141,43 +97,160 @@ macro_rules! bitmasks {
         $(
             #[repr(transparent)]
             #[derive(Default, Copy, Clone, Eq, PartialEq, Debug, Hash)]
-            pub struct $flags_name(u32);
-            impl $flags_name{
-                #[inline(always)]
-                pub fn value(&self,)->u32{
-                    self.0
-                }
-            }
-            impl From<u32> for $flags_name{
-                #[inline(always)]
-                fn from(n: u32)->Self{
-                    $flags_name(n)
-                }
-            }
-            #[repr(C)]
-            #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
-            pub enum $flag_bits_name{
+            pub struct $flags_name(pub u32);
+            pub type $flag_bits_name = $flags_name;
+            impl $flag_bits_name {
                 $(
-                    $bit_name = $value
-                ),*
+                    pub const $bit_name: $flag_bits_name = $flags_name($value);
+                )*
             }
-            impl $flag_bits_name{
+
+            impl std::ops::Not for $flags_name {
+                type Output = $flags_name;
                 #[inline(always)]
-                pub fn value(self,)->u32{
-                    self as u32
+                fn not(self) -> Self::Output {
+                    $flags_name(!self.0)
                 }
             }
-            impl Into<$flags_name> for $flag_bits_name{
+
+            impl std::ops::BitAnd for $flags_name {
+                type Output = Self;
                 #[inline(always)]
-                fn into(self)->$flags_name {
-                    $flags_name::from(self.value())
+                fn bitand(self, rhs: Self) -> Self::Output {
+                    $flags_name(self.0&rhs.0)
+                }
+            }
+            impl std::ops::BitAnd<u32> for $flags_name {
+                type Output = Self;
+                #[inline(always)]
+                fn bitand(self, rhs: u32) -> Self::Output {
+                    $flags_name(self.0&rhs)
+                }
+            }
+            impl std::ops::BitAnd<$flags_name> for u32 {
+                type Output = $flags_name;
+                #[inline(always)]
+                fn bitand(self, rhs: $flags_name) -> Self::Output {
+                    $flags_name(self&rhs.0)
+                }
+            }
+
+            impl std::ops::BitAndAssign for $flags_name {
+                #[inline(always)]
+                fn bitand_assign(&mut self, rhs: Self) {
+                    self.0&=rhs.0;
+                }
+            }
+            impl std::ops::BitAndAssign<u32> for $flags_name {
+                #[inline(always)]
+                fn bitand_assign(&mut self, rhs: u32) {
+                    self.0&=rhs;
+                }
+            }
+            impl std::ops::BitAndAssign<$flags_name> for u32 {
+                #[inline(always)]
+                fn bitand_assign(&mut self, rhs: $flags_name) {
+                    *self&=rhs.0;
+                }
+            }
+
+            impl std::ops::BitOr for $flags_name {
+                type Output = Self;
+                #[inline(always)]
+                fn bitor(self, rhs: Self) -> Self::Output {
+                    $flags_name(self.0|rhs.0)
+                }
+            }
+            impl std::ops::BitOr<u32> for $flags_name {
+                type Output = Self;
+                #[inline(always)]
+                fn bitor(self, rhs: u32) -> Self::Output {
+                    $flags_name(self.0|rhs)
+                }
+            }
+            impl std::ops::BitOr<$flags_name> for u32 {
+                type Output = $flags_name;
+                #[inline(always)]
+                fn bitor(self, rhs: $flags_name) -> Self::Output {
+                    $flags_name(self|rhs.0)
+                }
+            }
+
+            impl std::ops::BitOrAssign for $flags_name {
+                #[inline(always)]
+                fn bitor_assign(&mut self, rhs: Self) {
+                    self.0|=rhs.0;
+                }
+            }
+            impl std::ops::BitOrAssign<u32> for $flags_name {
+                #[inline(always)]
+                fn bitor_assign(&mut self, rhs: u32) {
+                    self.0|=rhs;
+                }
+            }
+            impl std::ops::BitOrAssign<$flags_name> for u32 {
+                #[inline(always)]
+                fn bitor_assign(&mut self, rhs: $flags_name) {
+                    *self|=rhs.0;
+                }
+            }
+
+            impl std::ops::BitXor for $flags_name {
+                type Output = Self;
+                #[inline(always)]
+                fn bitxor(self, rhs: Self) -> Self::Output {
+                    $flags_name(self.0^rhs.0)
+                }
+            }
+            impl std::ops::BitXor<u32> for $flags_name {
+                type Output = Self;
+                #[inline(always)]
+                fn bitxor(self, rhs: u32) -> Self::Output {
+                    $flags_name(self.0^rhs)
+                }
+            }
+            impl std::ops::BitXor<$flags_name> for u32 {
+                type Output = $flags_name;
+                #[inline(always)]
+                fn bitxor(self, rhs: $flags_name) -> Self::Output {
+                    $flags_name(self^rhs.0)
+                }
+            }
+
+            impl std::ops::BitXorAssign for $flags_name {
+                #[inline(always)]
+                fn bitxor_assign(&mut self, rhs: Self) {
+                    self.0^=rhs.0;
+                }
+            }
+            impl std::ops::BitXorAssign<u32> for $flags_name {
+                #[inline(always)]
+                fn bitxor_assign(&mut self, rhs: u32) {
+                    self.0^=rhs;
+                }
+            }
+            impl std::ops::BitXorAssign<$flags_name> for u32 {
+                #[inline(always)]
+                fn bitxor_assign(&mut self, rhs: $flags_name) {
+                    *self^=rhs.0;
+                }
+            }
+
+            impl PartialEq<u32> for $flags_name {
+                fn eq(&self, other: &u32) -> bool {
+                    self.0 == *other
+                }
+            }
+            impl PartialEq<$flags_name> for u32{
+                fn eq(&self, other: &$flags_name) -> bool {
+                    *self == other.0
                 }
             }
         )*
-    }
+    };
 }
 
-macro_rules! _extend_bitmasks {
+macro_rules! _extend_core_bitmasks {
     (
         $(
             {
@@ -188,24 +261,14 @@ macro_rules! _extend_bitmasks {
             }
         ),*$(,)?
     )=>{
-        pub mod extend_bitmasks{
+        pub mod extend_core_bitmasks{
         $(
-            #[repr(C)]
-            #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
-            pub enum $flag_bits_name{
-                $($bit_name = $value),*
+            pub struct $flag_bits_name {
             }
-            impl $flag_bits_name{
-                #[inline(always)]
-                pub fn value(self,)->u32{
-                    self as u32
-                }
-            }
-            impl Into<crate::$flags_name> for $flag_bits_name{
-                #[inline(always)]
-                fn into(self)->crate::$flags_name {
-                    crate::$flags_name::from(self.value())
-                }
+            impl $flag_bits_name {
+                $(
+                    pub const $bit_name: crate::$flag_bits_name = crate::$flags_name($value);
+                )*
             }
         )*
         }
@@ -332,7 +395,7 @@ fn get_device_proc_addr(device: VkDevice, name: &CStr)->Option<PFN_vkVoidFunctio
     }
 }
 
-
+pub mod tools;
 
 mod core;
 pub use crate::core::*;

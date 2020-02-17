@@ -35,7 +35,7 @@ bitmasks!{
     },
 }
 
-enums!{
+extension_enums!{
     enum VkPresentModeKHR{
         IMMEDIATE_KHR = 0,
         MAILBOX_KHR = 1,
@@ -64,7 +64,7 @@ enums!{
     },
 }
 
-extend_enums!{
+extend_core_enums!{
     enum VkResult{
         SURFACE_LOST_KHR = -1000000000,
         NATIVE_WINDOW_IN_USE_KHR = -1000000001,
@@ -78,7 +78,7 @@ pub struct VkSurfaceFormatKHR{
     pub colorSpace: VkColorSpaceKHR,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 #[repr(C)]
 pub struct VkSurfaceCapabilitiesKHR{
     pub minImageCount: u32,

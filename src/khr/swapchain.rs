@@ -31,7 +31,7 @@ bitmasks!{
     },
 }
 
-extend_enums!{
+extend_core_enums!{
     enum VkStructureType{
         SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
         PRESENT_INFO_KHR = 1000001001,

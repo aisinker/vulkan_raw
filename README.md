@@ -1,25 +1,52 @@
 # vulkan_rs
 A very thin rust wrapper for vulkan c api. current support Windows/Linux
+
+## Usage
+
+Almost names are same as the Vulkan C API. But for some simplification reasons, a little change must be taked. The `enum` variant name is changed to without `VK_` prefix and enum name. For example the `VkFormat.VK_FORMAT_UNDEFINED` is changed to `VkFormat::UNDEFINED`. Because language limition, some exceptions exit. They are follow: 
+
+| C version | Corresponding vulkan_rs version|
+| ------ | ------ |
+| `VkImageCreateFlagBits.VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` | `VkImageCreateFlagBits::TWO_DIMENSION_ARRAY_COMPATIBLE_BIT` |
+| `VkQueryResultFlagBits.VK_QUERY_RESULT_64_BIT` | `VkQueryResultFlagBits::U64_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_1_BIT` | `VkSampleCountFlagBits::SC1_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_2_BIT` | `VkSampleCountFlagBits::SC2_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_4_BIT` | `VkSampleCountFlagBits::SC4_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_8_BIT` | `VkSampleCountFlagBits::SC8_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_16_BIT` | `VkSampleCountFlagBits::SC16_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_32_BIT` | `VkSampleCountFlagBits::SC32_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_64_BIT` | `VkSampleCountFlagBits::SC64_BIT` |
+| `VkImageType.VK_IMAGE_TYPE_1D` | `VkImageType::ONE_DIMENSION` |
+| `VkImageType.VK_IMAGE_TYPE_2D` | `VkImageType::TWO_DIMENSION` |
+| `VkImageType.VK_IMAGE_TYPE_3D` | `VkImageType::THREE_DIMENSION` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D` | `VkImageViewType::ONE_DIMENSION` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D` | `VkImageViewType::TWO_DIMENSION` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_3D` | `VkImageViewType::THREE_DIMENSION` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D_ARRAY` | `VkImageViewType::ONE_DIMENSION_ARRAY` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D_ARRAY` | `VkImageViewType::TWO_DIMENSION_ARRAY` |
+| `VkShaderFloatControlsIndependence.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY` | `VkShaderFloatControlsIndependence::F32_BIT_ONLY` |
+
+
 ## Example
 ```rust
 use vulkan_rs::*;
 use std::ptr;
-use std::os::raw::c_char;
+use std::ffi::CStr;
 
 fn main(){
     let mut instance_version: u32 = 0;
     unsafe {vkEnumerateInstanceVersion(&mut instance_version)};
-    println!("Instance version: {}", instance_version);
+    println!("instance version: {}", tools::ApiVersion::from(instance_version));
 
     // Create Vulkan instance
     let app_info = VkApplicationInfo{
         sType: VkStructureType::APPLICATION_INFO,
         pNext: ptr::null(),
-        pApplicationName: "vulkan_rs\0" as *const c_char,
+        pApplicationName: ptr::null(),
         applicationVersion: 1,
-        pEngineName: "vulkan_rs\0" as *const c_char,
+        pEngineName: ptr::null(),
         engineVersion: 1,
-        apiVersion: 4198526,
+        apiVersion: tools::ApiVersion::new(1, 2, 0).into(),
     };
     let create_info = VkInstanceCreateInfo{
         sType: VkStructureType::INSTANCE_CREATE_INFO,
@@ -54,8 +81,11 @@ fn main(){
             properties: Default::default(),
         };
         unsafe { vkGetPhysicalDeviceProperties2(physical_device, &mut physical_device_properties); }
-//        physical_device_properties.properties.deviceName
-//        physical_device_properties.properties.apiVersion
+        println!(
+            "device: {}, supported vulkan version: {}",
+            unsafe {CStr::from_ptr(physical_device_properties.properties.deviceName.as_ptr())}.to_str().unwrap(),
+            tools::ApiVersion::from(physical_device_properties.properties.apiVersion)
+        );
     }
 
     unsafe { vkDestroyInstance(instance, ptr::null())};

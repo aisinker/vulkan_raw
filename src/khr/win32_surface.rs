@@ -16,7 +16,7 @@ bitmasks!{
     }
 }
 
-extend_enums!{
+extend_core_enums!{
     enum VkStructureType{
         WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
     },
