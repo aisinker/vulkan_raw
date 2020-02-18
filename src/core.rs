@@ -134,7 +134,7 @@ bitmasks!{
             CUBE_COMPATIBLE_BIT = 0x00000010,
             ALIAS_BIT = 0x00000400,
             SPLIT_INSTANCE_BIND_REGIONS_BIT = 0x00000040,
-            TWO_DIMENSION_ARRAY_COMPATIBLE_BIT = 0x00000020, // VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT
+            IC_2D_ARRAY_COMPATIBLE_BIT = 0x00000020, // VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT
             BLOCK_TEXEL_VIEW_COMPATIBLE_BIT = 0x00000080,
             EXTENDED_USAGE_BIT = 0x00000100,
             PROTECTED_BIT = 0x00000800,
@@ -304,13 +304,13 @@ bitmasks!{
     {
         VkSampleCountFlags,
         enum VkSampleCountFlagBits{
-            SC1_BIT = 0x00000001, // VK_SAMPLE_COUNT_1_BIT
-            SC2_BIT = 0x00000002, // VK_SAMPLE_COUNT_2_BIT
-            SC4_BIT = 0x00000004, // VK_SAMPLE_COUNT_4_BIT
-            SC8_BIT = 0x00000008, // VK_SAMPLE_COUNT_8_BIT
-            SC16_BIT = 0x00000010, // VK_SAMPLE_COUNT_16_BIT
-            SC32_BIT = 0x00000020, // VK_SAMPLE_COUNT_32_BIT
-            SC64_BIT = 0x00000040, // VK_SAMPLE_COUNT_64_BIT
+            SC_1_BIT = 0x00000001, // VK_SAMPLE_COUNT_1_BIT
+            SC_2_BIT = 0x00000002, // VK_SAMPLE_COUNT_2_BIT
+            SC_4_BIT = 0x00000004, // VK_SAMPLE_COUNT_4_BIT
+            SC_8_BIT = 0x00000008, // VK_SAMPLE_COUNT_8_BIT
+            SC_16_BIT = 0x00000010, // VK_SAMPLE_COUNT_16_BIT
+            SC_32_BIT = 0x00000020, // VK_SAMPLE_COUNT_32_BIT
+            SC_64_BIT = 0x00000040, // VK_SAMPLE_COUNT_64_BIT
         }
     },
     {
@@ -654,21 +654,21 @@ core_enums!{
         DONT_CARE = 1,
     },
     enum VkImageType{
-        ONE_DIMENSION = 0, // VK_IMAGE_TYPE_1D
-        TWO_DIMENSION = 1, // VK_IMAGE_TYPE_2D
-        THREE_DIMENSION = 2, // VK_IMAGE_TYPE_3D
+        IT_1D = 0, // VK_IMAGE_TYPE_1D
+        IT_2D = 1, // VK_IMAGE_TYPE_2D
+        IT_3D = 2, // VK_IMAGE_TYPE_3D
     },
     enum VkImageTiling{
         OPTIMAL = 0,
         LINEAR = 1,
     },
     enum VkImageViewType{
-        ONE_DIMENSION = 0, // VK_IMAGE_VIEW_TYPE_1D
-        TWO_DIMENSION = 1, // VK_IMAGE_VIEW_TYPE_2D
-        THREE_DIMENSION = 2, // VK_IMAGE_VIEW_TYPE_3D
+        IVT_1D = 0, // VK_IMAGE_VIEW_TYPE_1D
+        IVT_2D = 1, // VK_IMAGE_VIEW_TYPE_2D
+        IVT_3D = 2, // VK_IMAGE_VIEW_TYPE_3D
         CUBE = 3,
-        ONE_DIMENSION_ARRAY = 4, // VK_IMAGE_VIEW_TYPE_1D_ARRAY
-        TWO_DIMENSION_ARRAY = 5, // VK_IMAGE_VIEW_TYPE_2D_ARRAY
+        IVT_1D_ARRAY = 4, // VK_IMAGE_VIEW_TYPE_1D_ARRAY
+        IVT_2D_ARRAY = 5, // VK_IMAGE_VIEW_TYPE_2D_ARRAY
         CUBE_ARRAY = 6,
     },
     enum VkCommandBufferLevel{

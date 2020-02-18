@@ -7,23 +7,23 @@ Almost names are same as the Vulkan C API. But for some simplification reasons, 
 
 | C version | Corresponding vulkan_rs version|
 | ------ | ------ |
-| `VkImageCreateFlagBits.VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` | `VkImageCreateFlagBits::TWO_DIMENSION_ARRAY_COMPATIBLE_BIT` |
+| `VkImageCreateFlagBits.VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` | `VkImageCreateFlagBits::IC_2D_ARRAY_COMPATIBLE_BIT` |
 | `VkQueryResultFlagBits.VK_QUERY_RESULT_64_BIT` | `VkQueryResultFlagBits::U64_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_1_BIT` | `VkSampleCountFlagBits::SC1_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_2_BIT` | `VkSampleCountFlagBits::SC2_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_4_BIT` | `VkSampleCountFlagBits::SC4_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_8_BIT` | `VkSampleCountFlagBits::SC8_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_16_BIT` | `VkSampleCountFlagBits::SC16_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_32_BIT` | `VkSampleCountFlagBits::SC32_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_64_BIT` | `VkSampleCountFlagBits::SC64_BIT` |
-| `VkImageType.VK_IMAGE_TYPE_1D` | `VkImageType::ONE_DIMENSION` |
-| `VkImageType.VK_IMAGE_TYPE_2D` | `VkImageType::TWO_DIMENSION` |
-| `VkImageType.VK_IMAGE_TYPE_3D` | `VkImageType::THREE_DIMENSION` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D` | `VkImageViewType::ONE_DIMENSION` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D` | `VkImageViewType::TWO_DIMENSION` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_3D` | `VkImageViewType::THREE_DIMENSION` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D_ARRAY` | `VkImageViewType::ONE_DIMENSION_ARRAY` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D_ARRAY` | `VkImageViewType::TWO_DIMENSION_ARRAY` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_1_BIT` | `VkSampleCountFlagBits::SC_1_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_2_BIT` | `VkSampleCountFlagBits::SC_2_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_4_BIT` | `VkSampleCountFlagBits::SC_4_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_8_BIT` | `VkSampleCountFlagBits::SC_8_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_16_BIT` | `VkSampleCountFlagBits::SC_16_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_32_BIT` | `VkSampleCountFlagBits::SC_32_BIT` |
+| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_64_BIT` | `VkSampleCountFlagBits::SC_64_BIT` |
+| `VkImageType.VK_IMAGE_TYPE_1D` | `VkImageType::IT_1D` |
+| `VkImageType.VK_IMAGE_TYPE_2D` | `VkImageType::IT_2D` |
+| `VkImageType.VK_IMAGE_TYPE_3D` | `VkImageType::IT_3D` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D` | `VkImageViewType::IVT_1D` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D` | `VkImageViewType::IVT_2D` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_3D` | `VkImageViewType::IVT_3D` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D_ARRAY` | `VkImageViewType::IVT_1D_ARRAY` |
+| `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D_ARRAY` | `VkImageViewType::IVT_2D_ARRAY` |
 | `VkShaderFloatControlsIndependence.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY` | `VkShaderFloatControlsIndependence::F32_BIT_ONLY` |
 
 
@@ -114,13 +114,13 @@ For linking dynamic library, vulkan_rs needs [VulkanSDK](https://vulkan.lunarg.c
 - [ ] VK_KHR_push_descriptor
 - [ ] VK_KHR_shader_clock
 - [ ] VK_KHR_shared_presentable_image
-- [x] VK_KHR_surface
+- [x] VK_KHR_surface(Revision: 25)
 - [ ] VK_KHR_surface_protected_capabilities
-- [x] VK_KHR_swapchain
+- [x] VK_KHR_swapchain(Revision: 70)
 - [ ] VK_KHR_swapchain_mutable_format
 - [ ] VK_KHR_wayland_surface
 - [ ] VK_KHR_win32_keyed_mutex
-- [x] VK_KHR_win32_surface
+- [x] VK_KHR_win32_surface(Revision: 6)
 - [ ] VK_KHR_xcb_surface
 - [ ] VK_KHR_xlib_surface
 - [ ] VK_EXT_acquire_xlib_display
@@ -129,7 +129,7 @@ For linking dynamic library, vulkan_rs needs [VulkanSDK](https://vulkan.lunarg.c
 - [ ] VK_EXT_calibrated_timestamps
 - [ ] VK_EXT_conditional_rendering
 - [ ] VK_EXT_conservative_rasterization
-- [x] VK_EXT_debug_utils
+- [x] VK_EXT_debug_utils(Revision: 1)
 - [ ] VK_EXT_depth_clip_enable
 - [ ] VK_EXT_depth_range_unrestricted
 - [ ] VK_EXT_direct_mode_display
