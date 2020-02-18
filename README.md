@@ -1,11 +1,11 @@
-# vulkan_rs
+# vulkan_raw
 Vulkan C API bindings for Rust. Current support Windows and Linux.
 
 ## Usage
 
 1. Almost names are the same as the Vulkan C API. But for some simplification reasons, a little change must be taken. The `enum` variant name is changed to without `VK_` prefix and enum name. For example the `VkFormat.VK_FORMAT_UNDEFINED` is changed to `VkFormat::UNDEFINED`. Because of language limitations, some exceptions exist. They are the following:
 
-    | C version | Corresponding vulkan_rs version|
+    | C version | Corresponding vulkan_raw version|
     | ------ | ------ |
     | `VkImageCreateFlagBits.VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` | `VkImageCreateFlagBits::IC_2D_ARRAY_COMPATIBLE_BIT` |
     | `VkQueryResultFlagBits.VK_QUERY_RESULT_64_BIT` | `VkQueryResultFlagBits::U64_BIT` |
@@ -30,7 +30,7 @@ Vulkan C API bindings for Rust. Current support Windows and Linux.
 
 ## Example
 ```rust
-use vulkan_rs::*;
+use vulkan_raw::*;
 use std::ptr;
 use std::ffi::CStr;
 
@@ -65,16 +65,14 @@ fn main(){
 
     // Enumerate all devices
     let mut count: u32 = 0;
-    unsafe {
-        let result = vkEnumeratePhysicalDevices(instance, &mut count, ptr::null_mut());
-        if result != VkResult::SUCCESS { panic!("error!") }
-    }
+    let result = unsafe { vkEnumeratePhysicalDevices(instance, &mut count, ptr::null_mut())};
+    if result != VkResult::SUCCESS { panic!("error!") }
+
     let mut physical_devices: Vec<VkPhysicalDevice> = Vec::with_capacity(count as usize);
-    unsafe {
-        let result = vkEnumeratePhysicalDevices(instance, &mut count, physical_devices.as_mut_ptr());
-        if result != VkResult::SUCCESS { panic!("error!") }
-        physical_devices.set_len(count as usize);
-    }
+    let result = unsafe {vkEnumeratePhysicalDevices(instance, &mut count, physical_devices.as_mut_ptr())};
+    if result != VkResult::SUCCESS { panic!("error!") }
+    unsafe {physical_devices.set_len(count as usize); }
+
     for physical_device  in physical_devices{
         let mut physical_device_properties = VkPhysicalDeviceProperties2{
             sType: VkStructureType::PHYSICAL_DEVICE_PROPERTIES_2,
@@ -94,7 +92,7 @@ fn main(){
 ```
 ## Setup
 
-For linking the dynamic library, vulkan_rs needs [VulkanSDK](https://vulkan.lunarg.com/sdk/home) to be installed.
+For linking the dynamic library, vulkan_raw needs [VulkanSDK](https://vulkan.lunarg.com/sdk/home) to be installed.
 
 ## Supported API
 - [x] Vulkan 1.2 core API

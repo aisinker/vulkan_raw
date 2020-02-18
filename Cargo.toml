@@ -1,7 +1,11 @@
 [package]
-name = "vulkan_rs"
+name = "vulkan_raw"
 version = "0.0.1"
-authors = ["aisinker <aisinker@gmail.com>"]
+authors = ["aisinker <aisinker@outlook.com>"]
+repository = "https://github.com/aisinker/vulkan_raw"
+license = "..."
+description = "..."
+keywords = ["vulkan", "graphic", "bindings"]
 edition = "2018"
 build = "build.rs"
 
