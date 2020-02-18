@@ -624,6 +624,12 @@ bitmasks!{
             _RESERVED = 0,
         }
     },
+    {
+        VkFenceImportFlags,
+        enum VkFenceImportFlagBits{
+            TEMPORARY_BIT = 0x00000001,
+        }
+    },
 }
 
 core_enums!{

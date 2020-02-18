@@ -1,5 +1,8 @@
 # vulkan_raw
 
+[![Docs status](https://docs.rs/vulkan_raw/badge.svg)](https://docs.rs/crate/vulkan_raw)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/aisinker/vulkan_raw/master/LICENSE)
+
 ## Usage
 
 1. Almost names are the same as the Vulkan C API. But for some simplification reasons, a little change must be taken. The `enum` variant name is changed to without `VK_` prefix and enum name. For example the `VkFormat.VK_FORMAT_UNDEFINED` is changed to `VkFormat::UNDEFINED`. Because of language limitations, some exceptions exist. They are the following:
@@ -101,7 +104,7 @@ For linking the dynamic library, vulkan_raw needs [VulkanSDK](https://vulkan.lun
 - [ ] VK_KHR_android_surface
 - [ ] VK_KHR_display
 - [ ] VK_KHR_display_swapchain
-- [ ] VK_KHR_external_fence_fd
+- [x] VK_KHR_external_fence_fd(Revision: 1)
 - [ ] VK_KHR_external_fence_win32
 - [ ] VK_KHR_external_memory_fd
 - [ ] VK_KHR_external_memory_win32
