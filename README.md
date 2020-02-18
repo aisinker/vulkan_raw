@@ -1,31 +1,32 @@
 # vulkan_rs
-A very thin rust wrapper for vulkan c api. current support Windows/Linux
+Vulkan C API bindings for Rust. Current support Windows and Linux.
 
 ## Usage
 
-Almost names are same as the Vulkan C API. But for some simplification reasons, a little change must be taked. The `enum` variant name is changed to without `VK_` prefix and enum name. For example the `VkFormat.VK_FORMAT_UNDEFINED` is changed to `VkFormat::UNDEFINED`. Because language limition, some exceptions exit. They are follow: 
+1. Almost names are the same as the Vulkan C API. But for some simplification reasons, a little change must be taken. The `enum` variant name is changed to without `VK_` prefix and enum name. For example the `VkFormat.VK_FORMAT_UNDEFINED` is changed to `VkFormat::UNDEFINED`. Because of language limitations, some exceptions exist. They are the following:
 
-| C version | Corresponding vulkan_rs version|
-| ------ | ------ |
-| `VkImageCreateFlagBits.VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` | `VkImageCreateFlagBits::IC_2D_ARRAY_COMPATIBLE_BIT` |
-| `VkQueryResultFlagBits.VK_QUERY_RESULT_64_BIT` | `VkQueryResultFlagBits::U64_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_1_BIT` | `VkSampleCountFlagBits::SC_1_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_2_BIT` | `VkSampleCountFlagBits::SC_2_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_4_BIT` | `VkSampleCountFlagBits::SC_4_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_8_BIT` | `VkSampleCountFlagBits::SC_8_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_16_BIT` | `VkSampleCountFlagBits::SC_16_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_32_BIT` | `VkSampleCountFlagBits::SC_32_BIT` |
-| `VkSampleCountFlagBits.VK_SAMPLE_COUNT_64_BIT` | `VkSampleCountFlagBits::SC_64_BIT` |
-| `VkImageType.VK_IMAGE_TYPE_1D` | `VkImageType::IT_1D` |
-| `VkImageType.VK_IMAGE_TYPE_2D` | `VkImageType::IT_2D` |
-| `VkImageType.VK_IMAGE_TYPE_3D` | `VkImageType::IT_3D` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D` | `VkImageViewType::IVT_1D` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D` | `VkImageViewType::IVT_2D` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_3D` | `VkImageViewType::IVT_3D` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D_ARRAY` | `VkImageViewType::IVT_1D_ARRAY` |
-| `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D_ARRAY` | `VkImageViewType::IVT_2D_ARRAY` |
-| `VkShaderFloatControlsIndependence.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY` | `VkShaderFloatControlsIndependence::F32_BIT_ONLY` |
+    | C version | Corresponding vulkan_rs version|
+    | ------ | ------ |
+    | `VkImageCreateFlagBits.VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` | `VkImageCreateFlagBits::IC_2D_ARRAY_COMPATIBLE_BIT` |
+    | `VkQueryResultFlagBits.VK_QUERY_RESULT_64_BIT` | `VkQueryResultFlagBits::U64_BIT` |
+    | `VkSampleCountFlagBits.VK_SAMPLE_COUNT_1_BIT` | `VkSampleCountFlagBits::SC_1_BIT` |
+    | `VkSampleCountFlagBits.VK_SAMPLE_COUNT_2_BIT` | `VkSampleCountFlagBits::SC_2_BIT` |
+    | `VkSampleCountFlagBits.VK_SAMPLE_COUNT_4_BIT` | `VkSampleCountFlagBits::SC_4_BIT` |
+    | `VkSampleCountFlagBits.VK_SAMPLE_COUNT_8_BIT` | `VkSampleCountFlagBits::SC_8_BIT` |
+    | `VkSampleCountFlagBits.VK_SAMPLE_COUNT_16_BIT` | `VkSampleCountFlagBits::SC_16_BIT` |
+    | `VkSampleCountFlagBits.VK_SAMPLE_COUNT_32_BIT` | `VkSampleCountFlagBits::SC_32_BIT` |
+    | `VkSampleCountFlagBits.VK_SAMPLE_COUNT_64_BIT` | `VkSampleCountFlagBits::SC_64_BIT` |
+    | `VkImageType.VK_IMAGE_TYPE_1D` | `VkImageType::IT_1D` |
+    | `VkImageType.VK_IMAGE_TYPE_2D` | `VkImageType::IT_2D` |
+    | `VkImageType.VK_IMAGE_TYPE_3D` | `VkImageType::IT_3D` |
+    | `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D` | `VkImageViewType::IVT_1D` |
+    | `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D` | `VkImageViewType::IVT_2D` |
+    | `VkImageViewType.VK_IMAGE_VIEW_TYPE_3D` | `VkImageViewType::IVT_3D` |
+    | `VkImageViewType.VK_IMAGE_VIEW_TYPE_1D_ARRAY` | `VkImageViewType::IVT_1D_ARRAY` |
+    | `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D_ARRAY` | `VkImageViewType::IVT_2D_ARRAY` |
+    | `VkShaderFloatControlsIndependence.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY` | `VkShaderFloatControlsIndependence::F32_BIT_ONLY` |
 
+2. For using extension functions, the loading function pointer operation must be taken before. We provide a `Functions` object to do this on every extension, echo one corresponding to the extension's functions set.
 
 ## Example
 ```rust
@@ -36,7 +37,7 @@ use std::ffi::CStr;
 fn main(){
     let mut instance_version: u32 = 0;
     unsafe {vkEnumerateInstanceVersion(&mut instance_version)};
-    println!("instance version: {}", tools::ApiVersion::from(instance_version));
+    println!("instance version: {}", ApiVersion::from(instance_version));
 
     // Create Vulkan instance
     let app_info = VkApplicationInfo{
@@ -46,7 +47,7 @@ fn main(){
         applicationVersion: 1,
         pEngineName: ptr::null(),
         engineVersion: 1,
-        apiVersion: tools::ApiVersion::new(1, 2, 0).into(),
+        apiVersion: ApiVersion::new(1, 2, 0).into(),
     };
     let create_info = VkInstanceCreateInfo{
         sType: VkStructureType::INSTANCE_CREATE_INFO,
@@ -84,7 +85,7 @@ fn main(){
         println!(
             "device: {}, supported vulkan version: {}",
             unsafe {CStr::from_ptr(physical_device_properties.properties.deviceName.as_ptr())}.to_str().unwrap(),
-            tools::ApiVersion::from(physical_device_properties.properties.apiVersion)
+            ApiVersion::from(physical_device_properties.properties.apiVersion)
         );
     }
 
@@ -93,7 +94,7 @@ fn main(){
 ```
 ## Setup
 
-For linking dynamic library, vulkan_rs needs [VulkanSDK](https://vulkan.lunarg.com/sdk/home) be installed.
+For linking the dynamic library, vulkan_rs needs [VulkanSDK](https://vulkan.lunarg.com/sdk/home) to be installed.
 
 ## Supported API
 - [x] Vulkan 1.2 core API
