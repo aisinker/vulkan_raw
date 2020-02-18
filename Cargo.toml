@@ -9,4 +9,10 @@ keywords = ["vulkan", "graphic", "bindings"]
 edition = "2018"
 build = "build.rs"
 
+[features]
+docs = []
+
+[package.metadata.docs.rs]
+features = ["docs",]
+
 [dependencies]
