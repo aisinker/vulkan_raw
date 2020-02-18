@@ -1,5 +1,4 @@
 # vulkan_raw
-Vulkan C API bindings for Rust. Current support Windows and Linux.
 
 ## Usage
 
@@ -29,6 +28,7 @@ Vulkan C API bindings for Rust. Current support Windows and Linux.
 2. For using extension functions, the loading function pointer operation must be taken before. We provide a `Functions` object to do this on every extension, echo one corresponding to the extension's functions set.
 
 ## Example
+
 ```rust
 use vulkan_raw::*;
 use std::ptr;
@@ -90,11 +90,13 @@ fn main(){
     unsafe { vkDestroyInstance(instance, ptr::null())};
 }
 ```
-## Setup
+
+## Dependencies
 
 For linking the dynamic library, vulkan_raw needs [VulkanSDK](https://vulkan.lunarg.com/sdk/home) to be installed.
 
 ## Supported API
+
 - [x] Vulkan 1.2 core API
 - [ ] VK_KHR_android_surface
 - [ ] VK_KHR_display
