@@ -1,6 +1,6 @@
 # vulkan_raw
 
-[![Docs status](https://docs.rs/vulkan_raw/badge.svg)](https://docs.rs/crate/vulkan_raw)
+[![Docs status](https://docs.rs/vulkan_raw/badge.svg)](https://docs.rs/vulkan_raw)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/aisinker/vulkan_raw/master/LICENSE)
 
 ## Usage

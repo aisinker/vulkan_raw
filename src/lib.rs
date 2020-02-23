@@ -1,6 +1,9 @@
 use std::fmt::{Display, Formatter, Error};
 use std::ffi::CStr;
 
+#[macro_use]
+extern crate lazy_static;
+
 pub type VkSampleMask = u32;
 pub type VkFlags = u32;
 pub type VkDeviceSize = u64;
@@ -12,8 +15,13 @@ pub type HWND = usize;
 macro_rules! handle {
     ($x:ident,$y:ty) => {
         #[repr(C)]
-        #[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
+        #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
         pub struct $x($y);
+        impl $x{
+            pub fn none()->Self{
+                $x(<$y>::none())
+            }
+        }
         impl Display for $x{
             fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
                 write!(f, "{}", self.0.to_string())
@@ -275,6 +283,59 @@ macro_rules! _extend_core_bitmasks {
     }
 }
 
+macro_rules! core_functions {
+    ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
+        pub struct Functions {
+            $(
+                $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
+            )*
+        }
+        impl Functions {
+            pub fn load_from_instance(instance: VkInstance)->Result<Functions, crate::LoadingError> {
+                use std::ffi::CStr;
+                use crate::get_instance_proc_addr;
+                unsafe {
+                    let functions = Functions {
+                        $(
+                            $function_name: transmute(
+                                get_instance_proc_addr(
+                                    instance,
+                                    CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes())
+                                )?
+                            ),
+                        )*
+                    };
+                    Ok(functions)
+                }
+            }
+            pub fn load_from_device(core_functions: &Functions, device: VkDevice)->Result<Functions, crate::LoadingError> {
+                use std::ffi::CStr;
+                use crate::get_device_proc_addr;
+                unsafe {
+                    let functions = Functions {
+                        $(
+                            $function_name: transmute(
+                                get_device_proc_addr(
+                                    core_functions,
+                                    device,
+                                    CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes())
+                                )?
+                            ),
+                        )*
+                    };
+                    Ok(functions)
+                }
+            }
+            $(
+                #[inline(always)]
+                pub unsafe fn $function_name(&self, $($parameter_name:$parameter_type),*)$(->$return_type)?{
+                    (self.$function_name)($($parameter_name),*)
+                }
+            )*
+        }
+    }
+}
+
 macro_rules! extension_functions {
     ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
         pub struct Functions {
@@ -301,7 +362,7 @@ macro_rules! extension_functions {
                     Ok(functions)
                 }
             }
-            pub fn load_from_device(device: crate::core::VkDevice)->Result<Functions, crate::LoadingError> {
+            pub fn load_from_device(core_functions: &crate::core::Functions, device: crate::core::VkDevice)->Result<Functions, crate::LoadingError> {
                 use std::ffi::CStr;
                 use std::mem::transmute;
                 use crate::get_device_proc_addr;
@@ -310,6 +371,7 @@ macro_rules! extension_functions {
                         $(
                             $function_name: transmute(
                                 get_device_proc_addr(
+                                    core_functions,
                                     device,
                                     CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes())
                                 )?
@@ -322,7 +384,7 @@ macro_rules! extension_functions {
             $(
                 #[inline(always)]
                 pub unsafe fn $function_name(&self, $($parameter_name:$parameter_type),*)$(->$return_type)?{
-                (self.$function_name)($($parameter_name),*)
+                    (self.$function_name)($($parameter_name),*)
                 }
             )*
         }
@@ -330,8 +392,13 @@ macro_rules! extension_functions {
 }
 
 #[repr(transparent)]
-#[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 struct DispatchableHandle(usize);
+impl DispatchableHandle{
+    pub fn none()->Self{
+        DispatchableHandle(0)
+    }
+}
 impl Display for DispatchableHandle{
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         write!(f, "{:#x}", self.0)
@@ -339,8 +406,13 @@ impl Display for DispatchableHandle{
 }
 
 #[repr(transparent)]
-#[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 struct NonDispatchableHandle(u64);
+impl NonDispatchableHandle{
+    pub fn none()->Self{
+        NonDispatchableHandle(0)
+    }
+}
 impl Display for NonDispatchableHandle{
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         write!(f, "{}", self.0)
@@ -387,8 +459,8 @@ fn get_instance_proc_addr(instance: VkInstance, name: &CStr)->Result<PFN_vkVoidF
         _ => Ok(function_pointer),
     }
 }
-fn get_device_proc_addr(device: VkDevice, name: &CStr)->Result<PFN_vkVoidFunction, LoadingError>{
-    let function_pointer = unsafe {vkGetDeviceProcAddr(device, name.as_ptr())};
+fn get_device_proc_addr(core_functions: &Functions, device: VkDevice, name: &CStr)->Result<PFN_vkVoidFunction, LoadingError>{
+    let function_pointer = unsafe {core_functions.vkGetDeviceProcAddr(device, name.as_ptr())};
     match function_pointer as usize {
         0 => Err(LoadingError(format!("Load function '{}'  failed!", name.to_str().unwrap()))),
         _ => Ok(function_pointer),
