@@ -28,7 +28,7 @@
     | `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D_ARRAY` | `VkImageViewType::IVT_2D_ARRAY` |
     | `VkShaderFloatControlsIndependence.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY` | `VkShaderFloatControlsIndependence::F32_BIT_ONLY` |
 
-2. For using extension functions, the loading function pointer operation must be taken before. We provide a `Functions` object to do this on every extension, echo one corresponding to the extension's functions set.
+2. Most functions must need to obtain a corresponding function pointer before use. We provide a `Functions` object to do this on every module, echo one corresponding to the module's functions set.
 
 ## Example
 
@@ -62,17 +62,19 @@ fn main(){
         enabledExtensionCount: 0,
         ppEnabledExtensionNames: ptr::null(),
     };
-    let mut instance: VkInstance = Default::default();
+    let mut instance: VkInstance = VkInstance::none();
     let result = unsafe {vkCreateInstance(&create_info, ptr::null(), &mut instance)};
     if result != VkResult::SUCCESS { panic!("error!") }
 
+    let core_functions = Functions::load_from_instance(instance).unwrap();
+
     // Enumerate all devices
     let mut count: u32 = 0;
-    let result = unsafe { vkEnumeratePhysicalDevices(instance, &mut count, ptr::null_mut())};
+    let result = unsafe { core_functions.vkEnumeratePhysicalDevices(instance, &mut count, ptr::null_mut())};
     if result != VkResult::SUCCESS { panic!("error!") }
 
     let mut physical_devices: Vec<VkPhysicalDevice> = Vec::with_capacity(count as usize);
-    let result = unsafe {vkEnumeratePhysicalDevices(instance, &mut count, physical_devices.as_mut_ptr())};
+    let result = unsafe {core_functions.vkEnumeratePhysicalDevices(instance, &mut count, physical_devices.as_mut_ptr())};
     if result != VkResult::SUCCESS { panic!("error!") }
     unsafe {physical_devices.set_len(count as usize); }
 
@@ -82,7 +84,7 @@ fn main(){
             pNext: ptr::null(),
             properties: Default::default(),
         };
-        unsafe { vkGetPhysicalDeviceProperties2(physical_device, &mut physical_device_properties); }
+        unsafe { core_functions.vkGetPhysicalDeviceProperties2(physical_device, &mut physical_device_properties); }
         println!(
             "device: {}, supported vulkan version: {}",
             unsafe {CStr::from_ptr(physical_device_properties.properties.deviceName.as_ptr())}.to_str().unwrap(),
@@ -90,13 +92,9 @@ fn main(){
         );
     }
 
-    unsafe { vkDestroyInstance(instance, ptr::null())};
+    unsafe { core_functions.vkDestroyInstance(instance, ptr::null())};
 }
 ```
-
-## Dependencies
-
-For linking the dynamic library, vulkan_raw needs [VulkanSDK](https://vulkan.lunarg.com/sdk/home) to be installed.
 
 ## Supported API
 

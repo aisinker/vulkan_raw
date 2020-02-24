@@ -93,7 +93,7 @@ pub struct VkSurfaceCapabilitiesKHR{
     pub supportedUsageFlags: VkImageUsageFlags,
 }
 
-extension_functions! {
+instance_extension_functions! {
     fn vkDestroySurfaceKHR(instance: VkInstance, surface: VkSurfaceKHR, pAllocator: *const core::VkAllocationCallbacks);
     fn vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice: core::VkPhysicalDevice, queueFamilyIndex: u32, surface: VkSurfaceKHR, pSupported: *mut VkBool32)->VkResult;
     fn vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice: core::VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceCapabilities: *mut VkSurfaceCapabilitiesKHR)->VkResult;

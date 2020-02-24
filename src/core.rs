@@ -1126,7 +1126,7 @@ core_enums!{
         IMAGE_MEMORY_BARRIER = 45,
         MEMORY_BARRIER = 46,
         LOADER_INSTANCE_CREATE_INFO = 47, // reserved for internal use by the loader
-        LOADER_DEVICE_CREATE_INFO = 48, // // reserved for internal use by the loader
+        LOADER_DEVICE_CREATE_INFO = 48, // reserved for internal use by the loader
         PHYSICAL_DEVICE_SUBGROUP_PROPERTIES = 1000094000,
         BIND_BUFFER_MEMORY_INFO = 1000157000,
         BIND_IMAGE_MEMORY_INFO = 1000157001,

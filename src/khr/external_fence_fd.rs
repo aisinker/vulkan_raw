@@ -31,7 +31,7 @@ pub struct VkFenceGetFdInfoKHR{
     pub handleType: VkExternalFenceHandleTypeFlagBits,
 }
 
-extension_functions!{
+device_extension_functions!{
     fn vkImportFenceFdKHR(device: VkDevice, pImportFenceFdInfo: *const VkImportFenceFdInfoKHR)->VkResult;
     fn vkGetFenceFdKHR(device: VkDevice, pGetFdInfo: *const VkFenceGetFdInfoKHR, pFd: *mut c_int)->VkResult;
 }

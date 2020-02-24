@@ -31,7 +31,7 @@ pub struct VkWin32SurfaceCreateInfoKHR{
     pub hwnd: HWND,
 }
 
-extension_functions! {
+instance_extension_functions! {
     fn vkCreateWin32SurfaceKHR(instance: VkInstance, pCreateInfo: *const VkWin32SurfaceCreateInfoKHR, pAllocator: *const core::VkAllocationCallbacks, pSurface: *mut VkSurfaceKHR)->VkResult;
     fn vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice: core::VkPhysicalDevice, queueFamilyIndex: u32)->VkBool32;
 }

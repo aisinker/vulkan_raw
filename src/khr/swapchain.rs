@@ -135,7 +135,7 @@ pub struct VkDeviceGroupSwapchainCreateInfoKHR{
     pub mode: VkDeviceGroupPresentModeFlagsKHR,
 }
 
-extension_functions! {
+device_extension_functions! {
     fn vkCreateSwapchainKHR(device: core::VkDevice, pCreateInfo: *const VkSwapchainCreateInfoKHR, pAllocator: *const core::VkAllocationCallbacks, pSwapchain: *mut VkSwapchainKHR)->crate::VkResult;
     fn vkDestroySwapchainKHR(device: core::VkDevice, swapchain: VkSwapchainKHR, pAllocator: *const core::VkAllocationCallbacks);
     fn vkGetSwapchainImagesKHR(device: core::VkDevice, swapchain: VkSwapchainKHR, pSwapchainImageCount: *mut u32, pSwapchainImages: *mut core::VkImage)->crate::VkResult;

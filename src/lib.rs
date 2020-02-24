@@ -336,7 +336,43 @@ macro_rules! core_functions {
     }
 }
 
-macro_rules! extension_functions {
+macro_rules! instance_extension_functions {
+    ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
+        pub struct Functions {
+            $(
+                $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
+            )*
+        }
+        impl Functions {
+            pub fn load_from_instance(instance: crate::core::VkInstance)->Result<Functions, crate::LoadingError> {
+                use std::ffi::CStr;
+                use std::mem::transmute;
+                use crate::get_instance_proc_addr;
+                unsafe {
+                    let functions = Functions {
+                        $(
+                            $function_name: transmute(
+                                get_instance_proc_addr(
+                                    instance,
+                                    CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes())
+                                )?
+                            ),
+                        )*
+                    };
+                    Ok(functions)
+                }
+            }
+            $(
+                #[inline(always)]
+                pub unsafe fn $function_name(&self, $($parameter_name:$parameter_type),*)$(->$return_type)?{
+                    (self.$function_name)($($parameter_name),*)
+                }
+            )*
+        }
+    }
+}
+
+macro_rules! device_extension_functions {
     ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
         pub struct Functions {
             $(
