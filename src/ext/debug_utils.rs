@@ -5,6 +5,7 @@
 use std::ffi::c_void;
 use std::os::raw::c_char;
 use std::fmt::{Display, Formatter, Error};
+use std::ptr;
 
 use crate::*;
 
@@ -58,6 +59,7 @@ extend_core_enums!{
 pub type PFN_vkDebugUtilsMessengerCallbackEXT = extern "C" fn(messageSeverity: VkDebugUtilsMessageSeverityFlagBitsEXT, messageTypes: VkDebugUtilsMessageTypeFlagsEXT, pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT, pUserData: *mut c_void)->VkBool32;
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDebugUtilsObjectNameInfoEXT{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -65,8 +67,20 @@ pub struct VkDebugUtilsObjectNameInfoEXT{
     pub objectHandle: u64,
     pub pObjectName: *const c_char,
 }
+impl Default for VkDebugUtilsObjectNameInfoEXT{
+    fn default() -> Self {
+        VkDebugUtilsObjectNameInfoEXT{
+            sType: extend_core_enums::VkStructureType::DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+            pNext: ptr::null(),
+            objectType: VkObjectType::UNKNOWN,
+            objectHandle: Default::default(),
+            pObjectName: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDebugUtilsObjectTagInfoEXT {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -76,16 +90,41 @@ pub struct VkDebugUtilsObjectTagInfoEXT {
     pub tagSize: isize,
     pub pTag: *const c_void,
 }
+impl Default for VkDebugUtilsObjectTagInfoEXT{
+    fn default() -> Self {
+        VkDebugUtilsObjectTagInfoEXT {
+            sType: extend_core_enums::VkStructureType::DEBUG_UTILS_OBJECT_TAG_INFO_EXT,
+            pNext: ptr::null(),
+            objectType: VkObjectType::UNKNOWN,
+            objectHandle: Default::default(),
+            tagName: Default::default(),
+            tagSize: Default::default(),
+            pTag: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VkDebugUtilsLabelEXT{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub pLabelName: *const char,
     pub color: [f32; 4],
 }
+impl Default for VkDebugUtilsLabelEXT{
+    fn default() -> Self {
+        VkDebugUtilsLabelEXT{
+            sType: extend_core_enums::VkStructureType::DEBUG_UTILS_LABEL_EXT,
+            pNext: ptr::null(),
+            pLabelName: ptr::null(),
+            color: [0f32; 4],
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDebugUtilsMessengerCallbackDataEXT{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -100,8 +139,27 @@ pub struct VkDebugUtilsMessengerCallbackDataEXT{
     pub objectCount: u32,
     pub pObjects: *const VkDebugUtilsObjectNameInfoEXT,
 }
+impl Default for VkDebugUtilsMessengerCallbackDataEXT{
+    fn default() -> Self {
+        VkDebugUtilsMessengerCallbackDataEXT{
+            sType: extend_core_enums::VkStructureType::DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            pMessageIdName: ptr::null(),
+            messageIdNumber: Default::default(),
+            pMessage: ptr::null(),
+            queueLabelCount: Default::default(),
+            pQueueLabels: ptr::null(),
+            cmdBufLabelCount: Default::default(),
+            pCmdBufLabels: ptr::null(),
+            objectCount: Default::default(),
+            pObjects: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDebugUtilsMessengerCreateInfoEXT {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -110,6 +168,22 @@ pub struct VkDebugUtilsMessengerCreateInfoEXT {
     pub messageType: VkDebugUtilsMessageTypeFlagsEXT,
     pub pfnUserCallback: PFN_vkDebugUtilsMessengerCallbackEXT,
     pub pUserData: *mut c_void,
+}
+impl Default for VkDebugUtilsMessengerCreateInfoEXT{
+    fn default() -> Self {
+        extern "C" fn vkDebugUtilsMessengerCallbackEXT(_messageSeverity: VkDebugUtilsMessageSeverityFlagBitsEXT, _messageTypes: VkDebugUtilsMessageTypeFlagsEXT, _pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT, _pUserData: *mut c_void)->VkBool32{
+            unimplemented!()
+        }
+        VkDebugUtilsMessengerCreateInfoEXT {
+            sType: extend_core_enums::VkStructureType::DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            messageSeverity: Default::default(),
+            messageType: Default::default(),
+            pfnUserCallback: vkDebugUtilsMessengerCallbackEXT,
+            pUserData: ptr::null_mut(),
+        }
+    }
 }
 
 instance_extension_functions! {

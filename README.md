@@ -29,7 +29,7 @@
     | `VkShaderFloatControlsIndependence.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY` | `VkShaderFloatControlsIndependence::F32_BIT_ONLY` |
 
 2. Most functions must need to obtain a corresponding function pointer before use. We provide a `Functions` object to do this on every module, echo one corresponding to the module's functions set.
-
+3. All structures have `Debug` trait and `Default` trait. You don't need to set the `sType` field manually if it contains.
 ## Example
 
 ```rust
@@ -43,25 +43,10 @@ fn main(){
     println!("instance version: {}", ApiVersion::from(instance_version));
 
     // Create Vulkan instance
-    let app_info = VkApplicationInfo{
-        sType: VkStructureType::APPLICATION_INFO,
-        pNext: ptr::null(),
-        pApplicationName: ptr::null(),
-        applicationVersion: 1,
-        pEngineName: ptr::null(),
-        engineVersion: 1,
-        apiVersion: ApiVersion::new(1, 2, 0).into(),
-    };
-    let create_info = VkInstanceCreateInfo{
-        sType: VkStructureType::INSTANCE_CREATE_INFO,
-        pNext: ptr::null(),
-        flags: Default::default(),
-        pApplicationInfo: &app_info,
-        enabledLayerCount: 0,
-        ppEnabledLayerNames: ptr::null(),
-        enabledExtensionCount: 0,
-        ppEnabledExtensionNames: ptr::null(),
-    };
+    let mut app_info: VkApplicationInfo = Default::default();
+    app_info.apiVersion = ApiVersion::new(1, 2, 0).into();
+    let mut create_info: VkInstanceCreateInfo = Default::default();
+    create_info.pApplicationInfo = &app_info;
     let mut instance: VkInstance = VkInstance::none();
     let result = unsafe {vkCreateInstance(&create_info, ptr::null(), &mut instance)};
     if result != VkResult::SUCCESS { panic!("error!") }
@@ -79,11 +64,7 @@ fn main(){
     unsafe {physical_devices.set_len(count as usize); }
 
     for physical_device  in physical_devices{
-        let mut physical_device_properties = VkPhysicalDeviceProperties2{
-            sType: VkStructureType::PHYSICAL_DEVICE_PROPERTIES_2,
-            pNext: ptr::null(),
-            properties: Default::default(),
-        };
+        let mut physical_device_properties = Default::default();
         unsafe { core_functions.vkGetPhysicalDeviceProperties2(physical_device, &mut physical_device_properties); }
         println!(
             "device: {}, supported vulkan version: {}",

@@ -3,9 +3,7 @@
 #![allow(non_upper_case_globals)]
 
 use std::fmt::{Display, Formatter, Error};
-
 use crate::*;
-use crate::core;
 
 handle!(VkSurfaceKHR, NonDispatchableHandle);
 
@@ -71,21 +69,29 @@ extend_core_enums!{
     },
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSurfaceFormatKHR{
     pub format: VkFormat,
     pub colorSpace: VkColorSpaceKHR,
 }
+impl Default for VkSurfaceFormatKHR{
+    fn default() -> Self {
+        VkSurfaceFormatKHR{
+            format: VkFormat::UNDEFINED,
+            colorSpace: VkColorSpaceKHR::SRGB_NONLINEAR_KHR,
+        }
+    }
+}
 
-#[derive(Debug, Default)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkSurfaceCapabilitiesKHR{
     pub minImageCount: u32,
     pub maxImageCount: u32,
-    pub currentExtent: core::VkExtent2D,
-    pub minImageExtent: core::VkExtent2D,
-    pub maxImageExtent: core::VkExtent2D,
+    pub currentExtent: VkExtent2D,
+    pub minImageExtent: VkExtent2D,
+    pub maxImageExtent: VkExtent2D,
     pub maxImageArrayLayers: u32,
     pub supportedTransforms: VkSurfaceTransformFlagsKHR,
     pub currentTransform: VkSurfaceTransformFlagBitsKHR,
@@ -94,9 +100,9 @@ pub struct VkSurfaceCapabilitiesKHR{
 }
 
 instance_extension_functions! {
-    fn vkDestroySurfaceKHR(instance: VkInstance, surface: VkSurfaceKHR, pAllocator: *const core::VkAllocationCallbacks);
-    fn vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice: core::VkPhysicalDevice, queueFamilyIndex: u32, surface: VkSurfaceKHR, pSupported: *mut VkBool32)->VkResult;
-    fn vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice: core::VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceCapabilities: *mut VkSurfaceCapabilitiesKHR)->VkResult;
-    fn vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice: core::VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceFormatCount: *mut u32, pSurfaceFormats: *mut VkSurfaceFormatKHR)->VkResult;
-    fn vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice: core::VkPhysicalDevice, surface: VkSurfaceKHR, pPresentModeCount: *mut u32, pPresentModes: *mut VkPresentModeKHR)->VkResult;
+    fn vkDestroySurfaceKHR(instance: VkInstance, surface: VkSurfaceKHR, pAllocator: *const VkAllocationCallbacks);
+    fn vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32, surface: VkSurfaceKHR, pSupported: *mut VkBool32)->VkResult;
+    fn vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceCapabilities: *mut VkSurfaceCapabilitiesKHR)->VkResult;
+    fn vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceFormatCount: *mut u32, pSurfaceFormats: *mut VkSurfaceFormatKHR)->VkResult;
+    fn vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pPresentModeCount: *mut u32, pPresentModes: *mut VkPresentModeKHR)->VkResult;
 }

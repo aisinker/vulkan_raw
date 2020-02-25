@@ -3,10 +3,12 @@
 #![allow(non_upper_case_globals)]
 
 use std::os::raw::{c_char, c_void};
-use std::fmt::{Display, Formatter, Error};
 use std::mem::transmute;
+use std::ptr;
 
 use crate::*;
+use std::hash::{Hash};
+use std::fmt::Debug;
 
 bitmasks!{
     {
@@ -1410,49 +1412,67 @@ pub type PFN_vkInternalAllocationNotification = extern "C" fn(pUserData: *mut c_
 pub type PFN_vkInternalFreeNotification = extern "C" fn(pUserData: *mut c_void, size: isize, allocationType: VkInternalAllocationType, allocationScope: VkSystemAllocationScope);
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBaseOutStructure{
     pub sType: VkStructureType,
     pub pNext: *mut VkBaseOutStructure,
 }
+impl Default for VkBaseOutStructure{
+    fn default() -> Self {
+        VkBaseOutStructure{
+            sType: VkStructureType(-1),
+            pNext: ptr::null_mut(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBaseInStructure{
     pub sType: VkStructureType,
     pub pNext: *const VkBaseInStructure,
 }
+impl Default for VkBaseInStructure {
+    fn default() -> Self {
+        VkBaseInStructure{
+            sType: VkStructureType(-1),
+            pNext: ptr::null(),
+        }
+    }
+}
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkOffset2D{
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkOffset3D {
     pub x: i32,
     pub y: i32,
     pub z: i32,
 }
 
-#[derive(Default, Debug, Copy, Clone)]
 #[repr(C)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkExtent2D{
     pub width: u32,
     pub height: u32,
 }
 
-#[derive(Default, Copy, Clone, Debug)]
 #[repr(C)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkExtent3D{
     pub width: u32,
     pub height: u32,
     pub depth: u32,
 }
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct VkViewport{
     pub x: f32,
     pub y: f32,
@@ -1462,14 +1482,15 @@ pub struct VkViewport{
     pub maxDepth: f32,
 }
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkRect2D{
     pub offset: VkOffset2D,
     pub extent: VkExtent2D,
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkClearRect{
     pub rect: VkRect2D,
     pub baseArrayLayer: u32,
@@ -1477,15 +1498,26 @@ pub struct VkClearRect{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkComponentMapping{
     pub r: VkComponentSwizzle,
     pub g: VkComponentSwizzle,
     pub b: VkComponentSwizzle,
     pub a: VkComponentSwizzle,
 }
+impl Default for VkComponentMapping{
+    fn default() -> Self {
+        VkComponentMapping {
+            r: VkComponentSwizzle::IDENTITY,
+            g: VkComponentSwizzle::IDENTITY,
+            b: VkComponentSwizzle::IDENTITY,
+            a: VkComponentSwizzle::IDENTITY,
+        }
+    }
+}
 
-#[derive(Clone, Copy)]
 #[repr(C)]
+#[derive(Clone)]
 pub struct VkPhysicalDeviceProperties{
     pub apiVersion: u32,
     pub driverVersion: u32,
@@ -1504,7 +1536,7 @@ impl Default for VkPhysicalDeviceProperties{
             driverVersion: Default::default(),
             vendorID: Default::default(),
             deviceID: Default::default(),
-            deviceType: Default::default(),
+            deviceType: VkPhysicalDeviceType::OTHER,
             deviceName: [0; VK_MAX_PHYSICAL_DEVICE_NAME_SIZE],
             pipelineCacheUUID: Default::default(),
             limits: Default::default(),
@@ -1512,23 +1544,98 @@ impl Default for VkPhysicalDeviceProperties{
         }
     }
 }
-
+impl Debug for VkPhysicalDeviceProperties{
+    fn fmt(&self, f: &mut Formatter<'_>)->Result<(), Error> {
+        write!(f,
+            "VkPhysicalDeviceProperties {{ \
+                apiVersion: {}, \
+                driverVersion: {}, \
+                vendorID: {}, \
+                deviceID: {}, \
+                deviceType: {:?}, \
+                deviceName: {}, \
+                pipelineCacheUUID: {:?}, \
+                limits: {:?}， \
+                sparseProperties: {:?} \
+            }}",
+            self.apiVersion,
+            self.driverVersion,
+            self.vendorID,
+            self.deviceID,
+            self.deviceType,
+            unsafe {CStr::from_ptr(self.deviceName.as_ptr())}.to_str().unwrap(),
+            self.pipelineCacheUUID,
+            self.limits,
+            self.sparseProperties
+        )
+    }
+}
 
 #[repr(C)]
+#[derive(Clone)]
 pub struct VkExtensionProperties{
     pub extensionName: [c_char; VK_MAX_EXTENSION_NAME_SIZE],
     pub specVersion: u32
 }
+impl Default for VkExtensionProperties{
+    fn default() -> Self {
+        VkExtensionProperties{
+            extensionName: [0; VK_MAX_EXTENSION_NAME_SIZE],
+            specVersion: Default::default(),
+        }
+    }
+}
+impl Debug for VkExtensionProperties{
+    fn fmt(&self, f: &mut Formatter<'_>) ->Result<(), Error> {
+        write!(f,
+            "VkExtensionProperties {{ \
+                extensionName: {}, \
+                specVersion: {} \
+            }}",
+            unsafe {CStr::from_ptr(self.extensionName.as_ptr())}.to_str().unwrap(),
+            self.specVersion,
+        )
+    }
+}
+
 
 #[repr(C)]
+#[derive(Clone)]
 pub struct VkLayerProperties {
     pub layerName: [c_char; VK_MAX_EXTENSION_NAME_SIZE],
     pub specVersion: u32,
     pub implementationVersion: u32,
     pub description: [c_char; VK_MAX_DESCRIPTION_SIZE],
 }
+impl Default for VkLayerProperties{
+    fn default() -> Self {
+        VkLayerProperties{
+            layerName: [0; VK_MAX_EXTENSION_NAME_SIZE],
+            specVersion: Default::default(),
+            implementationVersion: Default::default(),
+            description: [0; VK_MAX_DESCRIPTION_SIZE],
+        }
+    }
+}
+impl Debug for VkLayerProperties{
+    fn fmt(&self, f: &mut Formatter<'_>)->Result<(), Error> {
+        write!(f,
+            "VkLayerProperties {{ \
+                layerName: {}, \
+                specVersion: {}, \
+                implementationVersion: {}, \
+                description: {} \
+            }}",
+            unsafe {CStr::from_ptr(self.layerName.as_ptr())}.to_str().unwrap(),
+            self.specVersion,
+            self.implementationVersion,
+            unsafe {CStr::from_ptr(self.description.as_ptr())}.to_str().unwrap()
+        )
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkApplicationInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1538,8 +1645,22 @@ pub struct VkApplicationInfo{
     pub engineVersion: u32,
     pub apiVersion: u32,
 }
+impl Default for VkApplicationInfo {
+    fn default() -> Self {
+        VkApplicationInfo{
+            sType: VkStructureType::APPLICATION_INFO,
+            pNext: ptr::null(),
+            pApplicationName: ptr::null(),
+            applicationVersion: Default::default(),
+            pEngineName: ptr::null(),
+            engineVersion: Default::default(),
+            apiVersion: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkAllocationCallbacks{
     pub pUserData: *mut c_void,
     pub pfnAllocation: PFN_vkAllocationFunction,
@@ -1548,8 +1669,36 @@ pub struct VkAllocationCallbacks{
     pub pfnInternalAllocation: PFN_vkInternalAllocationNotification,
     pub pfnInternalFree: PFN_vkInternalFreeNotification,
 }
+impl Default for VkAllocationCallbacks {
+    fn default() -> Self {
+        extern "C" fn vkAllocationFunction(_pUserData: *mut c_void, _size: isize, _alignment: isize, _allocationScope: VkSystemAllocationScope)->*mut c_void{
+            unimplemented!()
+        }
+        extern "C" fn vkReallocationFunction(_pUserData: *mut c_void, _pOriginal: *mut c_void, _size: isize, _alignment: isize, _allocationScope: VkSystemAllocationScope)->*mut c_void{
+            unimplemented!()
+        }
+        extern "C" fn vkFreeFunction(_pUserData: *mut c_void, _pMemory: *mut c_void){
+            unimplemented!()
+        }
+        extern "C" fn vkInternalAllocationNotification(_pUserData: *mut c_void, _size: isize, _allocationType: VkInternalAllocationType, _allocationScope: VkSystemAllocationScope){
+            unimplemented!()
+        }
+        extern "C" fn vkInternalFreeNotification(_pUserData: *mut c_void, _size: isize, _allocationType: VkInternalAllocationType, _allocationScope: VkSystemAllocationScope){
+            unimplemented!()
+        }
+        VkAllocationCallbacks {
+            pUserData: ptr::null_mut(),
+            pfnAllocation: vkAllocationFunction,
+            pfnReallocation: vkReallocationFunction,
+            pfnFree: vkFreeFunction,
+            pfnInternalAllocation: vkInternalAllocationNotification,
+            pfnInternalFree: vkInternalFreeNotification,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceQueueCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1558,8 +1707,21 @@ pub struct VkDeviceQueueCreateInfo{
     pub queueCount: u32,
     pub pQueuePriorities: *const f32,
 }
+impl Default for VkDeviceQueueCreateInfo {
+    fn default() -> Self {
+        VkDeviceQueueCreateInfo{
+            sType: VkStructureType::DEVICE_QUEUE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            queueFamilyIndex: Default::default(),
+            queueCount: Default::default(),
+            pQueuePriorities: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1572,10 +1734,27 @@ pub struct VkDeviceCreateInfo{
     pub ppEnabledExtensionNames: *const *const c_char,
     pub pEnabledFeatures: *const VkPhysicalDeviceFeatures,
 }
+impl Default for VkDeviceCreateInfo{
+    fn default() -> Self {
+        VkDeviceCreateInfo{
+            sType: VkStructureType::DEVICE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            queueCreateInfoCount: Default::default(),
+            pQueueCreateInfos: ptr::null(),
+            enabledLayerCount: Default::default(),
+            ppEnabledLayerNames: ptr::null(),
+            enabledExtensionCount: Default::default(),
+            ppEnabledExtensionNames: ptr::null(),
+            pEnabledFeatures: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkInstanceCreateInfo{
-    pub sType :VkStructureType,
+    pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkInstanceCreateFlags,
     pub pApplicationInfo: *const VkApplicationInfo,
@@ -1584,9 +1763,23 @@ pub struct VkInstanceCreateInfo{
     pub enabledExtensionCount: u32,
     pub ppEnabledExtensionNames: *const *const c_char,
 }
+impl Default for VkInstanceCreateInfo{
+    fn default() -> Self {
+        VkInstanceCreateInfo{
+            sType: VkStructureType::INSTANCE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            pApplicationInfo: ptr::null(),
+            enabledLayerCount: Default::default(),
+            ppEnabledLayerNames: ptr::null(),
+            enabledExtensionCount: Default::default(),
+            ppEnabledExtensionNames: ptr::null(),
+        }
+    }
+}
 
-#[derive(Debug)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkQueueFamilyProperties{
     pub queueFlags: VkQueueFlags,
     pub queueCount: u32,
@@ -1595,7 +1788,7 @@ pub struct VkQueueFamilyProperties{
 }
 
 #[repr(C)]
-#[derive(Default)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkPhysicalDeviceMemoryProperties {
     pub memoryTypeCount: u32,
     pub memoryTypes: [VkMemoryType; VK_MAX_MEMORY_TYPES],
@@ -1604,15 +1797,26 @@ pub struct VkPhysicalDeviceMemoryProperties {
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkMemoryAllocateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub allocationSize: VkDeviceSize,
     pub memoryTypeIndex: u32,
 }
+impl Default for VkMemoryAllocateInfo{
+    fn default() -> Self {
+        VkMemoryAllocateInfo{
+            sType: VkStructureType::MEMORY_ALLOCATE_INFO,
+            pNext: ptr::null(),
+            allocationSize: Default::default(),
+            memoryTypeIndex: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
-#[derive(Default)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkMemoryRequirements {
     pub size: VkDeviceSize,
     pub alignment: VkDeviceSize,
@@ -1620,6 +1824,7 @@ pub struct VkMemoryRequirements {
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkSparseImageFormatProperties{
     pub aspectMask: VkImageAspectFlags,
     pub imageGranularity: VkExtent3D,
@@ -1627,6 +1832,7 @@ pub struct VkSparseImageFormatProperties{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkSparseImageMemoryRequirements{
     pub formatProperties: VkSparseImageFormatProperties,
     pub imageMipTailFirstLod: u32,
@@ -1636,20 +1842,21 @@ pub struct VkSparseImageMemoryRequirements{
 }
 
 #[repr(C)]
-#[derive(Default)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkMemoryType{
     pub propertyFlags: VkMemoryPropertyFlags,
     pub heapIndex: u32,
 }
 
 #[repr(C)]
-#[derive(Default)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkMemoryHeap{
     pub size: VkDeviceSize,
     pub flags: VkMemoryHeapFlags,
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkMappedMemoryRange{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1657,9 +1864,20 @@ pub struct VkMappedMemoryRange{
     pub offset: VkDeviceSize,
     pub size: VkDeviceSize,
 }
+impl Default for VkMappedMemoryRange{
+    fn default() -> Self {
+        VkMappedMemoryRange{
+            sType: VkStructureType::MAPPED_MEMORY_RANGE,
+            pNext: ptr::null(),
+            memory: Default::default(),
+            offset: Default::default(),
+            size: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
-#[derive(Default)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkFormatProperties{
     pub linearTilingFeatures: VkFormatFeatureFlags,
     pub optimalTilingFeatures: VkFormatFeatureFlags,
@@ -1667,6 +1885,7 @@ pub struct VkFormatProperties{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkImageFormatProperties{
     pub maxExtent: VkExtent3D,
     pub maxMipLevels: u32,
@@ -1676,6 +1895,7 @@ pub struct VkImageFormatProperties{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkDescriptorBufferInfo{
     pub buffer: VkBuffer,
     pub offset: VkDeviceSize,
@@ -1683,13 +1903,24 @@ pub struct VkDescriptorBufferInfo{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorImageInfo{
     pub sampler: VkSampler,
     pub imageView: VkImageView,
     pub imageLayout: VkImageLayout,
 }
+impl Default for VkDescriptorImageInfo {
+    fn default() -> Self {
+        VkDescriptorImageInfo{
+            sampler: Default::default(),
+            imageView: Default::default(),
+            imageLayout: VkImageLayout::UNDEFINED,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkWriteDescriptorSet{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1702,8 +1933,25 @@ pub struct VkWriteDescriptorSet{
     pub pBufferInfo: *const VkDescriptorBufferInfo,
     pub pTexelBufferView: *const VkBufferView,
 }
+impl Default for VkWriteDescriptorSet{
+    fn default() -> Self {
+        VkWriteDescriptorSet{
+            sType: VkStructureType::WRITE_DESCRIPTOR_SET,
+            pNext: ptr::null(),
+            dstSet: Default::default(),
+            dstBinding: Default::default(),
+            dstArrayElement: Default::default(),
+            descriptorCount: Default::default(),
+            descriptorType: VkDescriptorType::SAMPLER,
+            pImageInfo: ptr::null(),
+            pBufferInfo: ptr::null(),
+            pTexelBufferView: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkCopyDescriptorSet{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1715,8 +1963,24 @@ pub struct VkCopyDescriptorSet{
     pub dstArrayElement: u32,
     pub descriptorCount: u32,
 }
+impl Default for VkCopyDescriptorSet {
+    fn default() -> Self {
+        VkCopyDescriptorSet{
+            sType: VkStructureType::COPY_DESCRIPTOR_SET,
+            pNext: ptr::null(),
+            srcSet: Default::default(),
+            srcBinding: Default::default(),
+            srcArrayElement: Default::default(),
+            dstSet: Default::default(),
+            dstBinding: Default::default(),
+            dstArrayElement: Default::default(),
+            descriptorCount: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBufferCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1727,8 +1991,23 @@ pub struct VkBufferCreateInfo{
     pub queueFamilyIndexCount: u32,
     pub pQueueFamilyIndices: *const u32,
 }
+impl Default for VkBufferCreateInfo{
+    fn default() -> Self {
+        VkBufferCreateInfo{
+            sType: VkStructureType::BUFFER_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            size: Default::default(),
+            usage: Default::default(),
+            sharingMode: VkSharingMode::EXCLUSIVE,
+            queueFamilyIndexCount: Default::default(),
+            pQueueFamilyIndices: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBufferViewCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1738,16 +2017,30 @@ pub struct VkBufferViewCreateInfo{
     pub offset: VkDeviceSize,
     pub range: VkDeviceSize,
 }
+impl Default for VkBufferViewCreateInfo{
+    fn default() -> Self {
+        VkBufferViewCreateInfo{
+            sType: VkStructureType::BUFFER_VIEW_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            buffer: Default::default(),
+            format: VkFormat::UNDEFINED,
+            offset: Default::default(),
+            range: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkImageSubresource{
     pub aspectMask: VkImageAspectFlags,
     pub mipLevel: u32,
     pub arrayLayer: u32,
 }
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkImageSubresourceLayers{
     pub aspectMask: VkImageAspectFlags,
     pub mipLevel: u32,
@@ -1756,7 +2049,7 @@ pub struct VkImageSubresourceLayers{
 }
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkImageSubresourceRange{
     pub aspectMask: VkImageAspectFlags,
     pub baseMipLevel: u32,
@@ -1766,14 +2059,26 @@ pub struct VkImageSubresourceRange{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkMemoryBarrier{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub srcAccessMask: VkAccessFlags,
     pub dstAccessMask: VkAccessFlags,
 }
+impl Default for VkMemoryBarrier{
+    fn default() -> Self {
+        VkMemoryBarrier{
+            sType: VkStructureType::MEMORY_BARRIER,
+            pNext: ptr::null(),
+            srcAccessMask: Default::default(),
+            dstAccessMask: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBufferMemoryBarrier{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1785,9 +2090,24 @@ pub struct VkBufferMemoryBarrier{
     pub offset: VkDeviceSize,
     pub size: VkDeviceSize,
 }
+impl Default for VkBufferMemoryBarrier{
+    fn default() -> Self {
+        VkBufferMemoryBarrier{
+            sType: VkStructureType::BUFFER_MEMORY_BARRIER,
+            pNext: ptr::null(),
+            srcAccessMask: Default::default(),
+            dstAccessMask: Default::default(),
+            srcQueueFamilyIndex: Default::default(),
+            dstQueueFamilyIndex: Default::default(),
+            buffer: Default::default(),
+            offset: Default::default(),
+            size: Default::default(),
+        }
+    }
+}
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageMemoryBarrier{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1800,8 +2120,25 @@ pub struct VkImageMemoryBarrier{
     pub image: VkImage,
     pub subresourceRange: VkImageSubresourceRange,
 }
+impl Default for VkImageMemoryBarrier{
+    fn default() -> Self {
+        VkImageMemoryBarrier{
+            sType: VkStructureType::IMAGE_MEMORY_BARRIER,
+            pNext: ptr::null(),
+            srcAccessMask: Default::default(),
+            dstAccessMask: Default::default(),
+            oldLayout: VkImageLayout::UNDEFINED,
+            newLayout: VkImageLayout::UNDEFINED,
+            srcQueueFamilyIndex: Default::default(),
+            dstQueueFamilyIndex: Default::default(),
+            image: Default::default(),
+            subresourceRange: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1819,8 +2156,30 @@ pub struct VkImageCreateInfo{
     pub pQueueFamilyIndices: *const u32,
     pub initialLayout: VkImageLayout,
 }
+impl Default for VkImageCreateInfo{
+    fn default() -> Self {
+        VkImageCreateInfo{
+            sType: VkStructureType::IMAGE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            imageType: VkImageType::IT_1D,
+            format: VkFormat::UNDEFINED,
+            extent: Default::default(),
+            mipLevels: Default::default(),
+            arrayLayers: Default::default(),
+            samples: Default::default(),
+            tiling: VkImageTiling::OPTIMAL,
+            usage: Default::default(),
+            sharingMode: VkSharingMode::EXCLUSIVE,
+            queueFamilyIndexCount: Default::default(),
+            pQueueFamilyIndices: ptr::null(),
+            initialLayout: VkImageLayout::UNDEFINED,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkSubresourceLayout{
     pub offset: VkDeviceSize,
     pub size: VkDeviceSize,
@@ -1830,6 +2189,7 @@ pub struct VkSubresourceLayout{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageViewCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1840,9 +2200,23 @@ pub struct VkImageViewCreateInfo{
     pub components: VkComponentMapping,
     pub subresourceRange: VkImageSubresourceRange,
 }
+impl Default for VkImageViewCreateInfo{
+    fn default() -> Self {
+        VkImageViewCreateInfo{
+            sType: VkStructureType::IMAGE_VIEW_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            image: Default::default(),
+            viewType: VkImageViewType::IVT_1D,
+            format: VkFormat::UNDEFINED,
+            components: Default::default(),
+            subresourceRange: Default::default()
+        }
+    }
+}
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkBufferCopy{
     pub srcOffset: VkDeviceSize,
     pub dstOffset: VkDeviceSize,
@@ -1850,6 +2224,7 @@ pub struct VkBufferCopy{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkSparseMemoryBind{
     pub resourceOffset: VkDeviceSize,
     pub size: VkDeviceSize,
@@ -1859,6 +2234,7 @@ pub struct VkSparseMemoryBind{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkSparseImageMemoryBind{
     pub subresource: VkImageSubresource,
     pub offset: VkOffset3D,
@@ -1869,27 +2245,58 @@ pub struct VkSparseImageMemoryBind{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSparseBufferMemoryBindInfo{
     pub buffer: VkBuffer,
     pub bindCount: u32,
     pub pBinds: *const VkSparseMemoryBind,
 }
+impl Default for VkSparseBufferMemoryBindInfo{
+    fn default() -> Self {
+        VkSparseBufferMemoryBindInfo{
+            buffer: Default::default(),
+            bindCount: Default::default(),
+            pBinds: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSparseImageOpaqueMemoryBindInfo{
     pub image: VkImage,
     pub bindCount: u32,
     pub pBinds: *const VkSparseMemoryBind,
 }
+impl Default for VkSparseImageOpaqueMemoryBindInfo{
+    fn default() -> Self {
+        VkSparseImageOpaqueMemoryBindInfo{
+            image: Default::default(),
+            bindCount: Default::default(),
+            pBinds: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSparseImageMemoryBindInfo{
     pub image: VkImage,
     pub bindCount: u32,
     pub pBinds: *const VkSparseImageMemoryBind,
 }
+impl Default for VkSparseImageMemoryBindInfo{
+    fn default() -> Self {
+        VkSparseImageMemoryBindInfo{
+            image: Default::default(),
+            bindCount: Default::default(),
+            pBinds: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBindSparseInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1904,8 +2311,27 @@ pub struct VkBindSparseInfo{
     pub signalSemaphoreCount: u32,
     pub pSignalSemaphores: *const VkSemaphore,
 }
+impl Default for VkBindSparseInfo{
+    fn default() -> Self {
+        VkBindSparseInfo{
+            sType: VkStructureType::BIND_SPARSE_INFO,
+            pNext: ptr::null(),
+            waitSemaphoreCount: Default::default(),
+            pWaitSemaphores: ptr::null(),
+            bufferBindCount: Default::default(),
+            pBufferBinds: ptr::null(),
+            imageOpaqueBindCount: Default::default(),
+            pImageOpaqueBinds: ptr::null(),
+            imageBindCount: Default::default(),
+            pImageBinds: ptr::null(),
+            signalSemaphoreCount: Default::default(),
+            pSignalSemaphores: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkImageCopy{
     pub srcSubresource: VkImageSubresourceLayers,
     pub srcOffset: VkOffset3D,
@@ -1914,8 +2340,8 @@ pub struct VkImageCopy{
     pub extent: VkExtent3D,
 }
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkImageBlit{
     pub srcSubresource: VkImageSubresourceLayers,
     pub srcOffsets: [VkOffset3D; 2],
@@ -1923,8 +2349,8 @@ pub struct VkImageBlit{
     pub dstOffsets: [VkOffset3D; 2],
 }
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkBufferImageCopy{
     pub bufferOffset: VkDeviceSize,
     pub bufferRowLength: u32,
@@ -1935,6 +2361,7 @@ pub struct VkBufferImageCopy{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkImageResolve{
     pub srcSubresource: VkImageSubresourceLayers,
     pub srcOffset: VkOffset3D,
@@ -1944,6 +2371,7 @@ pub struct VkImageResolve{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkShaderModuleCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1951,8 +2379,20 @@ pub struct VkShaderModuleCreateInfo{
     pub codeSize: usize,
     pub pCode: *const u32,
 }
+impl Default for VkShaderModuleCreateInfo{
+    fn default() -> Self {
+        VkShaderModuleCreateInfo{
+            sType: VkStructureType::SHADER_MODULE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            codeSize: Default::default(),
+            pCode: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorSetLayoutBinding{
     pub binding: u32,
     pub descriptorType: VkDescriptorType,
@@ -1960,8 +2400,20 @@ pub struct VkDescriptorSetLayoutBinding{
     pub stageFlags: VkShaderStageFlags,
     pub pImmutableSamplers: *const VkSampler,
 }
+impl Default for VkDescriptorSetLayoutBinding{
+    fn default() -> Self {
+        VkDescriptorSetLayoutBinding{
+            binding: Default::default(),
+            descriptorType: VkDescriptorType::SAMPLER,
+            descriptorCount: Default::default(),
+            stageFlags: Default::default(),
+            pImmutableSamplers: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorSetLayoutCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1969,14 +2421,35 @@ pub struct VkDescriptorSetLayoutCreateInfo{
     pub bindingCount: u32,
     pub pBindings: *const VkDescriptorSetLayoutBinding,
 }
+impl Default for VkDescriptorSetLayoutCreateInfo{
+    fn default() -> Self {
+        VkDescriptorSetLayoutCreateInfo{
+            sType: VkStructureType::DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            bindingCount: Default::default(),
+            pBindings: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorPoolSize{
     pub descriptorType: VkDescriptorType,
     pub descriptorCount: u32,
 }
+impl Default for VkDescriptorPoolSize {
+    fn default() -> Self {
+        VkDescriptorPoolSize{
+            descriptorType: VkDescriptorType::SAMPLER,
+            descriptorCount: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorPoolCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1985,8 +2458,21 @@ pub struct VkDescriptorPoolCreateInfo{
     pub poolSizeCount: u32,
     pub pPoolSizes: *const VkDescriptorPoolSize,
 }
+impl Default for VkDescriptorPoolCreateInfo{
+    fn default() -> Self {
+        VkDescriptorPoolCreateInfo{
+            sType: VkStructureType::DESCRIPTOR_POOL_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            maxSets: Default::default(),
+            poolSizeCount: Default::default(),
+            pPoolSizes: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorSetAllocateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -1994,25 +2480,48 @@ pub struct VkDescriptorSetAllocateInfo{
     pub descriptorSetCount: u32,
     pub pSetLayouts: *const VkDescriptorSetLayout,
 }
+impl Default for VkDescriptorSetAllocateInfo{
+    fn default() -> Self {
+        VkDescriptorSetAllocateInfo{
+            sType: VkStructureType::DESCRIPTOR_SET_ALLOCATE_INFO,
+            pNext: ptr::null(),
+            descriptorPool: Default::default(),
+            descriptorSetCount: Default::default(),
+            pSetLayouts: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkSpecializationMapEntry{
     constantID: u32,
     offset: u32,
     size: usize,
 }
 
-#[derive(Clone, Debug)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSpecializationInfo{
     mapEntryCount: u32,
     pMapEntries: *const VkSpecializationMapEntry,
     dataSize: usize,
     pData: *const c_void,
 }
+impl Default for VkSpecializationInfo{
+    fn default() -> Self {
+        VkSpecializationInfo{
+            mapEntryCount: Default::default(),
+            pMapEntries: ptr::null(),
+            dataSize: Default::default(),
+            pData: ptr::null(),
+        }
+    }
+}
 
-#[derive(Clone)]
+
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineShaderStageCreateInfo {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2022,8 +2531,22 @@ pub struct VkPipelineShaderStageCreateInfo {
     pub pName: *const c_char,
     pub pSpecializationInfo: *const VkSpecializationInfo,
 }
+impl Default for VkPipelineShaderStageCreateInfo{
+    fn default() -> Self {
+        VkPipelineShaderStageCreateInfo {
+            sType: VkStructureType::PIPELINE_SHADER_STAGE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            stage: Default::default(),
+            module: Default::default(),
+            pName: ptr::null(),
+            pSpecializationInfo: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkComputePipelineCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2033,26 +2556,58 @@ pub struct VkComputePipelineCreateInfo{
     pub basePipelineHandle: VkPipeline,
     pub basePipelineIndex: i32,
 }
+impl Default for VkComputePipelineCreateInfo{
+    fn default() -> Self {
+        VkComputePipelineCreateInfo{
+            sType: VkStructureType::COMPUTE_PIPELINE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            stage: Default::default(),
+            layout: Default::default(),
+            basePipelineHandle: Default::default(),
+            basePipelineIndex: Default::default(),
+        }
+    }
+}
 
-#[derive(Clone, Hash, Eq, PartialEq)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkVertexInputBindingDescription{
     pub binding: u32,
     pub stride: u32,
     pub inputRate: VkVertexInputRate,
 }
+impl Default for VkVertexInputBindingDescription{
+    fn default() -> Self {
+        VkVertexInputBindingDescription{
+            binding: Default::default(),
+            stride: Default::default(),
+            inputRate: VkVertexInputRate::VERTEX,
+        }
+    }
+}
 
-#[derive(Clone, Hash, Eq, PartialEq)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkVertexInputAttributeDescription{
     pub location: u32,
     pub binding: u32,
     pub format: VkFormat,
     pub offset: u32,
 }
+impl Default for VkVertexInputAttributeDescription{
+    fn default() -> Self {
+        VkVertexInputAttributeDescription{
+            location: Default::default(),
+            binding: Default::default(),
+            format: VkFormat::UNDEFINED,
+            offset: Default::default(),
+        }
+    }
+}
 
-#[derive(Debug, Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineVertexInputStateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2062,9 +2617,22 @@ pub struct VkPipelineVertexInputStateCreateInfo{
     pub vertexAttributeDescriptionCount: u32,
     pub pVertexAttributeDescriptions: *const VkVertexInputAttributeDescription,
 }
+impl Default for VkPipelineVertexInputStateCreateInfo{
+    fn default() -> Self {
+        VkPipelineVertexInputStateCreateInfo{
+            sType: VkStructureType::PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            vertexBindingDescriptionCount: Default::default(),
+            pVertexBindingDescriptions: ptr::null(),
+            vertexAttributeDescriptionCount: Default::default(),
+            pVertexAttributeDescriptions: ptr::null(),
+        }
+    }
+}
 
-#[derive(Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineInputAssemblyStateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2072,18 +2640,39 @@ pub struct VkPipelineInputAssemblyStateCreateInfo{
     pub topology: VkPrimitiveTopology,
     pub primitiveRestartEnable: VkBool32,
 }
+impl Default for VkPipelineInputAssemblyStateCreateInfo{
+    fn default() -> Self {
+        VkPipelineInputAssemblyStateCreateInfo{
+            sType: VkStructureType::PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            topology: VkPrimitiveTopology::POINT_LIST,
+            primitiveRestartEnable: Default::default()
+        }
+    }
+}
 
-#[derive(Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineTessellationStateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkPipelineTessellationStateCreateFlags,
     pub patchControlPoints: u32,
 }
+impl Default for VkPipelineTessellationStateCreateInfo{
+    fn default() -> Self {
+        VkPipelineTessellationStateCreateInfo{
+            sType: VkStructureType::PIPELINE_TESSELLATION_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            patchControlPoints: Default::default()
+        }
+    }
+}
 
-#[derive(Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineViewportStateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2093,9 +2682,22 @@ pub struct VkPipelineViewportStateCreateInfo{
     pub scissorCount: u32,
     pub pScissors: *const VkRect2D,
 }
+impl Default for VkPipelineViewportStateCreateInfo{
+    fn default() -> Self {
+        VkPipelineViewportStateCreateInfo{
+            sType: VkStructureType::PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            viewportCount: Default::default(),
+            pViewports: ptr::null(),
+            scissorCount: Default::default(),
+            pScissors: ptr::null(),
+        }
+    }
+}
 
-#[derive(Clone)]
 #[repr(C)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VkPipelineRasterizationStateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2111,9 +2713,28 @@ pub struct VkPipelineRasterizationStateCreateInfo{
     pub depthBiasSlopeFactor: f32,
     pub lineWidth: f32,
 }
+impl Default for VkPipelineRasterizationStateCreateInfo{
+    fn default() -> Self {
+        VkPipelineRasterizationStateCreateInfo{
+            sType: VkStructureType::PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            depthClampEnable: Default::default(),
+            rasterizerDiscardEnable: Default::default(),
+            polygonMode: VkPolygonMode::FILL,
+            cullMode: Default::default(),
+            frontFace: VkFrontFace::COUNTER_CLOCKWISE,
+            depthBiasEnable: Default::default(),
+            depthBiasConstantFactor: Default::default(),
+            depthBiasClamp: Default::default(),
+            depthBiasSlopeFactor: Default::default(),
+            lineWidth: Default::default(),
+        }
+    }
+}
 
-#[derive(Clone, Debug)]
 #[repr(C)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VkPipelineMultisampleStateCreateInfo {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2125,9 +2746,24 @@ pub struct VkPipelineMultisampleStateCreateInfo {
     pub alphaToCoverageEnable: VkBool32,
     pub alphaToOneEnable: VkBool32,
 }
+impl Default for VkPipelineMultisampleStateCreateInfo{
+    fn default()->Self{
+        VkPipelineMultisampleStateCreateInfo {
+            sType: VkStructureType::PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            rasterizationSamples: Default::default(),
+            sampleShadingEnable: Default::default(),
+            minSampleShading: Default::default(),
+            pSampleMask: ptr::null(),
+            alphaToCoverageEnable: Default::default(),
+            alphaToOneEnable: Default::default(),
+        }
+    }
+}
 
-#[derive(Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineColorBlendAttachmentState{
     pub blendEnable: VkBool32,
     pub srcColorBlendFactor: VkBlendFactor,
@@ -2138,9 +2774,23 @@ pub struct VkPipelineColorBlendAttachmentState{
     pub alphaBlendOp: VkBlendOp,
     pub colorWriteMask: VkColorComponentFlags,
 }
+impl Default for VkPipelineColorBlendAttachmentState{
+    fn default() -> Self {
+        VkPipelineColorBlendAttachmentState{
+            blendEnable: Default::default(),
+            srcColorBlendFactor: VkBlendFactor::ZERO,
+            dstColorBlendFactor: VkBlendFactor::ZERO,
+            colorBlendOp: VkBlendOp::ADD,
+            srcAlphaBlendFactor: VkBlendFactor::ZERO,
+            dstAlphaBlendFactor: VkBlendFactor::ZERO,
+            alphaBlendOp: VkBlendOp::ADD,
+            colorWriteMask: Default::default(),
+        }
+    }
+}
 
-#[derive(Clone)]
 #[repr(C)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VkPipelineColorBlendStateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2151,9 +2801,23 @@ pub struct VkPipelineColorBlendStateCreateInfo{
     pub pAttachments: *const VkPipelineColorBlendAttachmentState,
     pub blendConstants: [f32; 4],
 }
+impl Default for VkPipelineColorBlendStateCreateInfo{
+    fn default() -> Self {
+        VkPipelineColorBlendStateCreateInfo{
+            sType: VkStructureType::PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            logicOpEnable: Default::default(),
+            logicOp: VkLogicOp::CLEAR,
+            attachmentCount: Default::default(),
+            pAttachments: ptr::null(),
+            blendConstants: [0f32; 4],
+        }
+    }
+}
 
-#[derive(Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineDynamicStateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2161,21 +2825,45 @@ pub struct VkPipelineDynamicStateCreateInfo{
     pub dynamicStateCount: u32,
     pub pDynamicStates: *const VkDynamicState,
 }
-
-#[derive(Default, Copy, Clone, Eq, PartialEq, Debug)]
-#[repr(C)]
-pub struct VkStencilOpState{
-    failOp: VkStencilOp,
-    passOp: VkStencilOp,
-    depthFailOp: VkStencilOp,
-    compareOp: VkCompareOp,
-    compareMask: u32,
-    writeMask: u32,
-    reference: u32,
+impl Default for VkPipelineDynamicStateCreateInfo{
+    fn default() -> Self {
+        VkPipelineDynamicStateCreateInfo{
+            sType: VkStructureType::PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            dynamicStateCount: Default::default(),
+            pDynamicStates: ptr::null(),
+        }
+    }
 }
 
-#[derive(Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkStencilOpState{
+    pub failOp: VkStencilOp,
+    pub passOp: VkStencilOp,
+    pub depthFailOp: VkStencilOp,
+    pub compareOp: VkCompareOp,
+    pub compareMask: u32,
+    pub writeMask: u32,
+    pub reference: u32,
+}
+impl Default for VkStencilOpState{
+    fn default() -> Self {
+        VkStencilOpState{
+            failOp: VkStencilOp::KEEP,
+            passOp: VkStencilOp::KEEP,
+            depthFailOp: VkStencilOp::KEEP,
+            compareOp: VkCompareOp::NEVER,
+            compareMask: Default::default(),
+            writeMask: Default::default(),
+            reference: Default::default(),
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VkPipelineDepthStencilStateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2190,8 +2878,27 @@ pub struct VkPipelineDepthStencilStateCreateInfo{
     pub minDepthBounds: f32,
     pub maxDepthBounds: f32,
 }
+impl Default for VkPipelineDepthStencilStateCreateInfo{
+    fn default() -> Self {
+        VkPipelineDepthStencilStateCreateInfo{
+            sType: VkStructureType::PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            depthTestEnable: Default::default(),
+            depthWriteEnable: Default::default(),
+            depthCompareOp: VkCompareOp::NEVER,
+            depthBoundsTestEnable: Default::default(),
+            stencilTestEnable: Default::default(),
+            front: Default::default(),
+            back: Default::default(),
+            minDepthBounds: Default::default(),
+            maxDepthBounds: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkGraphicsPipelineCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2213,8 +2920,34 @@ pub struct VkGraphicsPipelineCreateInfo{
     pub basePipelineHandle: VkPipeline,
     pub basePipelineIndex: i32,
 }
+impl Default for VkGraphicsPipelineCreateInfo{
+    fn default() -> Self {
+        VkGraphicsPipelineCreateInfo{
+            sType: VkStructureType::GRAPHICS_PIPELINE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            stageCount: Default::default(),
+            pStages: ptr::null(),
+            pVertexInputState: ptr::null(),
+            pInputAssemblyState: ptr::null(),
+            pTessellationState: ptr::null(),
+            pViewportState: ptr::null(),
+            pRasterizationState: ptr::null(),
+            pMultisampleState: ptr::null(),
+            pDepthStencilState: ptr::null(),
+            pColorBlendState: ptr::null(),
+            pDynamicState: ptr::null(),
+            layout: Default::default(),
+            renderPass: Default::default(),
+            subpass: Default::default(),
+            basePipelineHandle: Default::default(),
+            basePipelineIndex: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineCacheCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2222,9 +2955,20 @@ pub struct VkPipelineCacheCreateInfo{
     pub initialDataSize: isize,
     pub pInitialData: *const c_void,
 }
+impl Default for VkPipelineCacheCreateInfo{
+    fn default() -> Self {
+        VkPipelineCacheCreateInfo{
+            sType: VkStructureType::PIPELINE_CACHE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            initialDataSize: Default::default(),
+            pInitialData: ptr::null(),
+        }
+    }
+}
 
-#[derive(Copy, Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkPushConstantRange{
     pub stageFlags: VkShaderStageFlags,
     pub offset: u32,
@@ -2232,6 +2976,7 @@ pub struct VkPushConstantRange{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineLayoutCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2241,8 +2986,22 @@ pub struct VkPipelineLayoutCreateInfo{
     pub pushConstantRangeCount: u32,
     pub pPushConstantRanges: *const VkPushConstantRange,
 }
+impl Default for VkPipelineLayoutCreateInfo{
+    fn default() -> Self {
+        VkPipelineLayoutCreateInfo{
+            sType: VkStructureType::PIPELINE_LAYOUT_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            setLayoutCount: Default::default(),
+            pSetLayouts: ptr::null(),
+            pushConstantRangeCount: Default::default(),
+            pPushConstantRanges: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VkSamplerCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2263,16 +3022,52 @@ pub struct VkSamplerCreateInfo{
     pub borderColor: VkBorderColor,
     pub unnormalizedCoordinates: VkBool32,
 }
+impl Default for VkSamplerCreateInfo{
+    fn default() -> Self {
+        VkSamplerCreateInfo{
+            sType: VkStructureType::SAMPLER_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            magFilter: VkFilter::NEAREST,
+            minFilter: VkFilter::NEAREST,
+            mipmapMode: VkSamplerMipmapMode::NEAREST,
+            addressModeU: VkSamplerAddressMode::REPEAT,
+            addressModeV: VkSamplerAddressMode::REPEAT,
+            addressModeW: VkSamplerAddressMode::REPEAT,
+            mipLodBias: Default::default(),
+            anisotropyEnable: Default::default(),
+            maxAnisotropy: Default::default(),
+            compareEnable: Default::default(),
+            compareOp: VkCompareOp::NEVER,
+            minLod: Default::default(),
+            maxLod: Default::default(),
+            borderColor: VkBorderColor::FLOAT_TRANSPARENT_BLACK,
+            unnormalizedCoordinates: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkCommandPoolCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkCommandPoolCreateFlags,
     pub queueFamilyIndex: u32,
 }
+impl Default for VkCommandPoolCreateInfo{
+    fn default() -> Self {
+        VkCommandPoolCreateInfo{
+            sType: VkStructureType::COMMAND_POOL_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            queueFamilyIndex: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkCommandBufferAllocateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2280,8 +3075,20 @@ pub struct VkCommandBufferAllocateInfo{
     pub level: VkCommandBufferLevel,
     pub commandBufferCount: u32,
 }
+impl Default for VkCommandBufferAllocateInfo{
+    fn default() -> Self {
+        VkCommandBufferAllocateInfo{
+            sType: VkStructureType::COMMAND_BUFFER_ALLOCATE_INFO,
+            pNext: ptr::null(),
+            commandPool: Default::default(),
+            level: VkCommandBufferLevel::PRIMARY,
+            commandBufferCount: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkCommandBufferInheritanceInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2292,16 +3099,42 @@ pub struct VkCommandBufferInheritanceInfo{
     pub queryFlags: VkQueryControlFlags,
     pub pipelineStatistics: VkQueryPipelineStatisticFlags,
 }
+impl Default for VkCommandBufferInheritanceInfo{
+    fn default() -> Self {
+        VkCommandBufferInheritanceInfo{
+            sType: VkStructureType::COMMAND_BUFFER_INHERITANCE_INFO,
+            pNext: ptr::null(),
+            renderPass: Default::default(),
+            subpass: Default::default(),
+            framebuffer: Default::default(),
+            occlusionQueryEnable: Default::default(),
+            queryFlags: Default::default(),
+            pipelineStatistics: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkCommandBufferBeginInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkCommandBufferUsageFlags,
     pub pInheritanceInfo: *const VkCommandBufferInheritanceInfo,
 }
+impl Default for VkCommandBufferBeginInfo{
+    fn default() -> Self {
+        VkCommandBufferBeginInfo{
+            sType: VkStructureType::COMMAND_BUFFER_BEGIN_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            pInheritanceInfo: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkRenderPassBeginInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2311,7 +3144,21 @@ pub struct VkRenderPassBeginInfo{
     pub clearValueCount: u32,
     pub pClearValues: *const VkClearValue,
 }
+impl Default for VkRenderPassBeginInfo{
+    fn default() -> Self {
+        VkRenderPassBeginInfo{
+            sType: VkStructureType::RENDER_PASS_BEGIN_INFO,
+            pNext: ptr::null(),
+            renderPass: Default::default(),
+            framebuffer: Default::default(),
+            renderArea: Default::default(),
+            clearValueCount: Default::default(),
+            pClearValues: ptr::null(),
+        }
+    }
+}
 
+// FIXME: Because of unions with non-`Copy` fields are unstable, so VkClearColorValue need to have Copy trait currently.
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union VkClearColorValue{
@@ -2319,21 +3166,62 @@ pub union VkClearColorValue{
     pub int32: [i32; 4],
     pub uint32: [u32; 4],
 }
+impl Default for VkClearColorValue {
+    fn default() -> Self {
+        VkClearColorValue{
+            uint32: [0; 4],
+        }
+    }
+}
+impl Debug for VkClearColorValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        unsafe {
+            write!(f,
+                   "VkClearColorValue {{ float32: [{}, {}, {}, {}], int32: [{}, {}, {}, {}], uint32: [{}, {}, {}, {}] }}",
+                   self.float32.get_unchecked(0), self.float32.get_unchecked(1), self.float32.get_unchecked(2), self.float32.get_unchecked(3),
+                   self.int32.get_unchecked(0), self.int32.get_unchecked(1), self.int32.get_unchecked(2), self.int32.get_unchecked(3),
+                   self.uint32.get_unchecked(0), self.uint32.get_unchecked(1), self.uint32.get_unchecked(2), self.uint32.get_unchecked(3),
+            )
+        }
+    }
+}
 
+// FIXME: Because of unions with non-`Copy` fields are unstable, so VkClearDepthStencilValue need to have Copy trait currently.
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct VkClearDepthStencilValue{
     pub depth: f32,
     pub stencil: u32,
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub union VkClearValue{
     pub color: VkClearColorValue,
     pub depthStencil: VkClearDepthStencilValue,
 }
+impl Default for VkClearValue {
+    fn default() -> Self {
+        VkClearValue{
+            color: Default::default(),
+        }
+    }
+}
+impl Debug for VkClearValue {
+    fn fmt(&self, f: &mut Formatter<'_>)->Result<(), Error> {
+        unsafe {
+            write!(
+                f,
+                "VkClearValue {{ color: {:?}, depthStencil: {:?} }}",
+                self.color,
+                self.depthStencil,
+            )
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Debug, Default)]
 pub struct VkClearAttachment{
     pub aspectMask: VkImageAspectFlags,
     pub colorAttachment: u32,
@@ -2341,6 +3229,7 @@ pub struct VkClearAttachment{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkAttachmentDescription{
     pub flags: VkAttachmentDescriptionFlags,
     pub format: VkFormat,
@@ -2352,14 +3241,39 @@ pub struct VkAttachmentDescription{
     pub initialLayout: VkImageLayout,
     pub finalLayout: VkImageLayout,
 }
+impl Default for VkAttachmentDescription{
+    fn default() -> Self {
+        VkAttachmentDescription{
+            flags: Default::default(),
+            format: VkFormat::UNDEFINED,
+            samples: Default::default(),
+            loadOp: VkAttachmentLoadOp::LOAD,
+            storeOp: VkAttachmentStoreOp::STORE,
+            stencilLoadOp: VkAttachmentLoadOp::LOAD,
+            stencilStoreOp: VkAttachmentStoreOp::STORE,
+            initialLayout: VkImageLayout::UNDEFINED,
+            finalLayout: VkImageLayout::UNDEFINED,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkAttachmentReference{
     pub attachment: u32,
     pub layout: VkImageLayout,
 }
+impl Default for VkAttachmentReference{
+    fn default() -> Self {
+        VkAttachmentReference{
+            attachment: Default::default(),
+            layout: VkImageLayout::UNDEFINED,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSubpassDescription{
     pub flags: VkSubpassDescriptionFlags,
     pub pipelineBindPoint: VkPipelineBindPoint,
@@ -2372,8 +3286,25 @@ pub struct VkSubpassDescription{
     pub preserveAttachmentCount: u32,
     pub pPreserveAttachments: *const u32,
 }
+impl Default for VkSubpassDescription{
+    fn default() -> Self {
+        VkSubpassDescription{
+            flags: Default::default(),
+            pipelineBindPoint: VkPipelineBindPoint::GRAPHICS,
+            inputAttachmentCount: Default::default(),
+            pInputAttachments: ptr::null(),
+            colorAttachmentCount: Default::default(),
+            pColorAttachments: ptr::null(),
+            pResolveAttachments: ptr::null(),
+            pDepthStencilAttachment: ptr::null(),
+            preserveAttachmentCount: Default::default(),
+            pPreserveAttachments: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkSubpassDependency{
     pub srcSubpass: u32,
     pub dstSubpass: u32,
@@ -2385,6 +3316,7 @@ pub struct VkSubpassDependency{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkRenderPassCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2396,23 +3328,58 @@ pub struct VkRenderPassCreateInfo{
     pub dependencyCount: u32,
     pub pDependencies: *const VkSubpassDependency,
 }
+impl Default for VkRenderPassCreateInfo{
+    fn default() -> Self {
+        VkRenderPassCreateInfo{
+            sType: VkStructureType::RENDER_PASS_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            attachmentCount: Default::default(),
+            pAttachments: ptr::null(),
+            subpassCount: Default::default(),
+            pSubpasses: ptr::null(),
+            dependencyCount: Default::default(),
+            pDependencies: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkEventCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkEventCreateFlags,
 }
+impl Default for VkEventCreateInfo{
+    fn default() -> Self {
+        VkEventCreateInfo{
+            sType: VkStructureType::EVENT_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkFenceCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkFenceCreateFlags,
 }
+impl Default for VkFenceCreateInfo{
+    fn default() -> Self {
+        VkFenceCreateInfo{
+            sType: VkStructureType::FENCE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
-#[derive(Default, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkPhysicalDeviceFeatures{
     pub robustBufferAccess: VkBool32,
     pub fullDrawIndexUint32: VkBool32,
@@ -2472,7 +3439,7 @@ pub struct VkPhysicalDeviceFeatures{
 }
 
 #[repr(C)]
-#[derive(Default, Clone, Copy)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkPhysicalDeviceSparseProperties{
     pub residencyStandard2DBlockShape: VkBool32,
     pub residencyStandard2DMultisampleBlockShape: VkBool32,
@@ -2482,7 +3449,7 @@ pub struct VkPhysicalDeviceSparseProperties{
 }
 
 #[repr(C)]
-#[derive(Default, Clone, Copy)]
+#[derive(Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct VkPhysicalDeviceLimits{
     pub maxImageDimension1D: u32,
     pub maxImageDimension2D: u32,
@@ -2593,13 +3560,24 @@ pub struct VkPhysicalDeviceLimits{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSemaphoreCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkSemaphoreCreateFlags,
 }
+impl Default for VkSemaphoreCreateInfo{
+    fn default() -> Self {
+        VkSemaphoreCreateInfo{
+            sType: VkStructureType::SEMAPHORE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkQueryPoolCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2608,8 +3586,21 @@ pub struct VkQueryPoolCreateInfo{
     pub queryCount: u32,
     pub pipelineStatistics: VkQueryPipelineStatisticFlags,
 }
+impl Default for VkQueryPoolCreateInfo{
+    fn default() -> Self {
+        VkQueryPoolCreateInfo{
+            sType: VkStructureType::QUERY_POOL_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            queryType: VkQueryType::OCCLUSION,
+            queryCount: Default::default(),
+            pipelineStatistics: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkFramebufferCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2621,8 +3612,24 @@ pub struct VkFramebufferCreateInfo{
     pub height: u32,
     pub layers: u32,
 }
+impl Default for VkFramebufferCreateInfo{
+    fn default() -> Self {
+        VkFramebufferCreateInfo{
+            sType: VkStructureType::FRAMEBUFFER_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            renderPass: Default::default(),
+            attachmentCount: Default::default(),
+            pAttachments: ptr::null(),
+            width: Default::default(),
+            height: Default::default(),
+            layers: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkDrawIndirectCommand{
     pub vertexCount: u32,
     pub instanceCount: u32,
@@ -2631,6 +3638,7 @@ pub struct VkDrawIndirectCommand{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkDrawIndexedIndirectCommand{
     pub indexCount: u32,
     pub instanceCount: u32,
@@ -2640,6 +3648,7 @@ pub struct VkDrawIndexedIndirectCommand{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkDispatchIndirectCommand{
     pub x: u32,
     pub y: u32,
@@ -2647,6 +3656,7 @@ pub struct VkDispatchIndirectCommand{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSubmitInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2658,37 +3668,92 @@ pub struct VkSubmitInfo{
     pub signalSemaphoreCount: u32,
     pub pSignalSemaphores: *const VkSemaphore,
 }
+impl Default for VkSubmitInfo{
+    fn default() -> Self {
+        VkSubmitInfo{
+            sType: VkStructureType::SUBMIT_INFO,
+            pNext: ptr::null(),
+            waitSemaphoreCount: Default::default(),
+            pWaitSemaphores: ptr::null(),
+            pWaitDstStageMask: ptr::null(),
+            commandBufferCount: Default::default(),
+            pCommandBuffers: ptr::null(),
+            signalSemaphoreCount: Default::default(),
+            pSignalSemaphores: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceFeatures2{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub features: VkPhysicalDeviceFeatures,
 }
+impl Default for VkPhysicalDeviceFeatures2{
+    fn default() -> Self {
+        VkPhysicalDeviceFeatures2{
+            sType: VkStructureType::PHYSICAL_DEVICE_FEATURES_2,
+            pNext: ptr::null_mut(),
+            features: Default::default(),
+        }
+    }
+}
 
-#[derive(Clone, Copy)]
 #[repr(C)]
+#[derive(Clone, Debug)]
 pub struct VkPhysicalDeviceProperties2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub properties: VkPhysicalDeviceProperties,
 }
+impl Default for VkPhysicalDeviceProperties2{
+    fn default() -> Self {
+        VkPhysicalDeviceProperties2{
+            sType: VkStructureType::PHYSICAL_DEVICE_PROPERTIES_2,
+            pNext: ptr::null(),
+            properties: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkFormatProperties2{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub formatProperties: VkFormatProperties,
 }
+impl Default for VkFormatProperties2{
+    fn default() -> Self {
+        VkFormatProperties2{
+            sType: VkStructureType::FORMAT_PROPERTIES_2,
+            pNext: ptr::null_mut(),
+            formatProperties: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageFormatProperties2{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub imageFormatProperties: VkImageFormatProperties,
 }
+impl Default for VkImageFormatProperties2{
+    fn default() -> Self {
+        VkImageFormatProperties2{
+            sType: VkStructureType::IMAGE_FORMAT_PROPERTIES_2,
+            pNext: ptr::null_mut(),
+            imageFormatProperties: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceImageFormatInfo2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2698,29 +3763,74 @@ pub struct VkPhysicalDeviceImageFormatInfo2{
     pub usage: VkImageUsageFlags,
     pub flags: VkImageCreateFlags,
 }
+impl Default for VkPhysicalDeviceImageFormatInfo2{
+    fn default() -> Self {
+        VkPhysicalDeviceImageFormatInfo2{
+            sType: VkStructureType::PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,
+            pNext: ptr::null(),
+            format: VkFormat::UNDEFINED,
+            r#type: VkImageType::IT_1D,
+            tiling: VkImageTiling::OPTIMAL,
+            usage: Default::default(),
+            flags: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkQueueFamilyProperties2{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub queueFamilyProperties: VkQueueFamilyProperties,
 }
+impl Default for VkQueueFamilyProperties2{
+    fn default() -> Self {
+        VkQueueFamilyProperties2{
+            sType: VkStructureType::QUEUE_FAMILY_PROPERTIES_2,
+            pNext: ptr::null_mut(),
+            queueFamilyProperties: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceMemoryProperties2{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub memoryProperties: VkPhysicalDeviceMemoryProperties,
 }
+impl Default for VkPhysicalDeviceMemoryProperties2{
+    fn default() -> Self {
+        VkPhysicalDeviceMemoryProperties2{
+            sType: VkStructureType::PHYSICAL_DEVICE_MEMORY_PROPERTIES_2,
+            pNext: ptr::null_mut(),
+            memoryProperties: Default::default()
+        }
+    }
+}
+
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSparseImageFormatProperties2{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub properties: VkSparseImageFormatProperties,
 }
+impl Default for VkSparseImageFormatProperties2{
+    fn default() -> Self {
+        VkSparseImageFormatProperties2{
+            sType: VkStructureType::SPARSE_IMAGE_FORMAT_PROPERTIES_2,
+            pNext: ptr::null_mut(),
+            properties: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceSparseImageFormatInfo2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2730,8 +3840,22 @@ pub struct VkPhysicalDeviceSparseImageFormatInfo2{
     pub usage: VkImageUsageFlags,
     pub tiling: VkImageTiling,
 }
+impl Default for VkPhysicalDeviceSparseImageFormatInfo2{
+    fn default() -> Self {
+        VkPhysicalDeviceSparseImageFormatInfo2{
+            sType: VkStructureType::PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2,
+            pNext: ptr::null(),
+            format: VkFormat::UNDEFINED,
+            r#type: VkImageType::IT_1D,
+            samples: Default::default(),
+            usage: Default::default(),
+            tiling: VkImageTiling::OPTIMAL,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkConformanceVersion{
     pub major: u8,
     pub minor: u8,
@@ -2740,16 +3864,43 @@ pub struct VkConformanceVersion{
 }
 
 #[repr(C)]
+#[derive(Clone)]
 pub struct VkPhysicalDeviceDriverProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub driverID: VkDriverId,
     pub driverName: [c_char; VK_MAX_DRIVER_NAME_SIZE],
-    pub driverInfo: [c_char; VK_MAX_DRIVER_NAME_SIZE],
+    pub driverInfo: [c_char; VK_MAX_DRIVER_INFO_SIZE],
     pub conformanceVersion: VkConformanceVersion,
+}
+impl Default for VkPhysicalDeviceDriverProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceDriverProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_DRIVER_PROPERTIES,
+            pNext: ptr::null_mut(),
+            driverID: VkDriverId::AMD_PROPRIETARY,
+            driverName: [0; VK_MAX_DRIVER_NAME_SIZE],
+            driverInfo: [0; VK_MAX_DRIVER_INFO_SIZE],
+            conformanceVersion: Default::default(),
+        }
+    }
+}
+impl Debug for VkPhysicalDeviceDriverProperties{
+    fn fmt(&self, f: &mut Formatter<'_>)->Result<(), Error> {
+        write!(f,
+            "VkPhysicalDeviceDriverProperties {{ sType: {:?}, pNext: {:?}, driverID: {:?}, driverName: {}, driverInfo: {}, conformanceVersion: {:?} }}",
+            self.sType,
+            self.pNext,
+            self.driverID,
+            unsafe {CStr::from_ptr(self.driverName.as_ptr())}.to_str().unwrap(),
+            unsafe {CStr::from_ptr(self.driverInfo.as_ptr())}.to_str().unwrap(),
+            self.conformanceVersion
+        )
+    }
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceVariablePointersFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -2757,8 +3908,19 @@ pub struct VkPhysicalDeviceVariablePointersFeatures{
     pub variablePointers: VkBool32,
 }
 pub type VkPhysicalDeviceVariablePointerFeatures = VkPhysicalDeviceVariablePointersFeatures;
+impl Default for VkPhysicalDeviceVariablePointersFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceVariablePointersFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
+            pNext: ptr::null_mut(),
+            variablePointersStorageBuffer: Default::default(),
+            variablePointers: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkExternalMemoryProperties{
     pub externalMemoryFeatures: VkExternalMemoryFeatureFlags,
     pub exportFromImportedHandleTypes: VkExternalMemoryHandleTypeFlags,
@@ -2766,20 +3928,41 @@ pub struct VkExternalMemoryProperties{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceExternalImageFormatInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub handleType: VkExternalMemoryHandleTypeFlagBits,
 }
+impl Default for VkPhysicalDeviceExternalImageFormatInfo{
+    fn default() -> Self {
+        VkPhysicalDeviceExternalImageFormatInfo{
+            sType: VkStructureType::PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO,
+            pNext: ptr::null(),
+            handleType: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkExternalImageFormatProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub externalMemoryProperties: VkExternalMemoryProperties,
 }
+impl Default for VkExternalImageFormatProperties{
+    fn default() -> Self {
+        VkExternalImageFormatProperties{
+            sType: VkStructureType::EXTERNAL_IMAGE_FORMAT_PROPERTIES,
+            pNext: ptr::null_mut(),
+            externalMemoryProperties: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceExternalBufferInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2787,15 +3970,37 @@ pub struct VkPhysicalDeviceExternalBufferInfo{
     pub usage: VkBufferUsageFlags,
     pub handleType: VkExternalMemoryHandleTypeFlagBits,
 }
+impl Default for VkPhysicalDeviceExternalBufferInfo{
+    fn default() -> Self {
+        VkPhysicalDeviceExternalBufferInfo{
+            sType: VkStructureType::PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            usage: Default::default(),
+            handleType: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkExternalBufferProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub externalMemoryProperties: VkExternalMemoryProperties,
 }
+impl Default for VkExternalBufferProperties{
+    fn default() -> Self {
+        VkExternalBufferProperties{
+            sType: VkStructureType::EXTERNAL_BUFFER_PROPERTIES,
+            pNext: ptr::null_mut(),
+            externalMemoryProperties: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceIDProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -2805,36 +4010,90 @@ pub struct VkPhysicalDeviceIDProperties{
     pub deviceNodeMask: u32,
     pub deviceLUIDValid: VkBool32,
 }
+impl Default for VkPhysicalDeviceIDProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceIDProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_ID_PROPERTIES,
+            pNext: ptr::null_mut(),
+            deviceUUID: Default::default(),
+            driverUUID: Default::default(),
+            deviceLUID: Default::default(),
+            deviceNodeMask: Default::default(),
+            deviceLUIDValid: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkExternalMemoryImageCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub handleTypes: VkExternalMemoryHandleTypeFlags,
 }
+impl Default for VkExternalMemoryImageCreateInfo{
+    fn default() -> Self {
+        VkExternalMemoryImageCreateInfo{
+            sType: VkStructureType::EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+            pNext: ptr::null(),
+            handleTypes: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkExternalMemoryBufferCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub handleTypes: VkExternalMemoryHandleTypeFlags,
 }
+impl Default for VkExternalMemoryBufferCreateInfo{
+    fn default() -> Self {
+        VkExternalMemoryBufferCreateInfo{
+            sType: VkStructureType::EXTERNAL_MEMORY_BUFFER_CREATE_INFO,
+            pNext: ptr::null(),
+            handleTypes: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkExportMemoryAllocateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub handleTypes: VkExternalMemoryHandleTypeFlags,
 }
+impl Default for VkExportMemoryAllocateInfo{
+    fn default() -> Self {
+        VkExportMemoryAllocateInfo{
+            sType: VkStructureType::EXPORT_MEMORY_ALLOCATE_INFO,
+            pNext: ptr::null(),
+            handleTypes: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceExternalSemaphoreInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub handleType: VkExternalSemaphoreHandleTypeFlagBits,
 }
+impl Default for VkPhysicalDeviceExternalSemaphoreInfo{
+    fn default() -> Self {
+        VkPhysicalDeviceExternalSemaphoreInfo{
+            sType: VkStructureType::PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO,
+            pNext: ptr::null(),
+            handleType: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkExternalSemaphoreProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -2842,22 +4101,54 @@ pub struct VkExternalSemaphoreProperties{
     pub compatibleHandleTypes: VkExternalSemaphoreHandleTypeFlags,
     pub externalSemaphoreFeatures: VkExternalSemaphoreFeatureFlags,
 }
+impl Default for VkExternalSemaphoreProperties{
+    fn default() -> Self {
+        VkExternalSemaphoreProperties{
+            sType: VkStructureType::EXTERNAL_SEMAPHORE_PROPERTIES,
+            pNext: ptr::null_mut(),
+            exportFromImportedHandleTypes: Default::default(),
+            compatibleHandleTypes: Default::default(),
+            externalSemaphoreFeatures: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkExportSemaphoreCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub handleTypes: VkExternalSemaphoreHandleTypeFlags,
 }
+impl Default for VkExportSemaphoreCreateInfo{
+    fn default() -> Self {
+        VkExportSemaphoreCreateInfo{
+            sType: VkStructureType::EXPORT_SEMAPHORE_CREATE_INFO,
+            pNext: ptr::null(),
+            handleTypes: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceExternalFenceInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub handleType: VkExternalFenceHandleTypeFlagBits,
 }
+impl Default for VkPhysicalDeviceExternalFenceInfo{
+    fn default() -> Self {
+        VkPhysicalDeviceExternalFenceInfo{
+            sType: VkStructureType::PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO,
+            pNext: ptr::null(),
+            handleType: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkExternalFenceProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -2865,15 +4156,37 @@ pub struct VkExternalFenceProperties{
     pub compatibleHandleTypes: VkExternalFenceHandleTypeFlags,
     pub externalFenceFeatures: VkExternalFenceFeatureFlags,
 }
+impl Default for VkExternalFenceProperties{
+    fn default() -> Self {
+        VkExternalFenceProperties{
+            sType: VkStructureType::EXTERNAL_FENCE_PROPERTIES,
+            pNext: ptr::null_mut(),
+            exportFromImportedHandleTypes: Default::default(),
+            compatibleHandleTypes: Default::default(),
+            externalFenceFeatures: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkExportFenceCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub handleTypes: VkExternalFenceHandleTypeFlags,
 }
+impl Default for VkExportFenceCreateInfo{
+    fn default() -> Self {
+        VkExportFenceCreateInfo{
+            sType: VkStructureType::EXPORT_FENCE_CREATE_INFO,
+            pNext: ptr::null(),
+            handleTypes: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceMultiviewFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -2881,16 +4194,39 @@ pub struct VkPhysicalDeviceMultiviewFeatures{
     pub multiviewGeometryShader: VkBool32,
     pub multiviewTessellationShader: VkBool32,
 }
+impl Default for VkPhysicalDeviceMultiviewFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceMultiviewFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
+            pNext: ptr::null_mut(),
+            multiview: Default::default(),
+            multiviewGeometryShader: Default::default(),
+            multiviewTessellationShader: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceMultiviewProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub maxMultiviewViewCount: u32,
     pub maxMultiviewInstanceIndex: u32,
 }
+impl Default for VkPhysicalDeviceMultiviewProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceMultiviewProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES,
+            pNext: ptr::null_mut(),
+            maxMultiviewViewCount: Default::default(),
+            maxMultiviewInstanceIndex: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkRenderPassMultiviewCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2901,8 +4237,23 @@ pub struct VkRenderPassMultiviewCreateInfo{
     pub correlationMaskCount: u32,
     pub pCorrelationMasks: *const  u32,
 }
+impl Default for VkRenderPassMultiviewCreateInfo{
+    fn default() -> Self {
+        VkRenderPassMultiviewCreateInfo{
+            sType: VkStructureType::RENDER_PASS_MULTIVIEW_CREATE_INFO,
+            pNext: ptr::null(),
+            subpassCount: Default::default(),
+            pViewMasks: ptr::null(),
+            dependencyCount: Default::default(),
+            pViewOffsets: ptr::null(),
+            correlationMaskCount: Default::default(),
+            pCorrelationMasks: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceGroupProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -2910,16 +4261,39 @@ pub struct VkPhysicalDeviceGroupProperties{
     pub physicalDevices: [VkPhysicalDevice; VK_MAX_DEVICE_GROUP_SIZE],
     pub subsetAllocation: VkBool32,
 }
+impl Default for VkPhysicalDeviceGroupProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceGroupProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_GROUP_PROPERTIES,
+            pNext: ptr::null_mut(),
+            physicalDeviceCount: Default::default(),
+            physicalDevices: Default::default(),
+            subsetAllocation: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkMemoryAllocateFlagsInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkMemoryAllocateFlags,
     pub deviceMask: u32,
 }
+impl Default for VkMemoryAllocateFlagsInfo{
+    fn default() -> Self {
+        VkMemoryAllocateFlagsInfo{
+            sType: VkStructureType::MEMORY_ALLOCATE_FLAGS_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            deviceMask: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBindBufferMemoryInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2927,16 +4301,39 @@ pub struct VkBindBufferMemoryInfo{
     pub memory: VkDeviceMemory,
     pub memoryOffset: VkDeviceSize,
 }
+impl Default for VkBindBufferMemoryInfo{
+    fn default() -> Self {
+        VkBindBufferMemoryInfo{
+            sType: VkStructureType::BIND_BUFFER_MEMORY_INFO,
+            pNext: ptr::null(),
+            buffer: Default::default(),
+            memory: Default::default(),
+            memoryOffset: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBindBufferMemoryDeviceGroupInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub deviceIndexCount: u32,
     pub pDeviceIndices: *const u32,
 }
+impl Default for VkBindBufferMemoryDeviceGroupInfo{
+    fn default() -> Self {
+        VkBindBufferMemoryDeviceGroupInfo{
+            sType: VkStructureType::BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO,
+            pNext: ptr::null(),
+            deviceIndexCount: Default::default(),
+            pDeviceIndices: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBindImageMemoryInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2944,8 +4341,20 @@ pub struct VkBindImageMemoryInfo{
     pub memory: VkDeviceMemory,
     pub memoryOffset: VkDeviceSize,
 }
+impl Default for VkBindImageMemoryInfo{
+    fn default() -> Self {
+        VkBindImageMemoryInfo{
+            sType: VkStructureType::BIND_IMAGE_MEMORY_INFO,
+            pNext: ptr::null(),
+            image: Default::default(),
+            memory: Default::default(),
+            memoryOffset: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBindImageMemoryDeviceGroupInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2954,8 +4363,21 @@ pub struct VkBindImageMemoryDeviceGroupInfo{
     pub splitInstanceBindRegionCount: u32,
     pub pSplitInstanceBindRegions: *const VkRect2D,
 }
+impl Default for VkBindImageMemoryDeviceGroupInfo{
+    fn default() -> Self {
+        VkBindImageMemoryDeviceGroupInfo{
+            sType: VkStructureType::BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO,
+            pNext: ptr::null(),
+            deviceIndexCount: Default::default(),
+            pDeviceIndices: ptr::null(),
+            splitInstanceBindRegionCount: Default::default(),
+            pSplitInstanceBindRegions: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceGroupRenderPassBeginInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2963,15 +4385,37 @@ pub struct VkDeviceGroupRenderPassBeginInfo{
     pub deviceRenderAreaCount: u32,
     pub pDeviceRenderAreas: *const VkRect2D,
 }
+impl Default for VkDeviceGroupRenderPassBeginInfo{
+    fn default() -> Self {
+        VkDeviceGroupRenderPassBeginInfo{
+            sType: VkStructureType::DEVICE_GROUP_RENDER_PASS_BEGIN_INFO,
+            pNext: ptr::null(),
+            deviceMask: Default::default(),
+            deviceRenderAreaCount: Default::default(),
+            pDeviceRenderAreas: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceGroupCommandBufferBeginInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub deviceMask: u32,
 }
+impl Default for VkDeviceGroupCommandBufferBeginInfo{
+    fn default() -> Self {
+        VkDeviceGroupCommandBufferBeginInfo{
+            sType: VkStructureType::DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO,
+            pNext: ptr::null(),
+            deviceMask: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceGroupSubmitInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -2982,24 +4426,61 @@ pub struct VkDeviceGroupSubmitInfo{
     pub signalSemaphoreCount: u32,
     pub pSignalSemaphoreDeviceIndices: *const u32,
 }
+impl Default for VkDeviceGroupSubmitInfo{
+    fn default() -> Self {
+        VkDeviceGroupSubmitInfo{
+            sType: VkStructureType::DEVICE_GROUP_SUBMIT_INFO,
+            pNext: ptr::null(),
+            waitSemaphoreCount: Default::default(),
+            pWaitSemaphoreDeviceIndices: ptr::null(),
+            commandBufferCount: Default::default(),
+            pCommandBufferDeviceMasks: ptr::null(),
+            signalSemaphoreCount: Default::default(),
+            pSignalSemaphoreDeviceIndices: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceGroupBindSparseInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub resourceDeviceIndex: u32,
     pub memoryDeviceIndex: u32,
 }
+impl Default for VkDeviceGroupBindSparseInfo{
+    fn default() -> Self {
+        VkDeviceGroupBindSparseInfo{
+            sType: VkStructureType::DEVICE_GROUP_BIND_SPARSE_INFO,
+            pNext: ptr::null(),
+            resourceDeviceIndex: Default::default(),
+            memoryDeviceIndex: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceGroupDeviceCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub physicalDeviceCount: u32,
     pub pPhysicalDevices: *const VkPhysicalDevice,
 }
+impl Default for VkDeviceGroupDeviceCreateInfo{
+    fn default() -> Self {
+        VkDeviceGroupDeviceCreateInfo{
+            sType: VkStructureType::DEVICE_GROUP_DEVICE_CREATE_INFO,
+            pNext: ptr::null(),
+            physicalDeviceCount: Default::default(),
+            pPhysicalDevices: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorUpdateTemplateEntry{
     pub dstBinding: u32,
     pub dstArrayElement: u32,
@@ -3008,8 +4489,21 @@ pub struct VkDescriptorUpdateTemplateEntry{
     pub offset: isize,
     pub stride: isize,
 }
+impl Default for VkDescriptorUpdateTemplateEntry{
+    fn default() -> Self {
+        VkDescriptorUpdateTemplateEntry{
+            dstBinding: Default::default(),
+            dstArrayElement: Default::default(),
+            descriptorCount: Default::default(),
+            descriptorType: VkDescriptorType::SAMPLER,
+            offset: Default::default(),
+            stride: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorUpdateTemplateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3022,8 +4516,25 @@ pub struct VkDescriptorUpdateTemplateCreateInfo{
     pub pipelineLayout: VkPipelineLayout,
     pub set: u32,
 }
+impl Default for VkDescriptorUpdateTemplateCreateInfo{
+    fn default() -> Self {
+        VkDescriptorUpdateTemplateCreateInfo{
+            sType: VkStructureType::DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            descriptorUpdateEntryCount: Default::default(),
+            pDescriptorUpdateEntries: ptr::null(),
+            templateType: VkDescriptorUpdateTemplateType::DESCRIPTOR_SET,
+            descriptorSetLayout: Default::default(),
+            pipelineBindPoint: VkPipelineBindPoint::GRAPHICS,
+            pipelineLayout: Default::default(),
+            set: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkInputAttachmentAspectReference{
     pub subpass: u32,
     pub inputAttachmentIndex: u32,
@@ -3031,14 +4542,26 @@ pub struct VkInputAttachmentAspectReference{
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkRenderPassInputAttachmentAspectCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub aspectReferenceCount: u32,
     pub pAspectReferences: *const VkInputAttachmentAspectReference,
 }
+impl Default for VkRenderPassInputAttachmentAspectCreateInfo{
+    fn default() -> Self {
+        VkRenderPassInputAttachmentAspectCreateInfo{
+            sType: VkStructureType::RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO,
+            pNext: ptr::null(),
+            aspectReferenceCount: Default::default(),
+            pAspectReferences: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDevice16BitStorageFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3047,8 +4570,21 @@ pub struct VkPhysicalDevice16BitStorageFeatures{
     pub storagePushConstant16: VkBool32,
     pub storageInputOutput16: VkBool32,
 }
+impl Default for VkPhysicalDevice16BitStorageFeatures{
+    fn default() -> Self {
+        VkPhysicalDevice16BitStorageFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES,
+            pNext: ptr::null_mut(),
+            storageBuffer16BitAccess: Default::default(),
+            uniformAndStorageBuffer16BitAccess: Default::default(),
+            storagePushConstant16: Default::default(),
+            storageInputOutput16: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceSubgroupProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3057,95 +4593,229 @@ pub struct VkPhysicalDeviceSubgroupProperties{
     pub supportedOperations: VkSubgroupFeatureFlags,
     pub quadOperationsInAllStages: VkBool32,
 }
+impl Default for VkPhysicalDeviceSubgroupProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceSubgroupProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_SUBGROUP_PROPERTIES,
+            pNext: ptr::null_mut(),
+            subgroupSize: Default::default(),
+            supportedStages: Default::default(),
+            supportedOperations: Default::default(),
+            quadOperationsInAllStages: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub shaderSubgroupExtendedTypes: VkBool32,
 }
+impl Default for VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES,
+            pNext: ptr::null_mut(),
+            shaderSubgroupExtendedTypes: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBufferMemoryRequirementsInfo2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub buffer: VkBuffer,
 }
+impl Default for VkBufferMemoryRequirementsInfo2{
+    fn default() -> Self {
+        VkBufferMemoryRequirementsInfo2{
+            sType: VkStructureType::BUFFER_MEMORY_REQUIREMENTS_INFO_2,
+            pNext: ptr::null(),
+            buffer: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageMemoryRequirementsInfo2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub image: VkImage,
 }
+impl Default for VkImageMemoryRequirementsInfo2{
+    fn default() -> Self {
+        VkImageMemoryRequirementsInfo2{
+            sType: VkStructureType::IMAGE_MEMORY_REQUIREMENTS_INFO_2,
+            pNext: ptr::null(),
+            image: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageSparseMemoryRequirementsInfo2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub image: VkImage,
 }
+impl Default for VkImageSparseMemoryRequirementsInfo2{
+    fn default() -> Self {
+        VkImageSparseMemoryRequirementsInfo2{
+            sType: VkStructureType::IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2,
+            pNext: ptr::null(),
+            image: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkMemoryRequirements2{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub memoryRequirements: VkMemoryRequirements,
 }
+impl Default for VkMemoryRequirements2{
+    fn default() -> Self {
+        VkMemoryRequirements2{
+            sType: VkStructureType::MEMORY_REQUIREMENTS_2,
+            pNext: ptr::null_mut(),
+            memoryRequirements: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSparseImageMemoryRequirements2{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub memoryRequirements: VkSparseImageMemoryRequirements,
 }
+impl Default for VkSparseImageMemoryRequirements2{
+    fn default() -> Self {
+        VkSparseImageMemoryRequirements2{
+            sType: VkStructureType::SPARSE_IMAGE_MEMORY_REQUIREMENTS_2,
+            pNext: ptr::null_mut(),
+            memoryRequirements: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDevicePointClippingProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub pointClippingBehavior: VkPointClippingBehavior,
 }
+impl Default for VkPhysicalDevicePointClippingProperties{
+    fn default() -> Self {
+        VkPhysicalDevicePointClippingProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES,
+            pNext: ptr::null_mut(),
+            pointClippingBehavior: VkPointClippingBehavior::ALL_CLIP_PLANES,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkMemoryDedicatedRequirements{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub prefersDedicatedAllocation: VkBool32,
     pub requiresDedicatedAllocation: VkBool32,
 }
+impl Default for VkMemoryDedicatedRequirements{
+    fn default() -> Self {
+        VkMemoryDedicatedRequirements{
+            sType: VkStructureType::MEMORY_DEDICATED_REQUIREMENTS,
+            pNext: ptr::null_mut(),
+            prefersDedicatedAllocation: Default::default(),
+            requiresDedicatedAllocation: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkMemoryDedicatedAllocateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub image: VkImage,
     pub buffer: VkBuffer,
 }
+impl Default for VkMemoryDedicatedAllocateInfo{
+    fn default() -> Self {
+        VkMemoryDedicatedAllocateInfo{
+            sType: VkStructureType::MEMORY_DEDICATED_ALLOCATE_INFO,
+            pNext: ptr::null(),
+            image: Default::default(),
+            buffer: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageViewUsageCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub usage: VkImageUsageFlags,
 }
+impl Default for VkImageViewUsageCreateInfo{
+    fn default() -> Self {
+        VkImageViewUsageCreateInfo{
+            sType: VkStructureType::IMAGE_VIEW_USAGE_CREATE_INFO,
+            pNext: ptr::null(),
+            usage: Default::default()
+        }
+    }
+}
 
-#[derive(Eq, PartialEq, Debug, Clone)]
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPipelineTessellationDomainOriginStateCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub domainOrigin: VkTessellationDomainOrigin,
 }
+impl Default for VkPipelineTessellationDomainOriginStateCreateInfo{
+    fn default() -> Self {
+        VkPipelineTessellationDomainOriginStateCreateInfo{
+            sType: VkStructureType::PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO,
+            pNext: ptr::null(),
+            domainOrigin: VkTessellationDomainOrigin::UPPER_LEFT,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSamplerYcbcrConversionInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub conversion: VkSamplerYcbcrConversion,
 }
+impl Default for VkSamplerYcbcrConversionInfo{
+    fn default() -> Self {
+        VkSamplerYcbcrConversionInfo{
+            sType: VkStructureType::SAMPLER_YCBCR_CONVERSION_INFO,
+            pNext: ptr::null(),
+            conversion: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSamplerYcbcrConversionCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3158,57 +4828,144 @@ pub struct VkSamplerYcbcrConversionCreateInfo{
     pub chromaFilter: VkFilter,
     pub forceExplicitReconstruction: VkBool32,
 }
+impl Default for VkSamplerYcbcrConversionCreateInfo{
+    fn default() -> Self {
+        VkSamplerYcbcrConversionCreateInfo{
+            sType: VkStructureType::SAMPLER_YCBCR_CONVERSION_CREATE_INFO,
+            pNext: ptr::null(),
+            format: VkFormat::UNDEFINED,
+            ycbcrModel: VkSamplerYcbcrModelConversion::RGB_IDENTITY,
+            ycbcrRange: VkSamplerYcbcrRange::ITU_FULL,
+            components: Default::default(),
+            xChromaOffset: VkChromaLocation::COSITED_EVEN,
+            yChromaOffset: VkChromaLocation::COSITED_EVEN,
+            chromaFilter: VkFilter::NEAREST,
+            forceExplicitReconstruction: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBindImagePlaneMemoryInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub planeAspect: VkImageAspectFlagBits,
 }
+impl Default for VkBindImagePlaneMemoryInfo{
+    fn default() -> Self {
+        VkBindImagePlaneMemoryInfo{
+            sType: VkStructureType::BIND_IMAGE_PLANE_MEMORY_INFO,
+            pNext: ptr::null(),
+            planeAspect: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImagePlaneMemoryRequirementsInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub planeAspect: VkImageAspectFlagBits,
 }
+impl Default for VkImagePlaneMemoryRequirementsInfo{
+    fn default() -> Self {
+        VkImagePlaneMemoryRequirementsInfo{
+            sType: VkStructureType::IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO,
+            pNext: ptr::null(),
+            planeAspect: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceSamplerYcbcrConversionFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub samplerYcbcrConversion: VkBool32,
 }
+impl Default for VkPhysicalDeviceSamplerYcbcrConversionFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceSamplerYcbcrConversionFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES,
+            pNext: ptr::null_mut(),
+            samplerYcbcrConversion: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSamplerYcbcrConversionImageFormatProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub combinedImageSamplerDescriptorCount: u32,
 }
+impl Default for VkSamplerYcbcrConversionImageFormatProperties{
+    fn default() -> Self {
+        VkSamplerYcbcrConversionImageFormatProperties{
+            sType: VkStructureType::SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES,
+            pNext: ptr::null_mut(),
+            combinedImageSamplerDescriptorCount: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkProtectedSubmitInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub protectedSubmit: VkBool32,
 }
+impl Default for VkProtectedSubmitInfo{
+    fn default() -> Self {
+        VkProtectedSubmitInfo{
+            sType: VkStructureType::PROTECTED_SUBMIT_INFO,
+            pNext: ptr::null(),
+            protectedSubmit: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceProtectedMemoryFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub protectedMemory: VkBool32,
 }
+impl Default for VkPhysicalDeviceProtectedMemoryFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceProtectedMemoryFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES,
+            pNext: ptr::null_mut(),
+            protectedMemory: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceProtectedMemoryProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub protectedNoFault: VkBool32,
 }
+impl Default for VkPhysicalDeviceProtectedMemoryProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceProtectedMemoryProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES,
+            pNext: ptr::null_mut(),
+            protectedNoFault: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceQueueInfo2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3216,62 +4973,148 @@ pub struct VkDeviceQueueInfo2{
     pub queueFamilyIndex: u32,
     pub queueIndex: u32,
 }
+impl Default for VkDeviceQueueInfo2{
+    fn default() -> Self {
+        VkDeviceQueueInfo2{
+            sType: VkStructureType::DEVICE_QUEUE_INFO_2,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            queueFamilyIndex: Default::default(),
+            queueIndex: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceSamplerFilterMinmaxProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub filterMinmaxSingleComponentFormats: VkBool32,
     pub filterMinmaxImageComponentMapping: VkBool32,
 }
+impl Default for VkPhysicalDeviceSamplerFilterMinmaxProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceSamplerFilterMinmaxProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES,
+            pNext: ptr::null_mut(),
+            filterMinmaxSingleComponentFormats: Default::default(),
+            filterMinmaxImageComponentMapping: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSamplerReductionModeCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub reductionMode: VkSamplerReductionMode,
 }
+impl Default for VkSamplerReductionModeCreateInfo{
+    fn default() -> Self {
+        VkSamplerReductionModeCreateInfo{
+            sType: VkStructureType::SAMPLER_REDUCTION_MODE_CREATE_INFO,
+            pNext: ptr::null(),
+            reductionMode: VkSamplerReductionMode::WEIGHTED_AVERAGE,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageFormatListCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub viewFormatCount: u32,
     pub pViewFormats: *const VkFormat,
 }
+impl Default for VkImageFormatListCreateInfo{
+    fn default() -> Self {
+        VkImageFormatListCreateInfo{
+            sType: VkStructureType::IMAGE_FORMAT_LIST_CREATE_INFO,
+            pNext: ptr::null(),
+            viewFormatCount: Default::default(),
+            pViewFormats: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceMaintenance3Properties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub maxPerSetDescriptors: u32,
     pub maxMemoryAllocationSize: VkDeviceSize,
 }
+impl Default for VkPhysicalDeviceMaintenance3Properties{
+    fn default() -> Self {
+        VkPhysicalDeviceMaintenance3Properties{
+            sType: VkStructureType::PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES,
+            pNext: ptr::null_mut(),
+            maxPerSetDescriptors: Default::default(),
+            maxMemoryAllocationSize: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorSetLayoutSupport{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub supported: VkBool32,
 }
+impl Default for VkDescriptorSetLayoutSupport{
+    fn default() -> Self {
+        VkDescriptorSetLayoutSupport{
+            sType: VkStructureType::DESCRIPTOR_SET_LAYOUT_SUPPORT,
+            pNext: ptr::null_mut(),
+            supported: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceShaderDrawParametersFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub shaderDrawParameters: VkBool32,
 }
 pub type VkPhysicalDeviceShaderDrawParameterFeatures = VkPhysicalDeviceShaderDrawParametersFeatures;
+impl Default for VkPhysicalDeviceShaderDrawParametersFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceShaderDrawParametersFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES,
+            pNext: ptr::null_mut(),
+            shaderDrawParameters: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceShaderFloat16Int8Features{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub shaderFloat16: VkBool32,
     pub shaderInt8: VkBool32,
 }
+impl Default for VkPhysicalDeviceShaderFloat16Int8Features{
+    fn default() -> Self {
+        VkPhysicalDeviceShaderFloat16Int8Features{
+            sType: VkStructureType::PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES,
+            pNext: ptr::null_mut(),
+            shaderFloat16: Default::default(),
+            shaderInt8: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceFloatControlsProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3293,15 +5136,51 @@ pub struct VkPhysicalDeviceFloatControlsProperties{
     pub shaderRoundingModeRTZFloat32: VkBool32,
     pub shaderRoundingModeRTZFloat64: VkBool32,
 }
+impl Default for VkPhysicalDeviceFloatControlsProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceFloatControlsProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES,
+            pNext: ptr::null_mut(),
+            denormBehaviorIndependence: VkShaderFloatControlsIndependence::F32_BIT_ONLY,
+            roundingModeIndependence: VkShaderFloatControlsIndependence::F32_BIT_ONLY,
+            shaderSignedZeroInfNanPreserveFloat16: Default::default(),
+            shaderSignedZeroInfNanPreserveFloat32: Default::default(),
+            shaderSignedZeroInfNanPreserveFloat64: Default::default(),
+            shaderDenormPreserveFloat16: Default::default(),
+            shaderDenormPreserveFloat32: Default::default(),
+            shaderDenormPreserveFloat64: Default::default(),
+            shaderDenormFlushToZeroFloat16: Default::default(),
+            shaderDenormFlushToZeroFloat32: Default::default(),
+            shaderDenormFlushToZeroFloat64: Default::default(),
+            shaderRoundingModeRTEFloat16: Default::default(),
+            shaderRoundingModeRTEFloat32: Default::default(),
+            shaderRoundingModeRTEFloat64: Default::default(),
+            shaderRoundingModeRTZFloat16: Default::default(),
+            shaderRoundingModeRTZFloat32: Default::default(),
+            shaderRoundingModeRTZFloat64: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceHostQueryResetFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub hostQueryReset: VkBool32,
 }
+impl Default for VkPhysicalDeviceHostQueryResetFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceHostQueryResetFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES,
+            pNext: ptr::null_mut(),
+            hostQueryReset: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceDescriptorIndexingFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3326,8 +5205,37 @@ pub struct VkPhysicalDeviceDescriptorIndexingFeatures{
     pub descriptorBindingVariableDescriptorCount: VkBool32,
     pub runtimeDescriptorArray: VkBool32,
 }
+impl Default for VkPhysicalDeviceDescriptorIndexingFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceDescriptorIndexingFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+            pNext: ptr::null_mut(),
+            shaderInputAttachmentArrayDynamicIndexing: Default::default(),
+            shaderUniformTexelBufferArrayDynamicIndexing: Default::default(),
+            shaderStorageTexelBufferArrayDynamicIndexing: Default::default(),
+            shaderUniformBufferArrayNonUniformIndexing: Default::default(),
+            shaderSampledImageArrayNonUniformIndexing: Default::default(),
+            shaderStorageBufferArrayNonUniformIndexing: Default::default(),
+            shaderStorageImageArrayNonUniformIndexing: Default::default(),
+            shaderInputAttachmentArrayNonUniformIndexing: Default::default(),
+            shaderUniformTexelBufferArrayNonUniformIndexing: Default::default(),
+            shaderStorageTexelBufferArrayNonUniformIndexing: Default::default(),
+            descriptorBindingUniformBufferUpdateAfterBind: Default::default(),
+            descriptorBindingSampledImageUpdateAfterBind: Default::default(),
+            descriptorBindingStorageImageUpdateAfterBind: Default::default(),
+            descriptorBindingStorageBufferUpdateAfterBind: Default::default(),
+            descriptorBindingUniformTexelBufferUpdateAfterBind: Default::default(),
+            descriptorBindingStorageTexelBufferUpdateAfterBind: Default::default(),
+            descriptorBindingUpdateUnusedWhilePending: Default::default(),
+            descriptorBindingPartiallyBound: Default::default(),
+            descriptorBindingVariableDescriptorCount: Default::default(),
+            runtimeDescriptorArray: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceDescriptorIndexingProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3355,31 +5263,95 @@ pub struct VkPhysicalDeviceDescriptorIndexingProperties{
     pub maxDescriptorSetUpdateAfterBindStorageImages: u32,
     pub maxDescriptorSetUpdateAfterBindInputAttachments: u32,
 }
+impl Default for VkPhysicalDeviceDescriptorIndexingProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceDescriptorIndexingProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES,
+            pNext: ptr::null_mut(),
+            maxUpdateAfterBindDescriptorsInAllPools: Default::default(),
+            shaderUniformBufferArrayNonUniformIndexingNative: Default::default(),
+            shaderSampledImageArrayNonUniformIndexingNative: Default::default(),
+            shaderStorageBufferArrayNonUniformIndexingNative: Default::default(),
+            shaderStorageImageArrayNonUniformIndexingNative: Default::default(),
+            shaderInputAttachmentArrayNonUniformIndexingNative: Default::default(),
+            robustBufferAccessUpdateAfterBind: Default::default(),
+            quadDivergentImplicitLod: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindSamplers: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindUniformBuffers: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindStorageBuffers: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindSampledImages: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindStorageImages: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindInputAttachments: Default::default(),
+            maxPerStageUpdateAfterBindResources: Default::default(),
+            maxDescriptorSetUpdateAfterBindSamplers: Default::default(),
+            maxDescriptorSetUpdateAfterBindUniformBuffers: Default::default(),
+            maxDescriptorSetUpdateAfterBindUniformBuffersDynamic: Default::default(),
+            maxDescriptorSetUpdateAfterBindStorageBuffers: Default::default(),
+            maxDescriptorSetUpdateAfterBindStorageBuffersDynamic: Default::default(),
+            maxDescriptorSetUpdateAfterBindSampledImages: Default::default(),
+            maxDescriptorSetUpdateAfterBindStorageImages: Default::default(),
+            maxDescriptorSetUpdateAfterBindInputAttachments: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorSetLayoutBindingFlagsCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub bindingCount: u32,
     pub pBindingFlags: *const VkDescriptorBindingFlags,
 }
+impl Default for VkDescriptorSetLayoutBindingFlagsCreateInfo{
+    fn default() -> Self {
+        VkDescriptorSetLayoutBindingFlagsCreateInfo{
+            sType: VkStructureType::DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+            pNext: ptr::null(),
+            bindingCount: Default::default(),
+            pBindingFlags: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorSetVariableDescriptorCountAllocateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub descriptorSetCount: u32,
     pub pDescriptorCounts: *const u32,
 }
+impl Default for VkDescriptorSetVariableDescriptorCountAllocateInfo{
+    fn default() -> Self {
+        VkDescriptorSetVariableDescriptorCountAllocateInfo{
+            sType: VkStructureType::DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
+            pNext: ptr::null(),
+            descriptorSetCount: Default::default(),
+            pDescriptorCounts: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDescriptorSetVariableDescriptorCountLayoutSupport{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub maxVariableDescriptorCount: u32,
 }
+impl Default for VkDescriptorSetVariableDescriptorCountLayoutSupport{
+    fn default() -> Self {
+        VkDescriptorSetVariableDescriptorCountLayoutSupport{
+            sType: VkStructureType::DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT,
+            pNext: ptr::null_mut(),
+            maxVariableDescriptorCount: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkAttachmentDescription2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3393,8 +5365,26 @@ pub struct VkAttachmentDescription2{
     pub initialLayout: VkImageLayout,
     pub finalLayout: VkImageLayout,
 }
+impl Default for VkAttachmentDescription2{
+    fn default() -> Self {
+        VkAttachmentDescription2{
+            sType: VkStructureType::ATTACHMENT_DESCRIPTION_2,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            format: VkFormat::UNDEFINED,
+            samples: Default::default(),
+            loadOp: VkAttachmentLoadOp::LOAD,
+            storeOp: VkAttachmentStoreOp::STORE,
+            stencilLoadOp: VkAttachmentLoadOp::LOAD,
+            stencilStoreOp: VkAttachmentStoreOp::STORE,
+            initialLayout: VkImageLayout::UNDEFINED,
+            finalLayout: VkImageLayout::UNDEFINED,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkAttachmentReference2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3402,8 +5392,20 @@ pub struct VkAttachmentReference2{
     pub layout: VkImageLayout,
     pub aspectMask: VkImageAspectFlags,
 }
+impl Default for VkAttachmentReference2{
+    fn default() -> Self {
+        VkAttachmentReference2{
+            sType: VkStructureType::ATTACHMENT_REFERENCE_2,
+            pNext: ptr::null(),
+            attachment: Default::default(),
+            layout: VkImageLayout::UNDEFINED,
+            aspectMask: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSubpassDescription2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3419,8 +5421,28 @@ pub struct VkSubpassDescription2{
     pub preserveAttachmentCount: u32,
     pub pPreserveAttachments: *const u32,
 }
+impl Default for VkSubpassDescription2{
+    fn default() -> Self {
+        VkSubpassDescription2{
+            sType: VkStructureType::SUBPASS_DESCRIPTION_2,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            pipelineBindPoint: VkPipelineBindPoint::GRAPHICS,
+            viewMask: Default::default(),
+            inputAttachmentCount: Default::default(),
+            pInputAttachments: ptr::null(),
+            colorAttachmentCount: Default::default(),
+            pColorAttachments: ptr::null(),
+            pResolveAttachments: ptr::null(),
+            pDepthStencilAttachment: ptr::null(),
+            preserveAttachmentCount: Default::default(),
+            pPreserveAttachments: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSubpassDependency2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3433,8 +5455,25 @@ pub struct VkSubpassDependency2{
     pub dependencyFlags: VkDependencyFlags,
     pub viewOffset: i32,
 }
+impl Default for VkSubpassDependency2{
+    fn default() -> Self {
+        VkSubpassDependency2{
+            sType: VkStructureType::SUBPASS_DEPENDENCY_2,
+            pNext: ptr::null(),
+            srcSubpass: Default::default(),
+            dstSubpass: Default::default(),
+            srcStageMask: Default::default(),
+            dstStageMask: Default::default(),
+            srcAccessMask: Default::default(),
+            dstAccessMask: Default::default(),
+            dependencyFlags: Default::default(),
+            viewOffset: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkRenderPassCreateInfo2{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3448,43 +5487,111 @@ pub struct VkRenderPassCreateInfo2{
     pub correlatedViewMaskCount: u32,
     pub pCorrelatedViewMasks: *const u32,
 }
+impl Default for VkRenderPassCreateInfo2{
+    fn default() -> Self {
+        VkRenderPassCreateInfo2{
+            sType: VkStructureType::RENDER_PASS_CREATE_INFO_2,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            attachmentCount: Default::default(),
+            pAttachments: ptr::null(),
+            subpassCount: Default::default(),
+            pSubpasses: ptr::null(),
+            dependencyCount: Default::default(),
+            pDependencies: ptr::null(),
+            correlatedViewMaskCount: Default::default(),
+            pCorrelatedViewMasks: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSubpassBeginInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub contents: VkSubpassContents,
 }
+impl Default for VkSubpassBeginInfo{
+    fn default() -> Self {
+        VkSubpassBeginInfo{
+            sType: VkStructureType::SUBPASS_BEGIN_INFO,
+            pNext: ptr::null(),
+            contents: VkSubpassContents::INLINE,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSubpassEndInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
 }
+impl Default for VkSubpassEndInfo{
+    fn default() -> Self {
+        VkSubpassEndInfo{
+            sType: VkStructureType::SUBPASS_END_INFO,
+            pNext: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceTimelineSemaphoreFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub timelineSemaphore: VkBool32,
 }
+impl Default for VkPhysicalDeviceTimelineSemaphoreFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceTimelineSemaphoreFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+            pNext: ptr::null_mut(),
+            timelineSemaphore: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceTimelineSemaphoreProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub maxTimelineSemaphoreValueDifference: u64,
 }
+impl Default for VkPhysicalDeviceTimelineSemaphoreProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceTimelineSemaphoreProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES,
+            pNext: ptr::null_mut(),
+            maxTimelineSemaphoreValueDifference: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSemaphoreTypeCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub semaphoreType: VkSemaphoreType,
     pub initialValue: u64,
 }
+impl Default for VkSemaphoreTypeCreateInfo{
+    fn default() -> Self {
+        VkSemaphoreTypeCreateInfo{
+            sType: VkStructureType::SEMAPHORE_TYPE_CREATE_INFO,
+            pNext: ptr::null(),
+            semaphoreType: VkSemaphoreType::BINARY,
+            initialValue: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkTimelineSemaphoreSubmitInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3493,8 +5600,21 @@ pub struct VkTimelineSemaphoreSubmitInfo{
     pub signalSemaphoreValueCount: u32,
     pub pSignalSemaphoreValues: *const u64,
 }
+impl Default for VkTimelineSemaphoreSubmitInfo{
+    fn default() -> Self {
+        VkTimelineSemaphoreSubmitInfo{
+            sType: VkStructureType::TIMELINE_SEMAPHORE_SUBMIT_INFO,
+            pNext: ptr::null(),
+            waitSemaphoreValueCount: Default::default(),
+            pWaitSemaphoreValues: ptr::null(),
+            signalSemaphoreValueCount: Default::default(),
+            pSignalSemaphoreValues: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSemaphoreWaitInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3503,16 +5623,40 @@ pub struct VkSemaphoreWaitInfo{
     pub pSemaphores: *const VkSemaphore,
     pub pValues: *const u64,
 }
+impl Default for VkSemaphoreWaitInfo{
+    fn default() -> Self {
+        VkSemaphoreWaitInfo{
+            sType: VkStructureType::SEMAPHORE_WAIT_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            semaphoreCount: Default::default(),
+            pSemaphores: ptr::null(),
+            pValues: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSemaphoreSignalInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub semaphore: VkSemaphore,
     pub value: u64,
 }
+impl Default for VkSemaphoreSignalInfo{
+    fn default() -> Self {
+        VkSemaphoreSignalInfo{
+            sType: VkStructureType::SEMAPHORE_SIGNAL_INFO,
+            pNext: ptr::null(),
+            semaphore: Default::default(),
+            value: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDevice8BitStorageFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3520,8 +5664,20 @@ pub struct VkPhysicalDevice8BitStorageFeatures{
     pub uniformAndStorageBuffer8BitAccess: VkBool32,
     pub storagePushConstant8: VkBool32,
 }
+impl Default for VkPhysicalDevice8BitStorageFeatures{
+    fn default() -> Self {
+        VkPhysicalDevice8BitStorageFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES,
+            pNext: ptr::null_mut(),
+            storageBuffer8BitAccess: Default::default(),
+            uniformAndStorageBuffer8BitAccess: Default::default(),
+            storagePushConstant8: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceVulkanMemoryModelFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3529,16 +5685,39 @@ pub struct VkPhysicalDeviceVulkanMemoryModelFeatures{
     pub vulkanMemoryModelDeviceScope: VkBool32,
     pub vulkanMemoryModelAvailabilityVisibilityChains: VkBool32,
 }
+impl Default for VkPhysicalDeviceVulkanMemoryModelFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceVulkanMemoryModelFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES,
+            pNext: ptr::null_mut(),
+            vulkanMemoryModel: Default::default(),
+            vulkanMemoryModelDeviceScope: Default::default(),
+            vulkanMemoryModelAvailabilityVisibilityChains: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceShaderAtomicInt64Features{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub shaderBufferInt64Atomics: VkBool32,
     pub shaderSharedInt64Atomics: VkBool32,
 }
+impl Default for VkPhysicalDeviceShaderAtomicInt64Features{
+    fn default() -> Self {
+        VkPhysicalDeviceShaderAtomicInt64Features{
+            sType: VkStructureType::PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES,
+            pNext: ptr::null_mut(),
+            shaderBufferInt64Atomics: Default::default(),
+            shaderSharedInt64Atomics: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceDepthStencilResolveProperties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3547,8 +5726,21 @@ pub struct VkPhysicalDeviceDepthStencilResolveProperties{
     pub independentResolveNone: VkBool32,
     pub independentResolve: VkBool32,
 }
+impl Default for VkPhysicalDeviceDepthStencilResolveProperties{
+    fn default() -> Self {
+        VkPhysicalDeviceDepthStencilResolveProperties{
+            sType: VkStructureType::PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES,
+            pNext: ptr::null_mut(),
+            supportedDepthResolveModes: Default::default(),
+            supportedStencilResolveModes: Default::default(),
+            independentResolveNone: Default::default(),
+            independentResolve: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSubpassDescriptionDepthStencilResolve{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3556,29 +5748,71 @@ pub struct VkSubpassDescriptionDepthStencilResolve{
     pub stencilResolveMode: VkResolveModeFlagBits,
     pub pDepthStencilResolveAttachment: *const VkAttachmentReference2,
 }
+impl Default for VkSubpassDescriptionDepthStencilResolve{
+    fn default() -> Self {
+        VkSubpassDescriptionDepthStencilResolve{
+            sType: VkStructureType::SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE,
+            pNext: ptr::null(),
+            depthResolveMode: Default::default(),
+            stencilResolveMode: Default::default(),
+            pDepthStencilResolveAttachment: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageStencilUsageCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub stencilUsage: VkImageUsageFlags,
 }
+impl Default for VkImageStencilUsageCreateInfo{
+    fn default() -> Self {
+        VkImageStencilUsageCreateInfo{
+            sType: VkStructureType::IMAGE_STENCIL_USAGE_CREATE_INFO,
+            pNext: ptr::null(),
+            stencilUsage: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceScalarBlockLayoutFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub scalarBlockLayout: VkBool32,
 }
+impl Default for VkPhysicalDeviceScalarBlockLayoutFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceScalarBlockLayoutFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES,
+            pNext: ptr::null_mut(),
+            scalarBlockLayout: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceUniformBufferStandardLayoutFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub uniformBufferStandardLayout: VkBool32,
 }
+impl Default for VkPhysicalDeviceUniformBufferStandardLayoutFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceUniformBufferStandardLayoutFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES,
+            pNext: ptr::null_mut(),
+            uniformBufferStandardLayout: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceBufferDeviceAddressFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3586,37 +5820,91 @@ pub struct VkPhysicalDeviceBufferDeviceAddressFeatures{
     pub bufferDeviceAddressCaptureReplay: VkBool32,
     pub bufferDeviceAddressMultiDevice: VkBool32,
 }
+impl Default for VkPhysicalDeviceBufferDeviceAddressFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceBufferDeviceAddressFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+            pNext: ptr::null_mut(),
+            bufferDeviceAddress: Default::default(),
+            bufferDeviceAddressCaptureReplay: Default::default(),
+            bufferDeviceAddressMultiDevice: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBufferDeviceAddressInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub buffer: VkBuffer,
 }
+impl Default for VkBufferDeviceAddressInfo{
+    fn default() -> Self {
+        VkBufferDeviceAddressInfo{
+            sType: VkStructureType::BUFFER_DEVICE_ADDRESS_INFO,
+            pNext: ptr::null(),
+            buffer: Default::default(),
+        }
+    }
+}
+
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkBufferOpaqueCaptureAddressCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub opaqueCaptureAddress: u64,
 }
+impl Default for VkBufferOpaqueCaptureAddressCreateInfo{
+    fn default() -> Self {
+        VkBufferOpaqueCaptureAddressCreateInfo{
+            sType: VkStructureType::BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO,
+            pNext: ptr::null(),
+            opaqueCaptureAddress: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceImagelessFramebufferFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub imagelessFramebuffer: VkBool32,
 }
+impl Default for VkPhysicalDeviceImagelessFramebufferFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceImagelessFramebufferFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES,
+            pNext: ptr::null_mut(),
+            imagelessFramebuffer: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkFramebufferAttachmentsCreateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub attachmentImageInfoCount: u32,
     pub pAttachmentImageInfos: *const VkFramebufferAttachmentImageInfo,
 }
+impl Default for VkFramebufferAttachmentsCreateInfo{
+    fn default() -> Self {
+        VkFramebufferAttachmentsCreateInfo{
+            sType: VkStructureType::FRAMEBUFFER_ATTACHMENTS_CREATE_INFO,
+            pNext: ptr::null(),
+            attachmentImageInfoCount: Default::default(),
+            pAttachmentImageInfos: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkFramebufferAttachmentImageInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -3628,52 +5916,130 @@ pub struct VkFramebufferAttachmentImageInfo{
     pub viewFormatCount: u32,
     pub pViewFormats: *const VkFormat,
 }
+impl Default for VkFramebufferAttachmentImageInfo{
+    fn default() -> Self {
+        VkFramebufferAttachmentImageInfo{
+            sType: VkStructureType::FRAMEBUFFER_ATTACHMENT_IMAGE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            usage: Default::default(),
+            width: Default::default(),
+            height: Default::default(),
+            layerCount: Default::default(),
+            viewFormatCount: Default::default(),
+            pViewFormats: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkRenderPassAttachmentBeginInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub attachmentCount: u32,
     pub pAttachments: *const VkImageView,
 }
+impl Default for VkRenderPassAttachmentBeginInfo{
+    fn default() -> Self {
+        VkRenderPassAttachmentBeginInfo{
+            sType: VkStructureType::RENDER_PASS_ATTACHMENT_BEGIN_INFO,
+            pNext: ptr::null(),
+            attachmentCount: Default::default(),
+            pAttachments: ptr::null(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub separateDepthStencilLayouts: VkBool32,
 }
+impl Default for VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures{
+    fn default() -> Self {
+        VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures{
+            sType: VkStructureType::PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES,
+            pNext: ptr::null_mut(),
+            separateDepthStencilLayouts: Default::default()
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkAttachmentReferenceStencilLayout{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub stencilLayout: VkImageLayout,
 }
+impl Default for VkAttachmentReferenceStencilLayout{
+    fn default() -> Self {
+        VkAttachmentReferenceStencilLayout{
+            sType: VkStructureType::ATTACHMENT_REFERENCE_STENCIL_LAYOUT,
+            pNext: ptr::null_mut(),
+            stencilLayout: VkImageLayout::UNDEFINED,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkAttachmentDescriptionStencilLayout{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
     pub stencilInitialLayout: VkImageLayout,
     pub stencilFinalLayout: VkImageLayout,
 }
+impl Default for VkAttachmentDescriptionStencilLayout{
+    fn default() -> Self {
+        VkAttachmentDescriptionStencilLayout{
+            sType: VkStructureType::ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT,
+            pNext: ptr::null_mut(),
+            stencilInitialLayout: VkImageLayout::UNDEFINED,
+            stencilFinalLayout: VkImageLayout::UNDEFINED,
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkMemoryOpaqueCaptureAddressAllocateInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub opaqueCaptureAddress: u64,
 }
+impl Default for VkMemoryOpaqueCaptureAddressAllocateInfo{
+    fn default() -> Self {
+        VkMemoryOpaqueCaptureAddressAllocateInfo{
+            sType: VkStructureType::MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO,
+            pNext: ptr::null(),
+            opaqueCaptureAddress: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceMemoryOpaqueCaptureAddressInfo{
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub memory: VkDeviceMemory,
 }
+impl Default for VkDeviceMemoryOpaqueCaptureAddressInfo{
+    fn default() -> Self {
+        VkDeviceMemoryOpaqueCaptureAddressInfo{
+            sType: VkStructureType::DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO,
+            pNext: ptr::null(),
+            memory: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceVulkan11Features{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3690,8 +6056,29 @@ pub struct VkPhysicalDeviceVulkan11Features{
     pub samplerYcbcrConversion: VkBool32,
     pub shaderDrawParameters: VkBool32,
 }
+impl Default for VkPhysicalDeviceVulkan11Features{
+    fn default() -> Self {
+        VkPhysicalDeviceVulkan11Features{
+            sType: VkStructureType::PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+            pNext: ptr::null_mut(),
+            storageBuffer16BitAccess: Default::default(),
+            uniformAndStorageBuffer16BitAccess: Default::default(),
+            storagePushConstant16: Default::default(),
+            storageInputOutput16: Default::default(),
+            multiview: Default::default(),
+            multiviewGeometryShader: Default::default(),
+            multiviewTessellationShader: Default::default(),
+            variablePointersStorageBuffer: Default::default(),
+            variablePointers: Default::default(),
+            protectedMemory: Default::default(),
+            samplerYcbcrConversion: Default::default(),
+            shaderDrawParameters: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceVulkan11Properties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3711,11 +6098,35 @@ pub struct VkPhysicalDeviceVulkan11Properties{
     pub maxPerSetDescriptors: u32,
     pub maxMemoryAllocationSize: VkDeviceSize,
 }
+impl Default for VkPhysicalDeviceVulkan11Properties{
+    fn default() -> Self {
+        VkPhysicalDeviceVulkan11Properties{
+            sType: VkStructureType::PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
+            pNext: ptr::null_mut(),
+            deviceUUID: Default::default(),
+            driverUUID: Default::default(),
+            deviceLUID: Default::default(),
+            deviceNodeMask: Default::default(),
+            deviceLUIDValid: Default::default(),
+            subgroupSize: Default::default(),
+            subgroupSupportedStages: Default::default(),
+            subgroupSupportedOperations: Default::default(),
+            subgroupQuadOperationsInAllStages: Default::default(),
+            pointClippingBehavior: VkPointClippingBehavior::ALL_CLIP_PLANES,
+            maxMultiviewViewCount: Default::default(),
+            maxMultiviewInstanceIndex: Default::default(),
+            protectedNoFault: Default::default(),
+            maxPerSetDescriptors: Default::default(),
+            maxMemoryAllocationSize: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkPhysicalDeviceVulkan12Features{
     pub sType: VkStructureType,
-    pub pNext: c_void,
+    pub pNext: *mut c_void,
     pub samplerMirrorClampToEdge: VkBool32,
     pub drawIndirectCount: VkBool32,
     pub storageBuffer8BitAccess: VkBool32,
@@ -3764,8 +6175,64 @@ pub struct VkPhysicalDeviceVulkan12Features{
     pub shaderOutputLayer: VkBool32,
     pub subgroupBroadcastDynamicId: VkBool32,
 }
+impl Default for VkPhysicalDeviceVulkan12Features{
+    fn default() -> Self {
+        VkPhysicalDeviceVulkan12Features{
+            sType: VkStructureType::PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+            pNext: ptr::null_mut(),
+            samplerMirrorClampToEdge: Default::default(),
+            drawIndirectCount: Default::default(),
+            storageBuffer8BitAccess: Default::default(),
+            uniformAndStorageBuffer8BitAccess: Default::default(),
+            storagePushConstant8: Default::default(),
+            shaderBufferInt64Atomics: Default::default(),
+            shaderSharedInt64Atomics: Default::default(),
+            shaderFloat16: Default::default(),
+            shaderInt8: Default::default(),
+            descriptorIndexing: Default::default(),
+            shaderInputAttachmentArrayDynamicIndexing: Default::default(),
+            shaderUniformTexelBufferArrayDynamicIndexing: Default::default(),
+            shaderStorageTexelBufferArrayDynamicIndexing: Default::default(),
+            shaderUniformBufferArrayNonUniformIndexing: Default::default(),
+            shaderSampledImageArrayNonUniformIndexing: Default::default(),
+            shaderStorageBufferArrayNonUniformIndexing: Default::default(),
+            shaderStorageImageArrayNonUniformIndexing: Default::default(),
+            shaderInputAttachmentArrayNonUniformIndexing: Default::default(),
+            shaderUniformTexelBufferArrayNonUniformIndexing: Default::default(),
+            shaderStorageTexelBufferArrayNonUniformIndexing: Default::default(),
+            descriptorBindingUniformBufferUpdateAfterBind: Default::default(),
+            descriptorBindingSampledImageUpdateAfterBind: Default::default(),
+            descriptorBindingStorageImageUpdateAfterBind: Default::default(),
+            descriptorBindingStorageBufferUpdateAfterBind: Default::default(),
+            descriptorBindingUniformTexelBufferUpdateAfterBind: Default::default(),
+            descriptorBindingStorageTexelBufferUpdateAfterBind: Default::default(),
+            descriptorBindingUpdateUnusedWhilePending: Default::default(),
+            descriptorBindingPartiallyBound: Default::default(),
+            descriptorBindingVariableDescriptorCount: Default::default(),
+            runtimeDescriptorArray: Default::default(),
+            samplerFilterMinmax: Default::default(),
+            scalarBlockLayout: Default::default(),
+            imagelessFramebuffer: Default::default(),
+            uniformBufferStandardLayout: Default::default(),
+            shaderSubgroupExtendedTypes: Default::default(),
+            separateDepthStencilLayouts: Default::default(),
+            hostQueryReset: Default::default(),
+            timelineSemaphore: Default::default(),
+            bufferDeviceAddress: Default::default(),
+            bufferDeviceAddressCaptureReplay: Default::default(),
+            bufferDeviceAddressMultiDevice: Default::default(),
+            vulkanMemoryModel: Default::default(),
+            vulkanMemoryModelDeviceScope: Default::default(),
+            vulkanMemoryModelAvailabilityVisibilityChains: Default::default(),
+            shaderOutputViewportIndex: Default::default(),
+            shaderOutputLayer: Default::default(),
+            subgroupBroadcastDynamicId: Default::default(),
+        }
+    }
+}
 
 #[repr(C)]
+#[derive(Clone)]
 pub struct VkPhysicalDeviceVulkan12Properties{
     pub sType: VkStructureType,
     pub pNext: *mut c_void,
@@ -3821,6 +6288,182 @@ pub struct VkPhysicalDeviceVulkan12Properties{
     pub filterMinmaxImageComponentMapping: VkBool32,
     pub maxTimelineSemaphoreValueDifference: u64,
     pub framebufferIntegerColorSampleCounts: VkSampleCountFlags,
+}
+impl Default for VkPhysicalDeviceVulkan12Properties{
+    fn default() -> Self {
+        VkPhysicalDeviceVulkan12Properties{
+            sType: VkStructureType::PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
+            pNext: ptr::null_mut(),
+            driverID: VkDriverId::AMD_PROPRIETARY,
+            driverName: [0; VK_MAX_DRIVER_NAME_SIZE],
+            driverInfo: [0; VK_MAX_DRIVER_INFO_SIZE],
+            conformanceVersion: Default::default(),
+            denormBehaviorIndependence: VkShaderFloatControlsIndependence::F32_BIT_ONLY,
+            roundingModeIndependence: VkShaderFloatControlsIndependence::F32_BIT_ONLY,
+            shaderSignedZeroInfNanPreserveFloat16: Default::default(),
+            shaderSignedZeroInfNanPreserveFloat32: Default::default(),
+            shaderSignedZeroInfNanPreserveFloat64: Default::default(),
+            shaderDenormPreserveFloat16: Default::default(),
+            shaderDenormPreserveFloat32: Default::default(),
+            shaderDenormPreserveFloat64: Default::default(),
+            shaderDenormFlushToZeroFloat16: Default::default(),
+            shaderDenormFlushToZeroFloat32: Default::default(),
+            shaderDenormFlushToZeroFloat64: Default::default(),
+            shaderRoundingModeRTEFloat16: Default::default(),
+            shaderRoundingModeRTEFloat32: Default::default(),
+            shaderRoundingModeRTEFloat64: Default::default(),
+            shaderRoundingModeRTZFloat16: Default::default(),
+            shaderRoundingModeRTZFloat32: Default::default(),
+            shaderRoundingModeRTZFloat64: Default::default(),
+            maxUpdateAfterBindDescriptorsInAllPools: Default::default(),
+            shaderUniformBufferArrayNonUniformIndexingNative: Default::default(),
+            shaderSampledImageArrayNonUniformIndexingNative: Default::default(),
+            shaderStorageBufferArrayNonUniformIndexingNative: Default::default(),
+            shaderStorageImageArrayNonUniformIndexingNative: Default::default(),
+            shaderInputAttachmentArrayNonUniformIndexingNative: Default::default(),
+            robustBufferAccessUpdateAfterBind: Default::default(),
+            quadDivergentImplicitLod: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindSamplers: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindUniformBuffers: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindStorageBuffers: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindSampledImages: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindStorageImages: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindInputAttachments: Default::default(),
+            maxPerStageUpdateAfterBindResources: Default::default(),
+            maxDescriptorSetUpdateAfterBindSamplers: Default::default(),
+            maxDescriptorSetUpdateAfterBindUniformBuffers: Default::default(),
+            maxDescriptorSetUpdateAfterBindUniformBuffersDynamic: Default::default(),
+            maxDescriptorSetUpdateAfterBindStorageBuffers: Default::default(),
+            maxDescriptorSetUpdateAfterBindStorageBuffersDynamic: Default::default(),
+            maxDescriptorSetUpdateAfterBindSampledImages: Default::default(),
+            maxDescriptorSetUpdateAfterBindStorageImages: Default::default(),
+            maxDescriptorSetUpdateAfterBindInputAttachments: Default::default(),
+            supportedDepthResolveModes: Default::default(),
+            supportedStencilResolveModes: Default::default(),
+            independentResolveNone: Default::default(),
+            independentResolve: Default::default(),
+            filterMinmaxSingleComponentFormats: Default::default(),
+            filterMinmaxImageComponentMapping: Default::default(),
+            maxTimelineSemaphoreValueDifference: Default::default(),
+            framebufferIntegerColorSampleCounts: Default::default(),
+        }
+    }
+}
+impl Debug for VkPhysicalDeviceVulkan12Properties{
+    fn fmt(&self, f: &mut Formatter<'_>)->Result<(), Error> {
+        write!(f,
+            "VkPhysicalDeviceVulkan12Properties {{ \
+                sType: {:?}, \
+                pNext: {:?}, \
+                driverID: {:?}, \
+                driverName: {}, \
+                driverInfo: {}, \
+                conformanceVersion: {:?}, \
+                denormBehaviorIndependence: {:?}, \
+                roundingModeIndependence: {:?}, \
+                shaderSignedZeroInfNanPreserveFloat16: {:?}, \
+                shaderSignedZeroInfNanPreserveFloat32: {:?}, \
+                shaderSignedZeroInfNanPreserveFloat64: {:?}, \
+                shaderDenormPreserveFloat16: {:?}, \
+                shaderDenormPreserveFloat32: {:?}, \
+                shaderDenormPreserveFloat64: {:?}, \
+                shaderDenormFlushToZeroFloat16: {:?}, \
+                shaderDenormFlushToZeroFloat32: {:?}, \
+                shaderDenormFlushToZeroFloat64: {:?}, \
+                shaderRoundingModeRTEFloat16: {:?}, \
+                shaderRoundingModeRTEFloat32: {:?}, \
+                shaderRoundingModeRTEFloat64: {:?}, \
+                shaderRoundingModeRTZFloat16: {:?}, \
+                shaderRoundingModeRTZFloat32: {:?}, \
+                shaderRoundingModeRTZFloat64: {:?}, \
+                maxUpdateAfterBindDescriptorsInAllPools: {}, \
+                shaderUniformBufferArrayNonUniformIndexingNative: {:?}, \
+                shaderSampledImageArrayNonUniformIndexingNative: {:?}, \
+                shaderStorageBufferArrayNonUniformIndexingNative: {:?}, \
+                shaderStorageImageArrayNonUniformIndexingNative: {:?}, \
+                shaderInputAttachmentArrayNonUniformIndexingNative: {:?}, \
+                robustBufferAccessUpdateAfterBind: {:?}, \
+                quadDivergentImplicitLod: {:?}, \
+                maxPerStageDescriptorUpdateAfterBindSamplers: {}, \
+                maxPerStageDescriptorUpdateAfterBindUniformBuffers: {}, \
+                maxPerStageDescriptorUpdateAfterBindStorageBuffers: {}, \
+                maxPerStageDescriptorUpdateAfterBindSampledImages: {}, \
+                maxPerStageDescriptorUpdateAfterBindStorageImages: {}, \
+                maxPerStageDescriptorUpdateAfterBindInputAttachments: {}, \
+                maxPerStageUpdateAfterBindResources: {}, \
+                maxDescriptorSetUpdateAfterBindSamplers: {}, \
+                maxDescriptorSetUpdateAfterBindUniformBuffers: {}, \
+                maxDescriptorSetUpdateAfterBindUniformBuffersDynamic: {}, \
+                maxDescriptorSetUpdateAfterBindStorageBuffers: {}, \
+                maxDescriptorSetUpdateAfterBindStorageBuffersDynamic: {}, \
+                maxDescriptorSetUpdateAfterBindSampledImages: {}, \
+                maxDescriptorSetUpdateAfterBindStorageImages: {}, \
+                maxDescriptorSetUpdateAfterBindInputAttachments: {}, \
+                supportedDepthResolveModes: {:?}, \
+                supportedStencilResolveModes: {:?}, \
+                independentResolveNone: {:?}, \
+                independentResolve: {:?}, \
+                filterMinmaxSingleComponentFormats: {:?}, \
+                filterMinmaxImageComponentMapping: {:?}, \
+                maxTimelineSemaphoreValueDifference: {}, \
+                framebufferIntegerColorSampleCounts: {:?} \
+            }}",
+            self.sType,
+            self.pNext,
+            self.driverID,
+            unsafe {CStr::from_ptr(self.driverName.as_ptr())}.to_str().unwrap(),
+            unsafe {CStr::from_ptr(self.driverInfo.as_ptr())}.to_str().unwrap(),
+            self.conformanceVersion,
+            self.denormBehaviorIndependence,
+            self.roundingModeIndependence,
+            self.shaderSignedZeroInfNanPreserveFloat16,
+            self.shaderSignedZeroInfNanPreserveFloat32,
+            self.shaderSignedZeroInfNanPreserveFloat64,
+            self.shaderDenormPreserveFloat16,
+            self.shaderDenormPreserveFloat32,
+            self.shaderDenormPreserveFloat64,
+            self.shaderDenormFlushToZeroFloat16,
+            self.shaderDenormFlushToZeroFloat32,
+            self.shaderDenormFlushToZeroFloat64,
+            self.shaderRoundingModeRTEFloat16,
+            self.shaderRoundingModeRTEFloat32,
+            self.shaderRoundingModeRTEFloat64,
+            self.shaderRoundingModeRTZFloat16,
+            self.shaderRoundingModeRTZFloat32,
+            self.shaderRoundingModeRTZFloat64,
+            self.maxUpdateAfterBindDescriptorsInAllPools,
+            self.shaderUniformBufferArrayNonUniformIndexingNative,
+            self.shaderSampledImageArrayNonUniformIndexingNative,
+            self.shaderStorageBufferArrayNonUniformIndexingNative,
+            self.shaderStorageImageArrayNonUniformIndexingNative,
+            self.shaderInputAttachmentArrayNonUniformIndexingNative,
+            self.robustBufferAccessUpdateAfterBind,
+            self.quadDivergentImplicitLod,
+            self.maxPerStageDescriptorUpdateAfterBindSamplers,
+            self.maxPerStageDescriptorUpdateAfterBindUniformBuffers,
+            self.maxPerStageDescriptorUpdateAfterBindStorageBuffers,
+            self.maxPerStageDescriptorUpdateAfterBindSampledImages,
+            self.maxPerStageDescriptorUpdateAfterBindStorageImages,
+            self.maxPerStageDescriptorUpdateAfterBindInputAttachments,
+            self.maxPerStageUpdateAfterBindResources,
+            self.maxDescriptorSetUpdateAfterBindSamplers,
+            self.maxDescriptorSetUpdateAfterBindUniformBuffers,
+            self.maxDescriptorSetUpdateAfterBindUniformBuffersDynamic,
+            self.maxDescriptorSetUpdateAfterBindStorageBuffers,
+            self.maxDescriptorSetUpdateAfterBindStorageBuffersDynamic,
+            self.maxDescriptorSetUpdateAfterBindSampledImages,
+            self.maxDescriptorSetUpdateAfterBindStorageImages,
+            self.maxDescriptorSetUpdateAfterBindInputAttachments,
+            self.supportedDepthResolveModes,
+            self.supportedStencilResolveModes,
+            self.independentResolveNone,
+            self.independentResolve,
+            self.filterMinmaxSingleComponentFormats,
+            self.filterMinmaxImageComponentMapping,
+            self.maxTimelineSemaphoreValueDifference,
+            self.framebufferIntegerColorSampleCounts,
+        )
+    }
 }
 
 #[cfg(windows)]

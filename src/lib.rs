@@ -22,6 +22,11 @@ macro_rules! handle {
                 $x(<$y>::none())
             }
         }
+        impl Default for $x{
+            fn default() -> Self {
+                $x::none()
+            }
+        }
         impl Display for $x{
             fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
                 write!(f, "{}", self.0.to_string())
@@ -40,7 +45,7 @@ macro_rules! core_enums {
     )=>{
         $(
             #[repr(transparent)]
-            #[derive(Default, Copy, Clone, Eq, PartialEq, Debug, Hash)]
+            #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
             pub struct $enum_name(pub i32);
             impl $enum_name{
                 $(
@@ -61,7 +66,7 @@ macro_rules! extension_enums{
     )=>{
         $(
             #[repr(C)]
-            #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
+            #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
             pub enum $enum_name{
                 $($variant_name = $value),*
             }
@@ -104,7 +109,7 @@ macro_rules! bitmasks {
     )=>{
         $(
             #[repr(transparent)]
-            #[derive(Default, Copy, Clone, Eq, PartialEq, Debug, Hash)]
+            #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
             pub struct $flags_name(pub u32);
             pub type $flag_bits_name = $flags_name;
             impl $flag_bits_name {
@@ -468,7 +473,7 @@ pub const VK_REMAINING_ARRAY_LAYERS: u32 = 0xFFFF_FFFF;
 pub const VK_WHOLE_SIZE: u64 = 0xFFFF_FFFF_FFFF_FFFF;
 pub const VK_ATTACHMENT_UNUSED: u32 = 0xFFFF_FFFF;
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum VkBool32{
     TRUE = 1,
     FALSE = 0,

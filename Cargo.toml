@@ -5,6 +5,7 @@ authors = ["aisinker <aisinker@outlook.com>"]
 repository = "https://github.com/aisinker/vulkan_raw"
 license = "MIT"
 description = "A raw Vulkan API bindings for Rust."
+readme = "README.md"
 keywords = ["vulkan", "graphic", "bindings"]
 edition = "2018"
 build = "build.rs"
