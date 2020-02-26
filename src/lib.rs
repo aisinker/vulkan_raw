@@ -290,6 +290,7 @@ macro_rules! _extend_core_bitmasks {
 
 macro_rules! core_functions {
     ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
+        #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
         pub struct Functions {
             $(
                 $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
@@ -343,6 +344,7 @@ macro_rules! core_functions {
 
 macro_rules! instance_extension_functions {
     ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
+        #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
         pub struct Functions {
             $(
                 $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
@@ -379,6 +381,7 @@ macro_rules! instance_extension_functions {
 
 macro_rules! device_extension_functions {
     ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
+        #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
         pub struct Functions {
             $(
                 $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
@@ -515,7 +518,7 @@ pub struct ApiVersion(u32);
 impl ApiVersion {
 
     #[inline(always)]
-    pub fn new(major: u32, minor: u32, patch: u32)-> ApiVersion {
+    pub const fn new(major: u32, minor: u32, patch: u32)-> ApiVersion {
         ApiVersion(
             (major << 22) | ((minor & 0x0000_03FF) << 12) | (patch & 0x0000_0FFF)
         )
