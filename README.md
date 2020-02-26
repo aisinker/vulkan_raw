@@ -43,10 +43,14 @@ fn main(){
     println!("instance version: {}", ApiVersion::from(instance_version));
 
     // Create Vulkan instance
-    let mut app_info: VkApplicationInfo = Default::default();
-    app_info.apiVersion = ApiVersion::new(1, 2, 0).into();
-    let mut create_info: VkInstanceCreateInfo = Default::default();
-    create_info.pApplicationInfo = &app_info;
+    let app_info = VkApplicationInfo {
+        apiVersion: ApiVersion::new(1, 2, 0).into(),
+        ..Default::default()
+    };
+    let create_info = VkInstanceCreateInfo{
+        pApplicationInfo: &app_info,
+        ..Default::default()
+    };
     let mut instance: VkInstance = VkInstance::none();
     let result = unsafe {vkCreateInstance(&create_info, ptr::null(), &mut instance)};
     if result != VkResult::SUCCESS { panic!("error!") }
@@ -67,7 +71,8 @@ fn main(){
         let mut physical_device_properties = Default::default();
         unsafe { core_functions.vkGetPhysicalDeviceProperties2(physical_device, &mut physical_device_properties); }
         println!(
-            "device: {}, supported vulkan version: {}",
+            "device: {}, \
+            supported vulkan version: {}",
             unsafe {CStr::from_ptr(physical_device_properties.properties.deviceName.as_ptr())}.to_str().unwrap(),
             ApiVersion::from(physical_device_properties.properties.apiVersion)
         );
