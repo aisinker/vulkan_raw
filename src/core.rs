@@ -3705,14 +3705,14 @@ impl Default for VkPhysicalDeviceFeatures2{
 #[derive(Clone, Debug)]
 pub struct VkPhysicalDeviceProperties2{
     pub sType: VkStructureType,
-    pub pNext: *const c_void,
+    pub pNext: *mut c_void,
     pub properties: VkPhysicalDeviceProperties,
 }
 impl Default for VkPhysicalDeviceProperties2{
     fn default() -> Self {
         VkPhysicalDeviceProperties2{
             sType: VkStructureType::PHYSICAL_DEVICE_PROPERTIES_2,
-            pNext: ptr::null(),
+            pNext: ptr::null_mut(),
             properties: Default::default(),
         }
     }
