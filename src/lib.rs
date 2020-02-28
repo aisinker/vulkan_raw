@@ -482,8 +482,18 @@ pub enum VkBool32{
     FALSE = 0,
 }
 impl Default for VkBool32{
+    #[inline(always)]
     fn default() -> Self {
         VkBool32::FALSE
+    }
+}
+impl From<VkBool32> for bool {
+    #[inline(always)]
+    fn from(bool: VkBool32) -> Self {
+        match bool {
+            VkBool32::TRUE => true,
+            VkBool32::FALSE => false,
+        }
     }
 }
 pub const VK_QUEUE_FAMILY_IGNORED: u32 = 0xFFFF_FFFF;

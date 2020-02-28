@@ -3855,7 +3855,7 @@ impl Default for VkPhysicalDeviceSparseImageFormatInfo2{
 }
 
 #[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkConformanceVersion{
     pub major: u8,
     pub minor: u8,
