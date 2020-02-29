@@ -1376,6 +1376,19 @@ core_enums!{
     },
 }
 
+impl VkResult {
+
+    #[inline(always)]
+    pub fn is_err(&self,)->bool{
+        self.0 < 0
+    }
+
+    #[inline(always)]
+    pub fn is_ok(&self,)->bool{
+        self.0 >= 0
+    }
+}
+
 handle!(VkInstance, DispatchableHandle);
 handle!(VkPhysicalDevice, DispatchableHandle);
 handle!(VkDevice, DispatchableHandle);
