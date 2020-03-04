@@ -496,6 +496,16 @@ impl From<VkBool32> for bool {
         }
     }
 }
+impl From<bool> for VkBool32{
+    #[inline(always)]
+    fn from(bool: bool) -> Self {
+        match bool {
+            true => VkBool32::TRUE,
+            false => VkBool32::FALSE,
+        }
+    }
+}
+
 pub const VK_QUEUE_FAMILY_IGNORED: u32 = 0xFFFF_FFFF;
 pub const VK_QUEUE_FAMILY_EXTERNAL: u32 = VK_QUEUE_FAMILY_IGNORED-1;
 pub const VK_SUBPASS_EXTERNAL: u32 = 0xFFFF_FFFF;
