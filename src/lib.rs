@@ -475,11 +475,12 @@ pub const VK_REMAINING_MIP_LEVELS: u32 = 0xFFFF_FFFF;
 pub const VK_REMAINING_ARRAY_LAYERS: u32 = 0xFFFF_FFFF;
 pub const VK_WHOLE_SIZE: u64 = 0xFFFF_FFFF_FFFF_FFFF;
 pub const VK_ATTACHMENT_UNUSED: u32 = 0xFFFF_FFFF;
-#[repr(C)]
+#[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub enum VkBool32{
-    TRUE = 1,
-    FALSE = 0,
+pub struct VkBool32(u32);
+impl VkBool32{
+    pub const TRUE: VkBool32 = VkBool32(1);
+    pub const FALSE: VkBool32 = VkBool32(0);
 }
 impl Default for VkBool32{
     #[inline(always)]
@@ -490,19 +491,13 @@ impl Default for VkBool32{
 impl From<VkBool32> for bool {
     #[inline(always)]
     fn from(bool: VkBool32) -> Self {
-        match bool {
-            VkBool32::TRUE => true,
-            VkBool32::FALSE => false,
-        }
+        bool == VkBool32::TRUE
     }
 }
 impl From<bool> for VkBool32{
     #[inline(always)]
     fn from(bool: bool) -> Self {
-        match bool {
-            true => VkBool32::TRUE,
-            false => VkBool32::FALSE,
-        }
+        VkBool32(bool as u32)
     }
 }
 
