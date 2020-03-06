@@ -28,7 +28,7 @@
     | `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D_ARRAY` | `VkImageViewType::IVT_2D_ARRAY` |
     | `VkShaderFloatControlsIndependence.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY` | `VkShaderFloatControlsIndependence::F32_BIT_ONLY` |
 
-2. Most functions must need to obtain a corresponding function pointer before use. We provide `InstanceLevelFunctions` object and/or `DeviceLevelFunctions` object to do this on every module, echo one corresponding to the module's functions set. The `InstanceLevelFunctions` only can be loaded from `VkInstance`, but the `DeviceLevelFunctions` also can be loaded from `VkDevice`.
+2. Most functions must need to obtain a corresponding function pointer before use. We provide `InstanceLevelFunctions` object and/or `DeviceLevelFunctions` object to do this on every module, each one corresponding to the module's functions set. The `InstanceLevelFunctions` only can be loaded from `VkInstance`, but the `DeviceLevelFunctions` also can be loaded from `VkDevice`.
 3. All structures have `Debug` trait and `Default` trait. You don't need to set the `sType` field manually if it contains.
 ## Example
 
