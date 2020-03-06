@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, Error};
+use std::fmt::{Display, Formatter, Error, Debug};
 use std::ffi::CStr;
 
 #[macro_use]
@@ -288,75 +288,21 @@ macro_rules! _extend_core_bitmasks {
     }
 }
 
-macro_rules! core_functions {
+macro_rules! instance_level_functions {
     ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
         #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-        pub struct Functions {
+        pub struct InstanceLevelFunctions {
             $(
                 $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
             )*
         }
-        impl Functions {
-            pub fn load_from_instance(instance: VkInstance)->Result<Functions, crate::LoadingError> {
-                use std::ffi::CStr;
-                use crate::get_instance_proc_addr;
-                unsafe {
-                    let functions = Functions {
-                        $(
-                            $function_name: transmute(
-                                get_instance_proc_addr(
-                                    instance,
-                                    CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes())
-                                )?
-                            ),
-                        )*
-                    };
-                    Ok(functions)
-                }
-            }
-            pub fn load_from_device(core_functions: &Functions, device: VkDevice)->Result<Functions, crate::LoadingError> {
-                use std::ffi::CStr;
-                use crate::get_device_proc_addr;
-                unsafe {
-                    let functions = Functions {
-                        $(
-                            $function_name: transmute(
-                                get_device_proc_addr(
-                                    core_functions,
-                                    device,
-                                    CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes())
-                                )?
-                            ),
-                        )*
-                    };
-                    Ok(functions)
-                }
-            }
-            $(
-                #[inline(always)]
-                pub unsafe fn $function_name(&self, $($parameter_name:$parameter_type),*)$(->$return_type)?{
-                    (self.$function_name)($($parameter_name),*)
-                }
-            )*
-        }
-    }
-}
-
-macro_rules! instance_extension_functions {
-    ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
-        #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-        pub struct Functions {
-            $(
-                $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
-            )*
-        }
-        impl Functions {
-            pub fn load_from_instance(instance: crate::core::VkInstance)->Result<Functions, crate::LoadingError> {
+        impl InstanceLevelFunctions {
+            pub fn load_from_instance(instance: crate::core::VkInstance)->Result<InstanceLevelFunctions, crate::LoadingError> {
                 use std::ffi::CStr;
                 use std::mem::transmute;
                 use crate::get_instance_proc_addr;
                 unsafe {
-                    let functions = Functions {
+                    let functions = InstanceLevelFunctions {
                         $(
                             $function_name: transmute(
                                 get_instance_proc_addr(
@@ -379,21 +325,21 @@ macro_rules! instance_extension_functions {
     }
 }
 
-macro_rules! device_extension_functions {
+macro_rules! device_level_functions {
     ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
         #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-        pub struct Functions {
+        pub struct DeviceLevelFunctions {
             $(
                 $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
             )*
         }
-        impl Functions {
-            pub fn load_from_instance(instance: crate::core::VkInstance)->Result<Functions, crate::LoadingError> {
+        impl DeviceLevelFunctions {
+            pub fn load_from_instance(instance: crate::core::VkInstance)->Result<DeviceLevelFunctions, crate::LoadingError> {
                 use std::ffi::CStr;
                 use std::mem::transmute;
                 use crate::get_instance_proc_addr;
                 unsafe {
-                    let functions = Functions {
+                    let functions = DeviceLevelFunctions {
                         $(
                             $function_name: transmute(
                                 get_instance_proc_addr(
@@ -406,12 +352,12 @@ macro_rules! device_extension_functions {
                     Ok(functions)
                 }
             }
-            pub fn load_from_device(core_functions: &crate::core::Functions, device: crate::core::VkDevice)->Result<Functions, crate::LoadingError> {
+            pub fn load_from_device(core_functions: &crate::core::InstanceLevelFunctions, device: crate::core::VkDevice)->Result<DeviceLevelFunctions, crate::LoadingError> {
                 use std::ffi::CStr;
                 use std::mem::transmute;
                 use crate::get_device_proc_addr;
                 unsafe {
-                    let functions = Functions {
+                    let functions = DeviceLevelFunctions {
                         $(
                             $function_name: transmute(
                                 get_device_proc_addr(
@@ -476,7 +422,7 @@ pub const VK_REMAINING_ARRAY_LAYERS: u32 = 0xFFFF_FFFF;
 pub const VK_WHOLE_SIZE: u64 = 0xFFFF_FFFF_FFFF_FFFF;
 pub const VK_ATTACHMENT_UNUSED: u32 = 0xFFFF_FFFF;
 #[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct VkBool32(u32);
 impl VkBool32{
     pub const TRUE: VkBool32 = VkBool32(1);
@@ -500,6 +446,16 @@ impl From<bool> for VkBool32{
         VkBool32(bool as u32)
     }
 }
+impl Debug for VkBool32{
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{}", if *self == VkBool32::TRUE {"VkBool32::TRUE"}else{"VkBool32::FALSE"})
+    }
+}
+impl Display for VkBool32 {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{}", *self == VkBool32::TRUE )
+    }
+}
 
 pub const VK_QUEUE_FAMILY_IGNORED: u32 = 0xFFFF_FFFF;
 pub const VK_QUEUE_FAMILY_EXTERNAL: u32 = VK_QUEUE_FAMILY_IGNORED-1;
@@ -518,7 +474,7 @@ fn get_instance_proc_addr(instance: VkInstance, name: &CStr)->Result<PFN_vkVoidF
         _ => Ok(function_pointer),
     }
 }
-fn get_device_proc_addr(core_functions: &Functions, device: VkDevice, name: &CStr)->Result<PFN_vkVoidFunction, LoadingError>{
+fn get_device_proc_addr(core_functions: &InstanceLevelFunctions, device: VkDevice, name: &CStr)->Result<PFN_vkVoidFunction, LoadingError>{
     let function_pointer = unsafe {core_functions.vkGetDeviceProcAddr(device, name.as_ptr())};
     match function_pointer as usize {
         0 => Err(LoadingError(format!("Load function '{}'  failed!", name.to_str().unwrap()))),

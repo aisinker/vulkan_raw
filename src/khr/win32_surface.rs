@@ -44,7 +44,7 @@ impl Default for VkWin32SurfaceCreateInfoKHR{
     }
 }
 
-instance_extension_functions! {
+instance_level_functions! {
     fn vkCreateWin32SurfaceKHR(instance: VkInstance, pCreateInfo: *const VkWin32SurfaceCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pSurface: *mut VkSurfaceKHR)->VkResult;
     fn vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32)->VkBool32;
 }

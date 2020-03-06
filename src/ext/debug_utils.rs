@@ -186,7 +186,7 @@ impl Default for VkDebugUtilsMessengerCreateInfoEXT{
     }
 }
 
-instance_extension_functions! {
+instance_level_functions! {
     fn vkSetDebugUtilsObjectNameEXT(device: VkDevice, pNameInfo: *const VkDebugUtilsObjectNameInfoEXT)->VkResult;
     fn vkSetDebugUtilsObjectTagEXT(device: VkDevice, pTagInfo: *const VkDebugUtilsObjectTagInfoEXT)->VkResult;
     fn vkQueueBeginDebugUtilsLabelEXT(queue: core::VkQueue, pLabelInfo: *const VkDebugUtilsLabelEXT);

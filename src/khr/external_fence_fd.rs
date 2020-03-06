@@ -56,7 +56,7 @@ impl Default for VkFenceGetFdInfoKHR{
     }
 }
 
-device_extension_functions!{
+device_level_functions!{
     fn vkImportFenceFdKHR(device: VkDevice, pImportFenceFdInfo: *const VkImportFenceFdInfoKHR)->VkResult;
     fn vkGetFenceFdKHR(device: VkDevice, pGetFdInfo: *const VkFenceGetFdInfoKHR, pFd: *mut c_int)->VkResult;
 }

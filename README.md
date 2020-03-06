@@ -28,7 +28,7 @@
     | `VkImageViewType.VK_IMAGE_VIEW_TYPE_2D_ARRAY` | `VkImageViewType::IVT_2D_ARRAY` |
     | `VkShaderFloatControlsIndependence.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY` | `VkShaderFloatControlsIndependence::F32_BIT_ONLY` |
 
-2. Most functions must need to obtain a corresponding function pointer before use. We provide a `Functions` object to do this on every module, echo one corresponding to the module's functions set.
+2. Most functions must need to obtain a corresponding function pointer before use. We provide `InstanceLevelFunctions` object and/or `DeviceLevelFunctions` object to do this on every module, echo one corresponding to the module's functions set. The `InstanceLevelFunctions` only can be loaded from `VkInstance`, but the `DeviceLevelFunctions` also can be loaded from `VkDevice`.
 3. All structures have `Debug` trait and `Default` trait. You don't need to set the `sType` field manually if it contains.
 ## Example
 
@@ -55,21 +55,21 @@ fn main(){
     let result = unsafe {vkCreateInstance(&create_info, ptr::null(), &mut instance)};
     if result != VkResult::SUCCESS { panic!("error!") }
 
-    let core_functions = Functions::load_from_instance(instance).unwrap();
+    let functions = InstanceLevelFunctions::load_from_instance(instance).unwrap();
 
     // Enumerate all devices
     let mut count: u32 = 0;
-    let result = unsafe { core_functions.vkEnumeratePhysicalDevices(instance, &mut count, ptr::null_mut())};
+    let result = unsafe { functions.vkEnumeratePhysicalDevices(instance, &mut count, ptr::null_mut())};
     if result != VkResult::SUCCESS { panic!("error!") }
 
     let mut physical_devices: Vec<VkPhysicalDevice> = Vec::with_capacity(count as usize);
-    let result = unsafe {core_functions.vkEnumeratePhysicalDevices(instance, &mut count, physical_devices.as_mut_ptr())};
+    let result = unsafe { functions.vkEnumeratePhysicalDevices(instance, &mut count, physical_devices.as_mut_ptr())};
     if result != VkResult::SUCCESS { panic!("error!") }
     unsafe {physical_devices.set_len(count as usize); }
 
     for physical_device  in physical_devices{
         let mut physical_device_properties = Default::default();
-        unsafe { core_functions.vkGetPhysicalDeviceProperties2(physical_device, &mut physical_device_properties); }
+        unsafe { functions.vkGetPhysicalDeviceProperties2(physical_device, &mut physical_device_properties); }
         println!(
             "device: {}, \
             supported vulkan version: {}",
@@ -78,7 +78,7 @@ fn main(){
         );
     }
 
-    unsafe { core_functions.vkDestroyInstance(instance, ptr::null())};
+    unsafe { functions.vkDestroyInstance(instance, ptr::null())};
 }
 ```
 
