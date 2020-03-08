@@ -3,15 +3,15 @@
 #![allow(non_upper_case_globals)]
 
 use std::ffi::c_void;
+use std::fmt::{Display, Error, Formatter};
 use std::os::raw::c_char;
-use std::fmt::{Display, Formatter, Error};
 use std::ptr;
 
 use crate::*;
 
 handle!(VkDebugUtilsMessengerEXT, NonDispatchableHandle);
 
-bitmasks!{
+bitmasks! {
     {
         VkDebugUtilsMessengerCreateFlagsEXT,
         enum VkDebugUtilsMessengerCreateFlagBitsEXT{
@@ -43,7 +43,7 @@ bitmasks!{
     },
 }
 
-extend_core_enums!{
+extend_core_enums! {
     enum VkStructureType{
         DEBUG_UTILS_OBJECT_NAME_INFO_EXT = 1000128000,
         DEBUG_UTILS_OBJECT_TAG_INFO_EXT = 1000128001,
@@ -56,20 +56,25 @@ extend_core_enums!{
     },
 }
 
-pub type PFN_vkDebugUtilsMessengerCallbackEXT = extern "C" fn(messageSeverity: VkDebugUtilsMessageSeverityFlagBitsEXT, messageTypes: VkDebugUtilsMessageTypeFlagsEXT, pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT, pUserData: *mut c_void)->VkBool32;
+pub type PFN_vkDebugUtilsMessengerCallbackEXT = extern "C" fn(
+    messageSeverity: VkDebugUtilsMessageSeverityFlagBitsEXT,
+    messageTypes: VkDebugUtilsMessageTypeFlagsEXT,
+    pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT,
+    pUserData: *mut c_void,
+) -> VkBool32;
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkDebugUtilsObjectNameInfoEXT{
+pub struct VkDebugUtilsObjectNameInfoEXT {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub objectType: VkObjectType,
     pub objectHandle: u64,
     pub pObjectName: *const c_char,
 }
-impl Default for VkDebugUtilsObjectNameInfoEXT{
+impl Default for VkDebugUtilsObjectNameInfoEXT {
     fn default() -> Self {
-        VkDebugUtilsObjectNameInfoEXT{
+        VkDebugUtilsObjectNameInfoEXT {
             sType: extend_core_enums::VkStructureType::DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
             pNext: ptr::null(),
             objectType: VkObjectType::UNKNOWN,
@@ -90,7 +95,7 @@ pub struct VkDebugUtilsObjectTagInfoEXT {
     pub tagSize: isize,
     pub pTag: *const c_void,
 }
-impl Default for VkDebugUtilsObjectTagInfoEXT{
+impl Default for VkDebugUtilsObjectTagInfoEXT {
     fn default() -> Self {
         VkDebugUtilsObjectTagInfoEXT {
             sType: extend_core_enums::VkStructureType::DEBUG_UTILS_OBJECT_TAG_INFO_EXT,
@@ -106,15 +111,15 @@ impl Default for VkDebugUtilsObjectTagInfoEXT{
 
 #[repr(C)]
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
-pub struct VkDebugUtilsLabelEXT{
+pub struct VkDebugUtilsLabelEXT {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub pLabelName: *const char,
     pub color: [f32; 4],
 }
-impl Default for VkDebugUtilsLabelEXT{
+impl Default for VkDebugUtilsLabelEXT {
     fn default() -> Self {
-        VkDebugUtilsLabelEXT{
+        VkDebugUtilsLabelEXT {
             sType: extend_core_enums::VkStructureType::DEBUG_UTILS_LABEL_EXT,
             pNext: ptr::null(),
             pLabelName: ptr::null(),
@@ -125,7 +130,7 @@ impl Default for VkDebugUtilsLabelEXT{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkDebugUtilsMessengerCallbackDataEXT{
+pub struct VkDebugUtilsMessengerCallbackDataEXT {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkDebugUtilsMessengerCallbackDataFlagsEXT,
@@ -139,9 +144,9 @@ pub struct VkDebugUtilsMessengerCallbackDataEXT{
     pub objectCount: u32,
     pub pObjects: *const VkDebugUtilsObjectNameInfoEXT,
 }
-impl Default for VkDebugUtilsMessengerCallbackDataEXT{
+impl Default for VkDebugUtilsMessengerCallbackDataEXT {
     fn default() -> Self {
-        VkDebugUtilsMessengerCallbackDataEXT{
+        VkDebugUtilsMessengerCallbackDataEXT {
             sType: extend_core_enums::VkStructureType::DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT,
             pNext: ptr::null(),
             flags: Default::default(),
@@ -169,9 +174,14 @@ pub struct VkDebugUtilsMessengerCreateInfoEXT {
     pub pfnUserCallback: PFN_vkDebugUtilsMessengerCallbackEXT,
     pub pUserData: *mut c_void,
 }
-impl Default for VkDebugUtilsMessengerCreateInfoEXT{
+impl Default for VkDebugUtilsMessengerCreateInfoEXT {
     fn default() -> Self {
-        extern "C" fn vkDebugUtilsMessengerCallbackEXT(_messageSeverity: VkDebugUtilsMessageSeverityFlagBitsEXT, _messageTypes: VkDebugUtilsMessageTypeFlagsEXT, _pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT, _pUserData: *mut c_void)->VkBool32{
+        extern "C" fn vkDebugUtilsMessengerCallbackEXT(
+            _messageSeverity: VkDebugUtilsMessageSeverityFlagBitsEXT,
+            _messageTypes: VkDebugUtilsMessageTypeFlagsEXT,
+            _pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT,
+            _pUserData: *mut c_void,
+        ) -> VkBool32 {
             unimplemented!()
         }
         VkDebugUtilsMessengerCreateInfoEXT {

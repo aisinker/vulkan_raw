@@ -3,16 +3,16 @@
 #![allow(non_upper_case_globals)]
 
 use std::ffi::c_void;
-use std::fmt::{Display, Formatter, Error};
+use std::fmt::{Display, Error, Formatter};
 use std::ptr;
 
-use crate::*;
 use crate::khr::surface::*;
 use crate::NonDispatchableHandle;
+use crate::*;
 
 handle!(VkSwapchainKHR, NonDispatchableHandle);
 
-bitmasks!{
+bitmasks! {
     {
         VkDeviceGroupPresentModeFlagsKHR,
         enum VkDeviceGroupPresentModeFlagBitsKHR{
@@ -32,7 +32,7 @@ bitmasks!{
     },
 }
 
-extend_core_enums!{
+extend_core_enums! {
     enum VkStructureType{
         SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
         PRESENT_INFO_KHR = 1000001001,
@@ -54,7 +54,7 @@ extend_core_enums!{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkSwapchainCreateInfoKHR{
+pub struct VkSwapchainCreateInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkSwapchainCreateFlagsKHR,
@@ -74,9 +74,9 @@ pub struct VkSwapchainCreateInfoKHR{
     pub clipped: VkBool32,
     pub oldSwapchain: VkSwapchainKHR,
 }
-impl Default for VkSwapchainCreateInfoKHR{
+impl Default for VkSwapchainCreateInfoKHR {
     fn default() -> Self {
-        VkSwapchainCreateInfoKHR{
+        VkSwapchainCreateInfoKHR {
             sType: extend_core_enums::VkStructureType::SWAPCHAIN_CREATE_INFO_KHR,
             pNext: ptr::null(),
             flags: Default::default(),
@@ -101,7 +101,7 @@ impl Default for VkSwapchainCreateInfoKHR{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkPresentInfoKHR{
+pub struct VkPresentInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub waitSemaphoreCount: u32,
@@ -111,9 +111,9 @@ pub struct VkPresentInfoKHR{
     pub pImageIndices: *const u32,
     pub pResults: *mut VkResult,
 }
-impl Default for VkPresentInfoKHR{
+impl Default for VkPresentInfoKHR {
     fn default() -> Self {
-        VkPresentInfoKHR{
+        VkPresentInfoKHR {
             sType: extend_core_enums::VkStructureType::PRESENT_INFO_KHR,
             pNext: ptr::null(),
             waitSemaphoreCount: Default::default(),
@@ -128,15 +128,15 @@ impl Default for VkPresentInfoKHR{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkDeviceGroupPresentCapabilitiesKHR{
+pub struct VkDeviceGroupPresentCapabilitiesKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub presentMask: [u32; VK_MAX_DEVICE_GROUP_SIZE],
     pub modes: VkDeviceGroupPresentModeFlagsKHR,
 }
-impl Default for VkDeviceGroupPresentCapabilitiesKHR{
+impl Default for VkDeviceGroupPresentCapabilitiesKHR {
     fn default() -> Self {
-        VkDeviceGroupPresentCapabilitiesKHR{
+        VkDeviceGroupPresentCapabilitiesKHR {
             sType: extend_core_enums::VkStructureType::DEVICE_GROUP_PRESENT_CAPABILITIES_KHR,
             pNext: ptr::null(),
             presentMask: Default::default(),
@@ -147,14 +147,14 @@ impl Default for VkDeviceGroupPresentCapabilitiesKHR{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkImageSwapchainCreateInfoKHR{
+pub struct VkImageSwapchainCreateInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub swapchain: VkSwapchainKHR,
 }
-impl Default for VkImageSwapchainCreateInfoKHR{
+impl Default for VkImageSwapchainCreateInfoKHR {
     fn default() -> Self {
-        VkImageSwapchainCreateInfoKHR{
+        VkImageSwapchainCreateInfoKHR {
             sType: extend_core_enums::VkStructureType::IMAGE_SWAPCHAIN_CREATE_INFO_KHR,
             pNext: ptr::null(),
             swapchain: Default::default(),
@@ -164,15 +164,15 @@ impl Default for VkImageSwapchainCreateInfoKHR{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkBindImageMemorySwapchainInfoKHR{
+pub struct VkBindImageMemorySwapchainInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub swapchain: VkSwapchainKHR,
     pub imageIndex: u32,
 }
-impl Default for VkBindImageMemorySwapchainInfoKHR{
+impl Default for VkBindImageMemorySwapchainInfoKHR {
     fn default() -> Self {
-        VkBindImageMemorySwapchainInfoKHR{
+        VkBindImageMemorySwapchainInfoKHR {
             sType: extend_core_enums::VkStructureType::BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR,
             pNext: ptr::null(),
             swapchain: Default::default(),
@@ -183,7 +183,7 @@ impl Default for VkBindImageMemorySwapchainInfoKHR{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkAcquireNextImageInfoKHR{
+pub struct VkAcquireNextImageInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub swapchain: VkSwapchainKHR,
@@ -192,9 +192,9 @@ pub struct VkAcquireNextImageInfoKHR{
     pub fence: VkFence,
     pub deviceMask: u32,
 }
-impl Default for VkAcquireNextImageInfoKHR{
+impl Default for VkAcquireNextImageInfoKHR {
     fn default() -> Self {
-        VkAcquireNextImageInfoKHR{
+        VkAcquireNextImageInfoKHR {
             sType: extend_core_enums::VkStructureType::ACQUIRE_NEXT_IMAGE_INFO_KHR,
             pNext: ptr::null(),
             swapchain: Default::default(),
@@ -208,16 +208,16 @@ impl Default for VkAcquireNextImageInfoKHR{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkDeviceGroupPresentInfoKHR{
+pub struct VkDeviceGroupPresentInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub swapchainCount: u32,
     pub pDeviceMasks: *const u32,
     pub mode: VkDeviceGroupPresentModeFlagBitsKHR,
 }
-impl Default for VkDeviceGroupPresentInfoKHR{
+impl Default for VkDeviceGroupPresentInfoKHR {
     fn default() -> Self {
-        VkDeviceGroupPresentInfoKHR{
+        VkDeviceGroupPresentInfoKHR {
             sType: extend_core_enums::VkStructureType::DEVICE_GROUP_PRESENT_INFO_KHR,
             pNext: ptr::null(),
             swapchainCount: Default::default(),
@@ -229,14 +229,14 @@ impl Default for VkDeviceGroupPresentInfoKHR{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkDeviceGroupSwapchainCreateInfoKHR{
+pub struct VkDeviceGroupSwapchainCreateInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub mode: VkDeviceGroupPresentModeFlagsKHR,
 }
-impl Default for VkDeviceGroupSwapchainCreateInfoKHR{
+impl Default for VkDeviceGroupSwapchainCreateInfoKHR {
     fn default() -> Self {
-        VkDeviceGroupSwapchainCreateInfoKHR{
+        VkDeviceGroupSwapchainCreateInfoKHR {
             sType: extend_core_enums::VkStructureType::DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR,
             pNext: ptr::null(),
             mode: Default::default(),

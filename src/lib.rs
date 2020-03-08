@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter, Error, Debug};
 use std::ffi::CStr;
+use std::fmt::{Debug, Display, Error, Formatter};
 
 #[macro_use]
 extern crate lazy_static;
@@ -17,22 +17,22 @@ macro_rules! handle {
         #[repr(C)]
         #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
         pub struct $x($y);
-        impl $x{
-            pub fn none()->Self{
+        impl $x {
+            pub fn none() -> Self {
                 $x(<$y>::none())
             }
         }
-        impl Default for $x{
+        impl Default for $x {
             fn default() -> Self {
                 $x::none()
             }
         }
-        impl Display for $x{
+        impl Display for $x {
             fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
                 write!(f, "{}", self.0.to_string())
             }
         }
-    }
+    };
 }
 
 macro_rules! core_enums {
@@ -384,12 +384,12 @@ macro_rules! device_level_functions {
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 struct DispatchableHandle(usize);
-impl DispatchableHandle{
-    pub fn none()->Self{
+impl DispatchableHandle {
+    pub fn none() -> Self {
         DispatchableHandle(0)
     }
 }
-impl Display for DispatchableHandle{
+impl Display for DispatchableHandle {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         write!(f, "{:#x}", self.0)
     }
@@ -398,12 +398,12 @@ impl Display for DispatchableHandle{
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 struct NonDispatchableHandle(u64);
-impl NonDispatchableHandle{
-    pub fn none()->Self{
+impl NonDispatchableHandle {
+    pub fn none() -> Self {
         NonDispatchableHandle(0)
     }
 }
-impl Display for NonDispatchableHandle{
+impl Display for NonDispatchableHandle {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         write!(f, "{}", self.0)
     }
@@ -424,11 +424,11 @@ pub const VK_ATTACHMENT_UNUSED: u32 = 0xFFFF_FFFF;
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct VkBool32(u32);
-impl VkBool32{
+impl VkBool32 {
     pub const TRUE: VkBool32 = VkBool32(1);
     pub const FALSE: VkBool32 = VkBool32(0);
 }
-impl Default for VkBool32{
+impl Default for VkBool32 {
     #[inline(always)]
     fn default() -> Self {
         VkBool32::FALSE
@@ -440,25 +440,33 @@ impl From<VkBool32> for bool {
         bool == VkBool32::TRUE
     }
 }
-impl From<bool> for VkBool32{
+impl From<bool> for VkBool32 {
     #[inline(always)]
     fn from(bool: bool) -> Self {
         VkBool32(bool as u32)
     }
 }
-impl Debug for VkBool32{
+impl Debug for VkBool32 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        write!(f, "{}", if *self == VkBool32::TRUE {"VkBool32::TRUE"}else{"VkBool32::FALSE"})
+        write!(
+            f,
+            "{}",
+            if *self == VkBool32::TRUE {
+                "VkBool32::TRUE"
+            } else {
+                "VkBool32::FALSE"
+            }
+        )
     }
 }
 impl Display for VkBool32 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        write!(f, "{}", *self == VkBool32::TRUE )
+        write!(f, "{}", *self == VkBool32::TRUE)
     }
 }
 
 pub const VK_QUEUE_FAMILY_IGNORED: u32 = 0xFFFF_FFFF;
-pub const VK_QUEUE_FAMILY_EXTERNAL: u32 = VK_QUEUE_FAMILY_IGNORED-1;
+pub const VK_QUEUE_FAMILY_EXTERNAL: u32 = VK_QUEUE_FAMILY_IGNORED - 1;
 pub const VK_SUBPASS_EXTERNAL: u32 = 0xFFFF_FFFF;
 pub const VK_MAX_DEVICE_GROUP_SIZE: usize = 32;
 pub const VK_MAX_DRIVER_NAME_SIZE: usize = 256;
@@ -467,17 +475,30 @@ pub const VK_MAX_DRIVER_INFO_SIZE: usize = 256;
 #[derive(Debug)]
 pub struct LoadingError(String);
 
-fn get_instance_proc_addr(instance: VkInstance, name: &CStr)->Result<PFN_vkVoidFunction, LoadingError>{
-    let function_pointer = unsafe {vkGetInstanceProcAddr(instance, name.as_ptr())};
+fn get_instance_proc_addr(
+    instance: VkInstance,
+    name: &CStr,
+) -> Result<PFN_vkVoidFunction, LoadingError> {
+    let function_pointer = unsafe { vkGetInstanceProcAddr(instance, name.as_ptr()) };
     match function_pointer as usize {
-        0 => Err(LoadingError(format!("Load function \"{}\"  failed!", name.to_str().unwrap()))),
+        0 => Err(LoadingError(format!(
+            "Load function \"{}\"  failed!",
+            name.to_str().unwrap()
+        ))),
         _ => Ok(function_pointer),
     }
 }
-fn get_device_proc_addr(core_functions: &InstanceLevelFunctions, device: VkDevice, name: &CStr)->Result<PFN_vkVoidFunction, LoadingError>{
-    let function_pointer = unsafe {core_functions.vkGetDeviceProcAddr(device, name.as_ptr())};
+fn get_device_proc_addr(
+    core_functions: &InstanceLevelFunctions,
+    device: VkDevice,
+    name: &CStr,
+) -> Result<PFN_vkVoidFunction, LoadingError> {
+    let function_pointer = unsafe { core_functions.vkGetDeviceProcAddr(device, name.as_ptr()) };
     match function_pointer as usize {
-        0 => Err(LoadingError(format!("Load function '{}'  failed!", name.to_str().unwrap()))),
+        0 => Err(LoadingError(format!(
+            "Load function '{}'  failed!",
+            name.to_str().unwrap()
+        ))),
         _ => Ok(function_pointer),
     }
 }
@@ -487,38 +508,35 @@ fn get_device_proc_addr(core_functions: &InstanceLevelFunctions, device: VkDevic
 pub struct ApiVersion(u32);
 
 impl ApiVersion {
-
     #[inline(always)]
-    pub const fn new(major: u32, minor: u32, patch: u32)-> ApiVersion {
-        ApiVersion(
-            (major << 22) | ((minor & 0x0000_03FF) << 12) | (patch & 0x0000_0FFF)
-        )
+    pub const fn new(major: u32, minor: u32, patch: u32) -> ApiVersion {
+        ApiVersion((major << 22) | ((minor & 0x0000_03FF) << 12) | (patch & 0x0000_0FFF))
     }
 
     #[inline(always)]
-    pub fn major(&self)->u32{
+    pub fn major(&self) -> u32 {
         (self.0 & 0xFFC0_0000) >> 22
     }
 
     #[inline(always)]
-    pub fn minor(&self)->u32{
+    pub fn minor(&self) -> u32 {
         (self.0 & 0x003F_F000) >> 12
     }
 
     #[inline(always)]
-    pub fn patch(&self)->u32{
+    pub fn patch(&self) -> u32 {
         self.0 & 0x0000_0FFF
     }
 }
 
-impl From<u32> for ApiVersion{
+impl From<u32> for ApiVersion {
     #[inline(always)]
     fn from(api_version: u32) -> Self {
         ApiVersion(api_version)
     }
 }
 
-impl Into<u32> for ApiVersion{
+impl Into<u32> for ApiVersion {
     #[inline(always)]
     fn into(self) -> u32 {
         self.0
@@ -535,5 +553,5 @@ impl Display for ApiVersion {
 mod core;
 pub use crate::core::*;
 
-pub mod khr;
 pub mod ext;
+pub mod khr;

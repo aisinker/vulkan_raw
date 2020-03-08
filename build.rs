@@ -1,5 +1,5 @@
 #[cfg(feature = "docs")]
-fn main(){}
+fn main() {}
 
 #[cfg(not(feature = "docs"))]
-fn main(){}
+fn main() {}

@@ -5,10 +5,10 @@
 use std::ffi::c_void;
 use std::ptr;
 
-use crate::*;
 use crate::khr::surface::*;
+use crate::*;
 
-bitmasks!{
+bitmasks! {
     {
         VkWin32SurfaceCreateFlagsKHR,
         enum VkWin32SurfaceCreateFlagBitsKHR{
@@ -17,7 +17,7 @@ bitmasks!{
     }
 }
 
-extend_core_enums!{
+extend_core_enums! {
     enum VkStructureType{
         WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
     },
@@ -25,16 +25,16 @@ extend_core_enums!{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkWin32SurfaceCreateInfoKHR{
+pub struct VkWin32SurfaceCreateInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkWin32SurfaceCreateFlagsKHR,
     pub hinstance: HINSTANCE,
     pub hwnd: HWND,
 }
-impl Default for VkWin32SurfaceCreateInfoKHR{
+impl Default for VkWin32SurfaceCreateInfoKHR {
     fn default() -> Self {
-        VkWin32SurfaceCreateInfoKHR{
+        VkWin32SurfaceCreateInfoKHR {
             sType: extend_core_enums::VkStructureType::WIN32_SURFACE_CREATE_INFO_KHR,
             pNext: ptr::null(),
             flags: Default::default(),

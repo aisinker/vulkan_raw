@@ -2,12 +2,12 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
-use std::fmt::{Display, Formatter, Error};
 use crate::*;
+use std::fmt::{Display, Error, Formatter};
 
 handle!(VkSurfaceKHR, NonDispatchableHandle);
 
-bitmasks!{
+bitmasks! {
     {
         VkSurfaceTransformFlagsKHR,
         enum VkSurfaceTransformFlagBitsKHR{
@@ -33,7 +33,7 @@ bitmasks!{
     },
 }
 
-extension_enums!{
+extension_enums! {
     enum VkPresentModeKHR{
         IMMEDIATE_KHR = 0,
         MAILBOX_KHR = 1,
@@ -62,7 +62,7 @@ extension_enums!{
     },
 }
 
-extend_core_enums!{
+extend_core_enums! {
     enum VkResult{
         SURFACE_LOST_KHR = -1000000000,
         NATIVE_WINDOW_IN_USE_KHR = -1000000001,
@@ -71,13 +71,13 @@ extend_core_enums!{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkSurfaceFormatKHR{
+pub struct VkSurfaceFormatKHR {
     pub format: VkFormat,
     pub colorSpace: VkColorSpaceKHR,
 }
-impl Default for VkSurfaceFormatKHR{
+impl Default for VkSurfaceFormatKHR {
     fn default() -> Self {
-        VkSurfaceFormatKHR{
+        VkSurfaceFormatKHR {
             format: VkFormat::UNDEFINED,
             colorSpace: VkColorSpaceKHR::SRGB_NONLINEAR_KHR,
         }
@@ -86,7 +86,7 @@ impl Default for VkSurfaceFormatKHR{
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub struct VkSurfaceCapabilitiesKHR{
+pub struct VkSurfaceCapabilitiesKHR {
     pub minImageCount: u32,
     pub maxImageCount: u32,
     pub currentExtent: VkExtent2D,
