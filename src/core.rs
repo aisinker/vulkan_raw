@@ -6529,9 +6529,9 @@ impl Debug for VkPhysicalDeviceVulkan12Properties {
     }
 }
 
-#[cfg(windows)]
+#[cfg(target_family = "windows")]
 static LIBRARY_NAME: &'static str = "vulkan-1";
-#[cfg(linux)]
+#[cfg(target_family = "unix")]
 static LIBRARY_NAME: &'static str = "vulkan";
 
 unsafe extern "C" fn enumerate_instance_version_for_vulkan10(pApiVersion: *mut u32) {

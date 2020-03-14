@@ -89,7 +89,7 @@ fn main(){
 - [ ] VK_KHR_display
 - [ ] VK_KHR_display_swapchain
 - [x] VK_KHR_external_fence_fd(Revision: 1)
-- [ ] VK_KHR_external_fence_win32
+- [x] VK_KHR_external_fence_win32(Revision: 1)
 - [ ] VK_KHR_external_memory_fd
 - [ ] VK_KHR_external_memory_win32
 - [ ] VK_KHR_external_semaphore_fd

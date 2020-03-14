@@ -9,8 +9,19 @@ pub type VkFlags = u32;
 pub type VkDeviceSize = u64;
 pub type VkDeviceAddress = u64;
 
+#[cfg(target_family = "windows")]
+pub type HANDLE = usize;
+#[cfg(target_family = "windows")]
 pub type HINSTANCE = usize;
+#[cfg(target_family = "windows")]
 pub type HWND = usize;
+#[cfg(target_family = "windows")]
+pub type LPCWSTR = *const u16;
+#[cfg(target_family = "windows")]
+pub type DWORD = u32;
+#[cfg(target_family = "windows")]
+#[allow(non_camel_case_types)]
+pub type SECURITY_ATTRIBUTES = c_void; // TODO
 
 macro_rules! handle {
     ($x:ident,$y:ty) => {
@@ -552,6 +563,7 @@ impl Display for ApiVersion {
 
 mod core;
 pub use crate::core::*;
+use std::os::raw::c_void;
 
 pub mod ext;
 pub mod khr;
