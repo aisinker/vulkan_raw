@@ -114,7 +114,7 @@ impl Default for VkDebugUtilsObjectTagInfoEXT {
 pub struct VkDebugUtilsLabelEXT {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
-    pub pLabelName: *const char,
+    pub pLabelName: *const c_char,
     pub color: [f32; 4],
 }
 impl Default for VkDebugUtilsLabelEXT {
