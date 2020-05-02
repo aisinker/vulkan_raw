@@ -122,7 +122,7 @@ impl Default for VkDebugUtilsLabelEXT {
         VkDebugUtilsLabelEXT {
             sType: extend_core_enums::VkStructureType::DEBUG_UTILS_LABEL_EXT,
             pNext: ptr::null(),
-            pLabelName: ptr::null(),
+            pLabelName: "\0".as_ptr() as *const c_char,
             color: [0f32; 4],
         }
     }
@@ -152,7 +152,7 @@ impl Default for VkDebugUtilsMessengerCallbackDataEXT {
             flags: Default::default(),
             pMessageIdName: ptr::null(),
             messageIdNumber: Default::default(),
-            pMessage: ptr::null(),
+            pMessage: "\0".as_ptr() as *const c_char,
             queueLabelCount: Default::default(),
             pQueueLabels: ptr::null(),
             cmdBufLabelCount: Default::default(),
