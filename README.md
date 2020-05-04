@@ -90,4 +90,4 @@ fn main(){
 - [x] VK_KHR_surface(Revision: 25)
 - [x] VK_KHR_swapchain(Revision: 70)
 - [x] VK_KHR_win32_surface(Revision: 6)
-- [x] VK_EXT_debug_utils(Revision: 1)
+- [x] VK_EXT_debug_utils(Revision: 2)
