@@ -1,6 +1,6 @@
 [package]
 name = "vulkan_raw"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["aisinker <aisinker@outlook.com>"]
 repository = "https://github.com/aisinker/vulkan_raw"
 license = "MIT"
