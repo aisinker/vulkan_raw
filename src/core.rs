@@ -1419,27 +1419,27 @@ handle!(VkDescriptorUpdateTemplate, NonDispatchableHandle);
 pub type PFN_vkVoidFunction = extern "C" fn();
 pub type PFN_vkAllocationFunction = extern "C" fn(
     pUserData: *mut c_void,
-    size: isize,
-    alignment: isize,
+    size: usize,
+    alignment: usize,
     allocationScope: VkSystemAllocationScope,
 ) -> *mut c_void;
 pub type PFN_vkReallocationFunction = extern "C" fn(
     pUserData: *mut c_void,
     pOriginal: *mut c_void,
-    size: isize,
-    alignment: isize,
+    size: usize,
+    alignment: usize,
     allocationScope: VkSystemAllocationScope,
 ) -> *mut c_void;
 pub type PFN_vkFreeFunction = extern "C" fn(pUserData: *mut c_void, pMemory: *mut c_void);
 pub type PFN_vkInternalAllocationNotification = extern "C" fn(
     pUserData: *mut c_void,
-    size: isize,
+    size: usize,
     allocationType: VkInternalAllocationType,
     allocationScope: VkSystemAllocationScope,
 );
 pub type PFN_vkInternalFreeNotification = extern "C" fn(
     pUserData: *mut c_void,
-    size: isize,
+    size: usize,
     allocationType: VkInternalAllocationType,
     allocationScope: VkSystemAllocationScope,
 );
@@ -1716,8 +1716,8 @@ impl Default for VkAllocationCallbacks {
     fn default() -> Self {
         extern "C" fn vkAllocationFunction(
             _pUserData: *mut c_void,
-            _size: isize,
-            _alignment: isize,
+            _size: usize,
+            _alignment: usize,
             _allocationScope: VkSystemAllocationScope,
         ) -> *mut c_void {
             unimplemented!()
@@ -1725,8 +1725,8 @@ impl Default for VkAllocationCallbacks {
         extern "C" fn vkReallocationFunction(
             _pUserData: *mut c_void,
             _pOriginal: *mut c_void,
-            _size: isize,
-            _alignment: isize,
+            _size: usize,
+            _alignment: usize,
             _allocationScope: VkSystemAllocationScope,
         ) -> *mut c_void {
             unimplemented!()
@@ -1736,7 +1736,7 @@ impl Default for VkAllocationCallbacks {
         }
         extern "C" fn vkInternalAllocationNotification(
             _pUserData: *mut c_void,
-            _size: isize,
+            _size: usize,
             _allocationType: VkInternalAllocationType,
             _allocationScope: VkSystemAllocationScope,
         ) {
@@ -1744,7 +1744,7 @@ impl Default for VkAllocationCallbacks {
         }
         extern "C" fn vkInternalFreeNotification(
             _pUserData: *mut c_void,
-            _size: isize,
+            _size: usize,
             _allocationType: VkInternalAllocationType,
             _allocationScope: VkSystemAllocationScope,
         ) {
@@ -3015,7 +3015,7 @@ pub struct VkPipelineCacheCreateInfo {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
     pub flags: VkPipelineCacheCreateFlags,
-    pub initialDataSize: isize,
+    pub initialDataSize: usize,
     pub pInitialData: *const c_void,
 }
 impl Default for VkPipelineCacheCreateInfo {
@@ -3577,7 +3577,7 @@ pub struct VkPhysicalDeviceLimits {
     pub maxViewportDimensions: [u32; 2],
     pub viewportBoundsRange: [f32; 2],
     pub viewportSubPixelBits: u32,
-    pub minMemoryMapAlignment: isize,
+    pub minMemoryMapAlignment: usize,
     pub minTexelBufferOffsetAlignment: VkDeviceSize,
     pub minUniformBufferOffsetAlignment: VkDeviceSize,
     pub minStorageBufferOffsetAlignment: VkDeviceSize,
@@ -4545,8 +4545,8 @@ pub struct VkDescriptorUpdateTemplateEntry {
     pub dstArrayElement: u32,
     pub descriptorCount: u32,
     pub descriptorType: VkDescriptorType,
-    pub offset: isize,
-    pub stride: isize,
+    pub offset: usize,
+    pub stride: usize,
 }
 impl Default for VkDescriptorUpdateTemplateEntry {
     fn default() -> Self {
@@ -6624,7 +6624,7 @@ device_level_functions! {
     fn vkResetEvent(device: VkDevice, event: VkEvent)->VkResult;
     fn vkCreateQueryPool(device: VkDevice, pCreateInfo: *const VkQueryPoolCreateInfo, pAllocator: *const VkAllocationCallbacks, pQueryPool: *mut VkQueryPool)->VkResult;
     fn vkDestroyQueryPool(device: VkDevice, queryPool: VkQueryPool, pAllocator: *const VkAllocationCallbacks);
-    fn vkGetQueryPoolResults(device: VkDevice, queryPool: VkQueryPool, firstQuery: u32, queryCount: u32, dataSize: isize, pData: *mut c_void, stride: VkDeviceSize, flags: VkQueryResultFlags)->VkResult;
+    fn vkGetQueryPoolResults(device: VkDevice, queryPool: VkQueryPool, firstQuery: u32, queryCount: u32, dataSize: usize, pData: *mut c_void, stride: VkDeviceSize, flags: VkQueryResultFlags)->VkResult;
     fn vkCreateBuffer(device: VkDevice, pCreateInfo: *const VkBufferCreateInfo, pAllocator: *const VkAllocationCallbacks, pBuffer: *mut VkBuffer)->VkResult;
     fn vkDestroyBuffer(device: VkDevice, buffer: VkBuffer, pAllocator: *const VkAllocationCallbacks);
     fn vkCreateBufferView(device: VkDevice, pCreateInfo: *const VkBufferViewCreateInfo, pAllocator: *const VkAllocationCallbacks, pView: *mut VkBufferView)->VkResult;
@@ -6638,7 +6638,7 @@ device_level_functions! {
     fn vkDestroyShaderModule(device: VkDevice, shaderModule: VkShaderModule, pAllocator: *const VkAllocationCallbacks);
     fn vkCreatePipelineCache(device: VkDevice, pCreateInfo: *const VkPipelineCacheCreateInfo, pAllocator: *const VkAllocationCallbacks, pPipelineCache: *mut VkPipelineCache)->VkResult;
     fn vkDestroyPipelineCache(device: VkDevice, pipelineCache: VkPipelineCache, pAllocator: *const VkAllocationCallbacks);
-    fn vkGetPipelineCacheData(device: VkDevice, pipelineCache: VkPipelineCache, pDataSize: *mut isize, pData: *mut c_void)->VkResult;
+    fn vkGetPipelineCacheData(device: VkDevice, pipelineCache: VkPipelineCache, pDataSize: *mut usize, pData: *mut c_void)->VkResult;
     fn vkMergePipelineCaches(device: VkDevice, dstCache: VkPipelineCache, srcCacheCount: u32, pSrcCaches: *const VkPipelineCache)->VkResult;
     fn vkCreateGraphicsPipelines(device: VkDevice, pipelineCache: VkPipelineCache, createInfoCount: u32, pCreateInfos: *const VkGraphicsPipelineCreateInfo, pAllocator: *const VkAllocationCallbacks, pPipelines: *mut VkPipeline)->VkResult;
     fn vkCreateComputePipelines(device: VkDevice, pipelineCache: VkPipelineCache, createInfoCount: u32, pCreateInfos: *const VkComputePipelineCreateInfo, pAllocator: *const VkAllocationCallbacks, pPipelines: *mut VkPipeline)->VkResult;
