@@ -2559,18 +2559,18 @@ impl Default for VkDescriptorSetAllocateInfo {
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkSpecializationMapEntry {
-    constantID: u32,
-    offset: u32,
-    size: usize,
+    pub constantID: u32,
+    pub offset: u32,
+    pub size: usize,
 }
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSpecializationInfo {
-    mapEntryCount: u32,
-    pMapEntries: *const VkSpecializationMapEntry,
-    dataSize: usize,
-    pData: *const c_void,
+    pub mapEntryCount: u32,
+    pub pMapEntries: *const VkSpecializationMapEntry,
+    pub dataSize: usize,
+    pub pData: *const c_void,
 }
 impl Default for VkSpecializationInfo {
     fn default() -> Self {
