@@ -308,22 +308,28 @@ macro_rules! instance_level_functions {
             )*
         }
         impl InstanceLevelFunctions {
-            pub fn load_from_instance(instance: crate::core::VkInstance)->Result<InstanceLevelFunctions, crate::LoadingError> {
+            pub fn load_from_instance(instance: crate::core::VkInstance)->InstanceLevelFunctions {
                 use std::ffi::CStr;
                 use std::mem::transmute;
                 use crate::get_instance_proc_addr;
                 unsafe {
                     let functions = InstanceLevelFunctions {
                         $(
-                            $function_name: transmute(
-                                get_instance_proc_addr(
-                                    instance,
-                                    CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes())
-                                )?
-                            ),
+                            $function_name: match get_instance_proc_addr(
+                                instance,
+                                CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes()))
+                            {
+                                Ok(proc_addr) => transmute(proc_addr),
+                                Err(_) => {
+                                    extern "C" fn $function_name($(_:$parameter_type),*)$(->$return_type)?{
+                                        unimplemented!()
+                                    }
+                                    $function_name
+                                },
+                            },
                         )*
                     };
-                    Ok(functions)
+                    functions
                 }
             }
             $(
@@ -345,41 +351,53 @@ macro_rules! device_level_functions {
             )*
         }
         impl DeviceLevelFunctions {
-            pub fn load_from_instance(instance: crate::core::VkInstance)->Result<DeviceLevelFunctions, crate::LoadingError> {
+            pub fn load_from_instance(instance: crate::core::VkInstance)->DeviceLevelFunctions {
                 use std::ffi::CStr;
                 use std::mem::transmute;
                 use crate::get_instance_proc_addr;
                 unsafe {
                     let functions = DeviceLevelFunctions {
                         $(
-                            $function_name: transmute(
-                                get_instance_proc_addr(
-                                    instance,
-                                    CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes())
-                                )?
-                            ),
+                            $function_name: match get_instance_proc_addr(
+                                instance,
+                                CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes()))
+                            {
+                                Ok(proc_addr) => transmute(proc_addr),
+                                Err(_) => {
+                                    extern "C" fn $function_name($(_:$parameter_type),*)$(->$return_type)?{
+                                        unimplemented!()
+                                    }
+                                    $function_name
+                                },
+                            },
                         )*
                     };
-                    Ok(functions)
+                    functions
                 }
             }
-            pub fn load_from_device(core_functions: &crate::core::InstanceLevelFunctions, device: crate::core::VkDevice)->Result<DeviceLevelFunctions, crate::LoadingError> {
+            pub fn load_from_device(core_functions: &crate::core::InstanceLevelFunctions, device: crate::core::VkDevice)->DeviceLevelFunctions {
                 use std::ffi::CStr;
                 use std::mem::transmute;
                 use crate::get_device_proc_addr;
                 unsafe {
                     let functions = DeviceLevelFunctions {
                         $(
-                            $function_name: transmute(
-                                get_device_proc_addr(
-                                    core_functions,
-                                    device,
-                                    CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes())
-                                )?
-                            ),
+                            $function_name: match get_device_proc_addr(
+                                core_functions,
+                                device,
+                                CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes()))
+                            {
+                                Ok(proc_addr) => transmute(proc_addr),
+                                Err(_) => {
+                                    extern "C" fn $function_name($(_:$parameter_type),*)$(->$return_type)?{
+                                        unimplemented!()
+                                    }
+                                    $function_name
+                                },
+                            },
                         )*
                     };
-                    Ok(functions)
+                    functions
                 }
             }
             $(

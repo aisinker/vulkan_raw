@@ -55,7 +55,7 @@ fn main(){
     let result = unsafe {vkCreateInstance(&create_info, ptr::null(), &mut instance)};
     if result != VkResult::SUCCESS { panic!("error!") }
 
-    let functions = InstanceLevelFunctions::load_from_instance(instance).unwrap();
+    let functions = InstanceLevelFunctions::load_from_instance(instance);
 
     // Enumerate all devices
     let mut count: u32 = 0;
