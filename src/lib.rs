@@ -76,10 +76,13 @@ macro_rules! extension_enums{
         ),*$(,)?
     )=>{
         $(
-            #[repr(C)]
+            #[repr(transparent)]
             #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-            pub enum $enum_name{
-                $($variant_name = $value),*
+            pub struct $enum_name(pub i32);
+            impl $enum_name{
+                $(
+                    pub const $variant_name: $enum_name = $enum_name($value);
+                )*
             }
         )*
     }
