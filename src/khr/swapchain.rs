@@ -232,14 +232,14 @@ impl Default for VkDeviceGroupPresentInfoKHR {
 pub struct VkDeviceGroupSwapchainCreateInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
-    pub mode: VkDeviceGroupPresentModeFlagsKHR,
+    pub modes: VkDeviceGroupPresentModeFlagsKHR,
 }
 impl Default for VkDeviceGroupSwapchainCreateInfoKHR {
     fn default() -> Self {
         VkDeviceGroupSwapchainCreateInfoKHR {
             sType: extend_core_enums::VkStructureType::DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR,
             pNext: ptr::null(),
-            mode: Default::default(),
+            modes: Default::default(),
         }
     }
 }
