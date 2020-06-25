@@ -43,6 +43,11 @@ macro_rules! handle {
                 write!(f, "{}", self.0.to_string())
             }
         }
+        impl From<$x> for u64 {
+            fn from(handle: $x) -> Self {
+                handle.0.into()
+            }
+        }
     };
 }
 
@@ -426,6 +431,11 @@ impl Display for DispatchableHandle {
         write!(f, "{:#x}", self.0)
     }
 }
+impl From<DispatchableHandle> for u64 {
+    fn from(handle: DispatchableHandle) -> Self {
+        handle.0 as u64
+    }
+}
 
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
@@ -438,6 +448,11 @@ impl NonDispatchableHandle {
 impl Display for NonDispatchableHandle {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         write!(f, "{}", self.0)
+    }
+}
+impl From<NonDispatchableHandle> for u64 {
+    fn from(handle: NonDispatchableHandle) -> Self {
+        handle.0
     }
 }
 
