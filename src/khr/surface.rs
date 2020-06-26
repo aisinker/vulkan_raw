@@ -64,8 +64,8 @@ extension_enums! {
 
 extend_core_enums! {
     enum VkResult{
-        SURFACE_LOST_KHR = -1000000000,
-        NATIVE_WINDOW_IN_USE_KHR = -1000000001,
+        ERROR_SURFACE_LOST_KHR = -1000000000,
+        ERROR_NATIVE_WINDOW_IN_USE_KHR = -1000000001,
     },
 }
 
