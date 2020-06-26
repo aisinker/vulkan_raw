@@ -44,6 +44,9 @@ bitmasks! {
 }
 
 extend_core_enums! {
+    enum VkObjectType{
+        DEBUG_UTILS_MESSENGER_EXT = 1000128000,
+    },
     enum VkStructureType{
         DEBUG_UTILS_OBJECT_NAME_INFO_EXT = 1000128000,
         DEBUG_UTILS_OBJECT_TAG_INFO_EXT = 1000128001,

@@ -33,6 +33,9 @@ bitmasks! {
 }
 
 extend_core_enums! {
+    enum VkObjectType{
+        SWAPCHAIN_KHR = 1000001000,
+    },
     enum VkStructureType{
         SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
         PRESENT_INFO_KHR = 1000001001,

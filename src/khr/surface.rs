@@ -60,9 +60,15 @@ extension_enums! {
         EXTENDED_SRGB_NONLINEAR_EXT = 1000104014,
         DISPLAY_NATIVE_AMD = 1000213000,
     },
+    enum VkObjectType{
+        DEBUG_UTILS_MESSENGER_EXT = 1000128000,
+    },
 }
 
 extend_core_enums! {
+    enum VkObjectType{
+        SURFACE_KHR = 1000000000,
+    },
     enum VkResult{
         ERROR_SURFACE_LOST_KHR = -1000000000,
         ERROR_NATIVE_WINDOW_IN_USE_KHR = -1000000001,
