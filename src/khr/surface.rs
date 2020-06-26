@@ -60,9 +60,6 @@ extension_enums! {
         EXTENDED_SRGB_NONLINEAR_EXT = 1000104014,
         DISPLAY_NATIVE_AMD = 1000213000,
     },
-    enum VkObjectType{
-        DEBUG_UTILS_MESSENGER_EXT = 1000128000,
-    },
 }
 
 extend_core_enums! {
