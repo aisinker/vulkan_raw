@@ -23,6 +23,7 @@ pub type DWORD = u32;
 #[allow(non_camel_case_types)]
 pub type SECURITY_ATTRIBUTES = c_void; // TODO
 
+#[macro_export]
 macro_rules! handle {
     ($x:ident,$y:ty) => {
         #[repr(C)]
@@ -51,28 +52,8 @@ macro_rules! handle {
     };
 }
 
-macro_rules! core_enums {
-    (
-        $(
-            enum $enum_name:ident{
-                $($variant_name:ident = $value:literal),*$(,)?
-            }
-        ),*$(,)?
-    )=>{
-        $(
-            #[repr(transparent)]
-            #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-            pub struct $enum_name(pub i32);
-            impl $enum_name{
-                $(
-                    pub const $variant_name: $enum_name = $enum_name($value);
-                )*
-            }
-        )*
-    }
-}
-
-macro_rules! extension_enums{
+#[macro_export]
+macro_rules! enums {
     (
         $(
             enum $enum_name:ident{
@@ -115,6 +96,7 @@ macro_rules! extend_core_enums {
     }
 }
 
+#[macro_export]
 macro_rules! bitmasks {
     (
         $(
@@ -420,7 +402,7 @@ macro_rules! device_level_functions {
 
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-struct DispatchableHandle(usize);
+pub struct DispatchableHandle(usize);
 impl DispatchableHandle {
     pub fn none() -> Self {
         DispatchableHandle(0)
@@ -439,7 +421,7 @@ impl From<DispatchableHandle> for u64 {
 
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-struct NonDispatchableHandle(u64);
+pub struct NonDispatchableHandle(u64);
 impl NonDispatchableHandle {
     pub fn none() -> Self {
         NonDispatchableHandle(0)

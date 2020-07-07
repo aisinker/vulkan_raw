@@ -33,7 +33,7 @@ bitmasks! {
     },
 }
 
-extension_enums! {
+enums! {
     enum VkPresentModeKHR{
         IMMEDIATE_KHR = 0,
         MAILBOX_KHR = 1,

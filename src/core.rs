@@ -635,7 +635,7 @@ bitmasks! {
     },
 }
 
-core_enums! {
+enums! {
     enum VkImageLayout{
         UNDEFINED = 0,
         GENERAL = 1,
