@@ -294,7 +294,7 @@ macro_rules! instance_level_functions {
         #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
         pub struct InstanceLevelFunctions {
             $(
-                $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
+                pub $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
             )*
         }
         impl InstanceLevelFunctions {
@@ -337,7 +337,7 @@ macro_rules! device_level_functions {
         #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
         pub struct DeviceLevelFunctions {
             $(
-                $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
+                pub $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
             )*
         }
         impl DeviceLevelFunctions {
