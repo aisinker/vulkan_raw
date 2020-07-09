@@ -33,52 +33,62 @@
 ## Example
 
 ```rust
-use vulkan_raw::*;
-use std::ptr;
 use std::ffi::CStr;
+use std::ptr;
+use vulkan_raw::*;
 
-fn main(){
+fn main() {
     let mut instance_version: u32 = 0;
-    unsafe {vkEnumerateInstanceVersion(&mut instance_version)};
-    println!("instance version: {}", ApiVersion::from(instance_version));
+    unsafe { vkEnumerateInstanceVersion(&mut instance_version) };
+    println!("Instance version: {}", ApiVersion::from(instance_version));
 
     // Create Vulkan instance
     let app_info = VkApplicationInfo {
         apiVersion: ApiVersion::new(1, 2, 0).into(),
         ..Default::default()
     };
-    let create_info = VkInstanceCreateInfo{
+    let create_info = VkInstanceCreateInfo {
         pApplicationInfo: &app_info,
         ..Default::default()
     };
     let mut instance: VkInstance = VkInstance::none();
-    let result = unsafe {vkCreateInstance(&create_info, ptr::null(), &mut instance)};
-    if result != VkResult::SUCCESS { panic!("error!") }
+    let result = unsafe { vkCreateInstance(&create_info, ptr::null(), &mut instance) };
+    assert_eq!(result, VkResult::SUCCESS);
 
     let functions = InstanceLevelFunctions::load_from_instance(instance);
 
     // Enumerate all devices
     let mut count: u32 = 0;
-    let result = unsafe { functions.vkEnumeratePhysicalDevices(instance, &mut count, ptr::null_mut())};
-    if result != VkResult::SUCCESS { panic!("error!") }
+    let result =
+        unsafe { functions.vkEnumeratePhysicalDevices(instance, &mut count, ptr::null_mut()) };
+    assert_eq!(result, VkResult::SUCCESS);
 
     let mut physical_devices: Vec<VkPhysicalDevice> = Vec::with_capacity(count as usize);
-    let result = unsafe { functions.vkEnumeratePhysicalDevices(instance, &mut count, physical_devices.as_mut_ptr())};
-    if result != VkResult::SUCCESS { panic!("error!") }
-    unsafe {physical_devices.set_len(count as usize); }
+    let result = unsafe {
+        functions.vkEnumeratePhysicalDevices(instance, &mut count, physical_devices.as_mut_ptr())
+    };
+    assert_eq!(result, VkResult::SUCCESS);
+    unsafe {
+        physical_devices.set_len(count as usize);
+    }
 
-    for physical_device  in physical_devices{
-        let mut physical_device_properties = Default::default();
-        unsafe { functions.vkGetPhysicalDeviceProperties2(physical_device, &mut physical_device_properties); }
+    let mut physical_device_properties = Default::default();
+    for physical_device in physical_devices {
+        unsafe {
+            functions
+                .vkGetPhysicalDeviceProperties2(physical_device, &mut physical_device_properties);
+        }
         println!(
-            "device: {}, \
-            supported vulkan version: {}",
-            unsafe {CStr::from_ptr(physical_device_properties.properties.deviceName.as_ptr())}.to_str().unwrap(),
+            "Physical Device: {}; \
+            Supported vulkan version: {}",
+            unsafe { CStr::from_ptr(physical_device_properties.properties.deviceName.as_ptr()) }
+                .to_str()
+                .unwrap(),
             ApiVersion::from(physical_device_properties.properties.apiVersion)
         );
     }
 
-    unsafe { functions.vkDestroyInstance(instance, ptr::null())};
+    unsafe { functions.vkDestroyInstance(instance, ptr::null()) };
 }
 ```
 
@@ -91,3 +101,4 @@ fn main(){
 - [x] VK_KHR_swapchain(Revision: 70)
 - [x] VK_KHR_win32_surface(Revision: 6)
 - [x] VK_EXT_debug_utils(Revision: 2)
+- [x] VK_EXT_memory_budget(Revision: 1)

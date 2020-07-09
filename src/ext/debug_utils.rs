@@ -9,6 +9,9 @@ use std::ptr;
 
 use crate::*;
 
+pub const SPEC_VERSION: u32 = 2;
+pub const EXTENSION_NAME: &'static str = "VK_EXT_debug_utils\0";
+
 handle!(VkDebugUtilsMessengerEXT, NonDispatchableHandle);
 
 bitmasks! {

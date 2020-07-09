@@ -5,6 +5,9 @@
 use crate::*;
 use std::fmt::{Display, Error, Formatter};
 
+pub const SPEC_VERSION: u32 = 25;
+pub const EXTENSION_NAME: &'static str = "VK_KHR_surface\0";
+
 handle!(VkSurfaceKHR, NonDispatchableHandle);
 
 bitmasks! {

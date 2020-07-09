@@ -8,6 +8,9 @@ use std::ptr;
 use crate::khr::surface::*;
 use crate::*;
 
+pub const SPEC_VERSION: u32 = 6;
+pub const EXTENSION_NAME: &'static str = "VK_KHR_win32_surface\0";
+
 bitmasks! {
     {
         VkWin32SurfaceCreateFlagsKHR,

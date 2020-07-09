@@ -10,6 +10,9 @@ use crate::khr::surface::*;
 use crate::NonDispatchableHandle;
 use crate::*;
 
+pub const SPEC_VERSION: u32 = 70;
+pub const EXTENSION_NAME: &'static str = "VK_KHR_swapchain\0";
+
 handle!(VkSwapchainKHR, NonDispatchableHandle);
 
 bitmasks! {

@@ -7,6 +7,9 @@ use std::ptr;
 
 use crate::*;
 
+pub const SPEC_VERSION: u32 = 1;
+pub const EXTENSION_NAME: &'static str = "VK_KHR_external_fence_win32\0";
+
 extend_core_enums! {
     enum VkStructureType{
         IMPORT_FENCE_WIN32_HANDLE_INFO_KHR = 1000114000,
