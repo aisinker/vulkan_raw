@@ -4,9 +4,10 @@
 
 use crate::*;
 use std::fmt::{Display, Error, Formatter};
+use std::os::raw::c_char;
 
 pub const SPEC_VERSION: u32 = 25;
-pub const EXTENSION_NAME: &'static str = "VK_KHR_surface\0";
+pub const EXTENSION_NAME: *const c_char = b"VK_KHR_surface\0".as_ptr() as *const c_char;
 
 handle!(VkSurfaceKHR, NonDispatchableHandle);
 

@@ -7,9 +7,10 @@ use std::ptr;
 
 use crate::khr::surface::*;
 use crate::*;
+use std::os::raw::c_char;
 
 pub const SPEC_VERSION: u32 = 6;
-pub const EXTENSION_NAME: &'static str = "VK_KHR_win32_surface\0";
+pub const EXTENSION_NAME: *const c_char = b"VK_KHR_win32_surface\0".as_ptr() as *const c_char;
 
 bitmasks! {
     {

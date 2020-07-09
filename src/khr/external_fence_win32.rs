@@ -2,13 +2,14 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
-use std::os::raw::c_void;
+use std::os::raw::{c_char, c_void};
 use std::ptr;
 
 use crate::*;
 
 pub const SPEC_VERSION: u32 = 1;
-pub const EXTENSION_NAME: &'static str = "VK_KHR_external_fence_win32\0";
+pub const EXTENSION_NAME: *const c_char =
+    b"VK_KHR_external_fence_win32\0".as_ptr() as *const c_char;
 
 extend_core_enums! {
     enum VkStructureType{

@@ -4,10 +4,11 @@
 
 use crate::*;
 use std::ffi::c_void;
+use std::os::raw::c_char;
 use std::ptr;
 
 pub const SPEC_VERSION: u32 = 1;
-pub const EXTENSION_NAME: &'static str = "VK_EXT_memory_budget\0";
+pub const EXTENSION_NAME: *const c_char = b"VK_EXT_memory_budget\0".as_ptr() as *const c_char;
 
 extend_core_enums! {
     enum VkStructureType{

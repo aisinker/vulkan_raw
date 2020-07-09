@@ -10,7 +10,7 @@ use std::ptr;
 use crate::*;
 
 pub const SPEC_VERSION: u32 = 2;
-pub const EXTENSION_NAME: &'static str = "VK_EXT_debug_utils\0";
+pub const EXTENSION_NAME: *const c_char = b"VK_EXT_debug_utils\0".as_ptr() as *const c_char;
 
 handle!(VkDebugUtilsMessengerEXT, NonDispatchableHandle);
 
