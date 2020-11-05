@@ -53,6 +53,34 @@ macro_rules! handle {
 }
 
 #[macro_export]
+macro_rules! link_vulkan_structure {
+    {
+        $(#[$first_attr:meta])*
+        $first:ident,
+        $(
+            $(#[$other_attr:meta])*
+            $other:ident
+        ),+$(,)?
+    }=>{
+        {
+            let mut last_next: &mut *mut std::ffi::c_void;
+            $(#[$first_attr])*
+            {
+                last_next = std::mem::transmute(&mut $first.pNext);
+            }
+            $(
+                $(#[$other_attr])*
+                #[allow(unused_assignments)]
+                {
+                    *last_next = std::mem::transmute(&$other);
+                    last_next = std::mem::transmute(&mut $other.pNext);
+                }
+            )+
+        }
+    }
+}
+
+#[macro_export]
 macro_rules! enums {
     (
         $(
