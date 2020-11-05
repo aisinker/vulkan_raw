@@ -56,10 +56,10 @@ macro_rules! handle {
 macro_rules! link_vulkan_structure {
     {
         $(#[$first_attr:meta])*
-        $first:ident,
+        $first:expr,
         $(
             $(#[$other_attr:meta])*
-            $other:ident
+            $other:expr
         ),+$(,)?
     }=>{
         {
