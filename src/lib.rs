@@ -53,27 +53,44 @@ macro_rules! handle {
 }
 
 #[macro_export]
-macro_rules! link_vulkan_structure {
+macro_rules! link_vulkan_structures {
     {
-        $first:expr=>
+        $($first:ident).+
+        =>
+        $(#[$last_attr:meta])*
+        $($last:ident).+
+    } => {
+        {
+            $(#[$last_attr])*
+            {
+                $($first).+.pNext = std::mem::transmute(&$($last).+);
+            }
+        }
+    };
+    {
+        $($first:ident).+
+        =>
         $(
             $(#[$other_attr:meta])*
             $($other:ident).+
-        )=>+
+        ),+
+        =>
+        $(#[$last_attr:meta])*
+        $($last:ident).+
     }=>{
         {
-            let mut last_next: &mut *mut std::ffi::c_void;
-            {
-                last_next = std::mem::transmute(&mut $first.pNext);
-            }
+            let mut last_next: &mut *mut std::ffi::c_void = std::mem::transmute(&mut $($first).+.pNext);
             $(
                 $(#[$other_attr])*
-                #[allow(unused_assignments)]
                 {
                     *last_next = std::mem::transmute(&$($other).+);
                     last_next = std::mem::transmute(&mut $($other).+.pNext);
                 }
             )+
+            $(#[$last_attr])*
+            {
+                *last_next = std::mem::transmute(&$($last).+);
+            }
         }
     }
 }
