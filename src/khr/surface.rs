@@ -4,36 +4,30 @@
 
 use crate::*;
 use std::fmt::{Display, Error, Formatter};
-use std::os::raw::c_char;
+// use std::os::raw::c_char;
 
-pub const SPEC_VERSION: u32 = 25;
-pub const EXTENSION_NAME: *const c_char = b"VK_KHR_surface\0".as_ptr() as *const c_char;
+// pub const SPEC_VERSION: u32 = 25;
+// pub const EXTENSION_NAME: *const c_char = b"VK_KHR_surface\0".as_ptr() as *const c_char;
 
 handle!(VkSurfaceKHR, NonDispatchableHandle);
 
 bitmasks! {
-    {
-        VkSurfaceTransformFlagsKHR,
-        enum VkSurfaceTransformFlagBitsKHR{
-            IDENTITY_BIT_KHR = 0x00000001,
-            ROTATE_90_BIT_KHR = 0x00000002,
-            ROTATE_180_BIT_KHR = 0x00000004,
-            ROTATE_270_BIT_KHR = 0x00000008,
-            HORIZONTAL_MIRROR_BIT_KHR = 0x00000010,
-            HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR = 0x00000020,
-            HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR = 0x00000040,
-            HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR = 0x00000080,
-            INHERIT_BIT_KHR = 0x00000100,
-        }
+    VkSurfaceTransformFlagsKHR = enum VkSurfaceTransformFlagBitsKHR{
+        IDENTITY_BIT_KHR = 0x00000001,
+        ROTATE_90_BIT_KHR = 0x00000002,
+        ROTATE_180_BIT_KHR = 0x00000004,
+        ROTATE_270_BIT_KHR = 0x00000008,
+        HORIZONTAL_MIRROR_BIT_KHR = 0x00000010,
+        HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR = 0x00000020,
+        HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR = 0x00000040,
+        HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR = 0x00000080,
+        INHERIT_BIT_KHR = 0x00000100,
     },
-    {
-        VkCompositeAlphaFlagsKHR,
-        enum VkCompositeAlphaFlagBitsKHR{
-            OPAQUE_BIT_KHR = 0x00000001,
-            PRE_MULTIPLIED_BIT_KHR = 0x00000002,
-            POST_MULTIPLIED_BIT_KHR = 0x00000004,
-            INHERIT_BIT_KHR = 0x00000008,
-        }
+    VkCompositeAlphaFlagsKHR = enum VkCompositeAlphaFlagBitsKHR{
+        OPAQUE_BIT_KHR = 0x00000001,
+        PRE_MULTIPLIED_BIT_KHR = 0x00000002,
+        POST_MULTIPLIED_BIT_KHR = 0x00000004,
+        INHERIT_BIT_KHR = 0x00000008,
     },
 }
 
@@ -66,16 +60,6 @@ enums! {
     },
 }
 
-extend_core_enums! {
-    enum VkObjectType{
-        SURFACE_KHR = 1000000000,
-    },
-    enum VkResult{
-        ERROR_SURFACE_LOST_KHR = -1000000000,
-        ERROR_NATIVE_WINDOW_IN_USE_KHR = -1000000001,
-    },
-}
-
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkSurfaceFormatKHR {
@@ -104,12 +88,4 @@ pub struct VkSurfaceCapabilitiesKHR {
     pub currentTransform: VkSurfaceTransformFlagBitsKHR,
     pub supportedCompositeAlpha: VkCompositeAlphaFlagsKHR,
     pub supportedUsageFlags: VkImageUsageFlags,
-}
-
-instance_level_functions! {
-    fn vkDestroySurfaceKHR(instance: VkInstance, surface: VkSurfaceKHR, pAllocator: *const VkAllocationCallbacks);
-    fn vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32, surface: VkSurfaceKHR, pSupported: *mut VkBool32)->VkResult;
-    fn vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceCapabilities: *mut VkSurfaceCapabilitiesKHR)->VkResult;
-    fn vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceFormatCount: *mut u32, pSurfaceFormats: *mut VkSurfaceFormatKHR)->VkResult;
-    fn vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pPresentModeCount: *mut u32, pPresentModes: *mut VkPresentModeKHR)->VkResult;
 }

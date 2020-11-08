@@ -2,20 +2,13 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
-use std::os::raw::{c_char, c_int, c_void};
+use std::os::raw::{c_int, c_void};
 use std::ptr;
 
 use crate::*;
 
-pub const SPEC_VERSION: u32 = 1;
-pub const EXTENSION_NAME: *const c_char = b"VK_KHR_external_fence_fd\0".as_ptr() as *const c_char;
-
-extend_core_enums! {
-    enum VkStructureType{
-        IMPORT_FENCE_FD_INFO_KHR = 1000115000,
-        FENCE_GET_FD_INFO_KHR = 1000115001,
-    }
-}
+// pub const SPEC_VERSION: u32 = 1;
+// pub const EXTENSION_NAME: *const c_char = b"VK_KHR_external_fence_fd\0".as_ptr() as *const c_char;
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
@@ -30,7 +23,7 @@ pub struct VkImportFenceFdInfoKHR {
 impl Default for VkImportFenceFdInfoKHR {
     fn default() -> Self {
         VkImportFenceFdInfoKHR {
-            sType: extend_core_enums::VkStructureType::IMPORT_FENCE_FD_INFO_KHR,
+            sType: VkStructureType::IMPORT_FENCE_FD_INFO_KHR,
             pNext: ptr::null(),
             fence: Default::default(),
             flags: Default::default(),
@@ -51,15 +44,10 @@ pub struct VkFenceGetFdInfoKHR {
 impl Default for VkFenceGetFdInfoKHR {
     fn default() -> Self {
         VkFenceGetFdInfoKHR {
-            sType: extend_core_enums::VkStructureType::FENCE_GET_FD_INFO_KHR,
+            sType: VkStructureType::FENCE_GET_FD_INFO_KHR,
             pNext: ptr::null(),
             fence: Default::default(),
             handleType: Default::default(),
         }
     }
-}
-
-device_level_functions! {
-    fn vkImportFenceFdKHR(device: VkDevice, pImportFenceFdInfo: *const VkImportFenceFdInfoKHR)->VkResult;
-    fn vkGetFenceFdKHR(device: VkDevice, pGetFdInfo: *const VkFenceGetFdInfoKHR, pFd: *mut c_int)->VkResult;
 }

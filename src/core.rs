@@ -7,635 +7,644 @@ use std::os::raw::{c_char, c_void};
 use std::ptr;
 
 use crate::*;
+
+#[cfg(feature = "VK_EXT_debug_utils")]
+use crate::ext::debug_utils::*;
+
+#[cfg(feature = "VK_KHR_external_fence_fd")]
+use crate::khr::external_fence_fd::*;
+#[cfg(feature = "VK_KHR_external_fence_win32")]
+use crate::khr::external_fence_win32::*;
+#[cfg(feature = "VK_KHR_swapchain")]
+use crate::khr::swapchain::*;
+#[cfg(feature = "VK_KHR_win32_surface")]
+use crate::khr::win32_surface::*;
+
 use std::fmt::Debug;
 use std::hash::Hash;
 
 bitmasks! {
-    {
-        VkCullModeFlags,
-        enum VkCullModeFlagBits{
-            NONE = 0,
-            FRONT_BIT = 0x00000001,
-            BACK_BIT = 0x00000002,
-            FRONT_AND_BACK = 0x00000003,
-        }
-    },
-    {
-        VkQueueFlags,
-        enum VkQueueFlagBits{
-            GRAPHICS_BIT = 0x00000001,
-            COMPUTE_BIT = 0x00000002,
-            TRANSFER_BIT = 0x00000004,
-            SPARSE_BINDING_BIT = 0x00000008,
-            PROTECTED_BIT = 0x00000010,
-        }
-    },
-    {
-        VkDeviceQueueCreateFlags,
-        enum VkDeviceQueueCreateFlagBits{
-            PROTECTED_BIT = 0x00000001,
-        }
-    },
-    {
-        VkMemoryPropertyFlags,
-        enum VkMemoryPropertyFlagBits{
-            DEVICE_LOCAL_BIT = 0x00000001,
-            HOST_VISIBLE_BIT = 0x00000002,
-            HOST_COHERENT_BIT = 0x00000004,
-            HOST_CACHED_BIT = 0x00000008,
-            LAZILY_ALLOCATED_BIT = 0x00000010,
-            PROTECTED_BIT = 0x00000020,
-        }
-    },
-    {
-        VkMemoryHeapFlags,
-        enum VkMemoryHeapFlagBits{
-            DEVICE_LOCAL_BIT = 0x00000001,
-            MULTI_INSTANCE_BIT = 0x00000002,
-        }
-    },
-    {
-        VkAccessFlags,
-        enum VkAccessFlagBits{
-            INDIRECT_COMMAND_READ_BIT = 0x00000001,
-            INDEX_READ_BIT = 0x00000002,
-            VERTEX_ATTRIBUTE_READ_BIT = 0x00000004,
-            UNIFORM_READ_BIT = 0x00000008,
-            INPUT_ATTACHMENT_READ_BIT = 0x00000010,
-            SHADER_READ_BIT = 0x00000020,
-            SHADER_WRITE_BIT = 0x00000040,
-            COLOR_ATTACHMENT_READ_BIT = 0x00000080,
-            COLOR_ATTACHMENT_WRITE_BIT = 0x00000100,
-            DEPTH_STENCIL_ATTACHMENT_READ_BIT = 0x00000200,
-            DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = 0x00000400,
-            TRANSFER_READ_BIT = 0x00000800,
-            TRANSFER_WRITE_BIT = 0x00001000,
-            HOST_READ_BIT = 0x00002000,
-            HOST_WRITE_BIT = 0x00004000,
-            MEMORY_READ_BIT = 0x00008000,
-            MEMORY_WRITE_BIT = 0x00010000,
-        }
-    },
-    {
-        VkBufferUsageFlags,
-        enum VkBufferUsageFlagBits{
-            TRANSFER_SRC_BIT = 0x00000001,
-            TRANSFER_DST_BIT = 0x00000002,
-            UNIFORM_TEXEL_BUFFER_BIT = 0x00000004,
-            STORAGE_TEXEL_BUFFER_BIT = 0x00000008,
-            UNIFORM_BUFFER_BIT = 0x00000010,
-            STORAGE_BUFFER_BIT = 0x00000020,
-            INDEX_BUFFER_BIT = 0x00000040,
-            VERTEX_BUFFER_BIT = 0x00000080,
-            INDIRECT_BUFFER_BIT = 0x00000100,
-            SHADER_DEVICE_ADDRESS_BIT = 0x00020000,
-        }
-    },
-    {
-        VkBufferCreateFlags,
-        enum VkBufferCreateFlagBits{
-            SPARSE_BINDING_BIT = 0x00000001,
-            SPARSE_RESIDENCY_BIT = 0x00000002,
-            SPARSE_ALIASED_BIT = 0x00000004,
-            PROTECTED_BIT = 0x00000008,
-            DEVICE_ADDRESS_CAPTURE_REPLAY_BIT = 0x00000010,
-        }
-    },
-    {
-        VkShaderStageFlags,
-        enum VkShaderStageFlagBits{
-            VERTEX_BIT = 0x00000001,
-            TESSELLATION_CONTROL_BIT = 0x00000002,
-            TESSELLATION_EVALUATION_BIT = 0x00000004,
-            GEOMETRY_BIT = 0x00000008,
-            FRAGMENT_BIT = 0x00000010,
-            COMPUTE_BIT = 0x00000020,
-            ALL_GRAPHICS = 0x0000001F,
-            ALL = 0x7FFFFFFF,
-        }
-    },
-    {
-        VkImageUsageFlags,
-        enum VkImageUsageFlagBits{
-            TRANSFER_SRC_BIT = 0x00000001,
-            TRANSFER_DST_BIT = 0x00000002,
-            SAMPLED_BIT = 0x00000004,
-            STORAGE_BIT = 0x00000008,
-            COLOR_ATTACHMENT_BIT = 0x00000010,
-            DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000020,
-            TRANSIENT_ATTACHMENT_BIT = 0x00000040,
-            INPUT_ATTACHMENT_BIT = 0x00000080,
-        }
-    },
-    {
-        VkImageCreateFlags,
-        enum VkImageCreateFlagBits{
-            SPARSE_BINDING_BIT = 0x00000001,
-            SPARSE_RESIDENCY_BIT = 0x00000002,
-            SPARSE_ALIASED_BIT = 0x00000004,
-            MUTABLE_FORMAT_BIT = 0x00000008,
-            CUBE_COMPATIBLE_BIT = 0x00000010,
-            ALIAS_BIT = 0x00000400,
-            SPLIT_INSTANCE_BIND_REGIONS_BIT = 0x00000040,
-            IC_2D_ARRAY_COMPATIBLE_BIT = 0x00000020, // VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT
-            BLOCK_TEXEL_VIEW_COMPATIBLE_BIT = 0x00000080,
-            EXTENDED_USAGE_BIT = 0x00000100,
-            PROTECTED_BIT = 0x00000800,
-            DISJOINT_BIT = 0x00000200,
-        }
-    },
-    {
-        VkPipelineCreateFlags,
-        enum VkPipelineCreateFlagBits{
-            DISABLE_OPTIMIZATION_BIT = 0x00000001,
-            ALLOW_DERIVATIVES_BIT = 0x00000002,
-            DERIVATIVE_BIT = 0x00000004,
-            VIEW_INDEX_FROM_DEVICE_INDEX_BIT = 0x00000008,
-            DISPATCH_BASE_BIT = 0x00000010,
-        }
-    },
-    {
-        VkColorComponentFlags,
-        enum VkColorComponentFlagBits{
-            R_BIT = 0x00000001,
-            G_BIT = 0x00000002,
-            B_BIT = 0x00000004,
-            A_BIT = 0x00000008,
-        }
-    },
-    {
-        VkFenceCreateFlags,
-        enum VkFenceCreateFlagBits{
-            SIGNALED_BIT = 0x00000001,
-        }
-    },
-    {
-        VkFormatFeatureFlags,
-        enum VkFormatFeatureFlagBits{
-            SAMPLED_IMAGE_BIT = 0x00000001,
-            STORAGE_IMAGE_BIT = 0x00000002,
-            STORAGE_IMAGE_ATOMIC_BIT = 0x00000004,
-            UNIFORM_TEXEL_BUFFER_BIT = 0x00000008,
-            STORAGE_TEXEL_BUFFER_BIT = 0x00000010,
-            STORAGE_TEXEL_BUFFER_ATOMIC_BIT = 0x00000020,
-            VERTEX_BUFFER_BIT = 0x00000040,
-            COLOR_ATTACHMENT_BIT = 0x00000080,
-            COLOR_ATTACHMENT_BLEND_BIT = 0x00000100,
-            DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000200,
-            BLIT_SRC_BIT = 0x00000400,
-            BLIT_DST_BIT = 0x00000800,
-            SAMPLED_IMAGE_FILTER_LINEAR_BIT = 0x00001000,
-            TRANSFER_SRC_BIT = 0x00004000,
-            TRANSFER_DST_BIT = 0x00008000,
-            MIDPOINT_CHROMA_SAMPLES_BIT = 0x00020000,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT = 0x00040000,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT = 0x00080000,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT = 0x00100000,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT = 0x00200000,
-            DISJOINT_BIT = 0x00400000,
-            COSITED_CHROMA_SAMPLES_BIT = 0x00800000,
-            SAMPLED_IMAGE_FILTER_MINMAX_BIT = 0x00010000,
-        }
-    },
-    {
-        VkQueryControlFlags,
-        enum VkQueryControlFlagBits{
-            PRECISE_BIT = 0x00000001,
-        }
-    },
-    {
-        VkQueryResultFlags,
-        enum VkQueryResultFlagBits{
-            U64_BIT = 0x00000001, // VK_QUERY_RESULT_64_BIT
-            WAIT_BIT = 0x00000002,
-            WITH_AVAILABILITY_BIT = 0x00000004,
-            PARTIAL_BIT = 0x00000008,
-        }
-    },
-    {
-        VkCommandBufferUsageFlags,
-        enum VkCommandBufferUsageFlagBits{
-            ONE_TIME_SUBMIT_BIT = 0x00000001,
-            RENDER_PASS_CONTINUE_BIT = 0x00000002,
-            SIMULTANEOUS_USE_BIT = 0x00000004,
-        }
-    },
-    {
-        VkQueryPipelineStatisticFlags,
-        enum VkQueryPipelineStatisticFlagBits{
-            INPUT_ASSEMBLY_VERTICES_BIT = 0x00000001,
-            INPUT_ASSEMBLY_PRIMITIVES_BIT = 0x00000002,
-            VERTEX_SHADER_INVOCATIONS_BIT = 0x00000004,
-            GEOMETRY_SHADER_INVOCATIONS_BIT = 0x00000008,
-            GEOMETRY_SHADER_PRIMITIVES_BIT = 0x00000010,
-            CLIPPING_INVOCATIONS_BIT = 0x00000020,
-            CLIPPING_PRIMITIVES_BIT = 0x00000040,
-            FRAGMENT_SHADER_INVOCATIONS_BIT = 0x00000080,
-            TESSELLATION_CONTROL_SHADER_PATCHES_BIT = 0x00000100,
-            TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT = 0x00000200,
-            COMPUTE_SHADER_INVOCATIONS_BIT = 0x00000400,
-        }
-    },
-    {
-        VkImageAspectFlags,
-        enum VkImageAspectFlagBits{
-            COLOR_BIT = 0x00000001,
-            DEPTH_BIT = 0x00000002,
-            STENCIL_BIT = 0x00000004,
-            METADATA_BIT = 0x00000008,
-            PLANE_0_BIT = 0x00000010,
-            PLANE_1_BIT = 0x00000020,
-            PLANE_2_BIT = 0x00000040,
-        }
-    },
-    {
-        VkSparseImageFormatFlags,
-        enum VkSparseImageFormatFlagBits{
-            SINGLE_MIPTAIL_BIT = 0x00000001,
-            ALIGNED_MIP_SIZE_BIT = 0x00000002,
-            NONSTANDARD_BLOCK_SIZE_BIT = 0x00000004,
-        }
-    },
-    {
-        VkSparseMemoryBindFlags,
-        enum VkSparseMemoryBindFlagBits{
-            METADATA_BIT = 0x00000001,
-        }
-    },
-    {
-        VkPipelineStageFlags,
-        enum VkPipelineStageFlagBits{
-            TOP_OF_PIPE_BIT = 0x00000001,
-            DRAW_INDIRECT_BIT = 0x00000002,
-            VERTEX_INPUT_BIT = 0x00000004,
-            VERTEX_SHADER_BIT = 0x00000008,
-            TESSELLATION_CONTROL_SHADER_BIT = 0x00000010,
-            TESSELLATION_EVALUATION_SHADER_BIT = 0x00000020,
-            GEOMETRY_SHADER_BIT = 0x00000040,
-            FRAGMENT_SHADER_BIT = 0x00000080,
-            EARLY_FRAGMENT_TESTS_BIT = 0x00000100,
-            LATE_FRAGMENT_TESTS_BIT = 0x00000200,
-            COLOR_ATTACHMENT_OUTPUT_BIT = 0x00000400,
-            COMPUTE_SHADER_BIT = 0x00000800,
-            TRANSFER_BIT = 0x00001000,
-            BOTTOM_OF_PIPE_BIT = 0x00002000,
-            HOST_BIT = 0x00004000,
-            ALL_GRAPHICS_BIT = 0x00008000,
-            ALL_COMMANDS_BIT = 0x00010000,
-        }
-    },
-    {
-        VkCommandPoolCreateFlags,
-        enum VkCommandPoolCreateFlagBits{
-            TRANSIENT_BIT = 0x00000001,
-            RESET_COMMAND_BUFFER_BIT = 0x00000002,
-            PROTECTED_BIT = 0x00000004,
-        }
-    },
-    {
-        VkCommandPoolResetFlags,
-        enum VkCommandPoolResetFlagBits{
-            RELEASE_RESOURCES_BIT = 0x00000001,
-        }
-    },
-    {
-        VkCommandBufferResetFlags,
-        enum VkCommandBufferResetFlagBits{
-            RELEASE_RESOURCES_BIT = 0x00000001,
-        }
-    },
-    {
-        VkSampleCountFlags,
-        enum VkSampleCountFlagBits{
-            SC_1_BIT = 0x00000001, // VK_SAMPLE_COUNT_1_BIT
-            SC_2_BIT = 0x00000002, // VK_SAMPLE_COUNT_2_BIT
-            SC_4_BIT = 0x00000004, // VK_SAMPLE_COUNT_4_BIT
-            SC_8_BIT = 0x00000008, // VK_SAMPLE_COUNT_8_BIT
-            SC_16_BIT = 0x00000010, // VK_SAMPLE_COUNT_16_BIT
-            SC_32_BIT = 0x00000020, // VK_SAMPLE_COUNT_32_BIT
-            SC_64_BIT = 0x00000040, // VK_SAMPLE_COUNT_64_BIT
-        }
-    },
-    {
-        VkAttachmentDescriptionFlags,
-        enum VkAttachmentDescriptionFlagBits{
-            MAY_ALIAS_BIT = 0x00000001,
-        }
-    },
-    {
-        VkStencilFaceFlags,
-        enum VkStencilFaceFlagBits{
-            FRONT_BIT = 0x00000001,
-            BACK_BIT = 0x00000002,
-            FRONT_AND_BACK = 0x00000003,
-        }
-    },
-    {
-        VkDescriptorPoolCreateFlags,
-        enum VkDescriptorPoolCreateFlagBits{
-            FREE_DESCRIPTOR_SET_BIT = 0x00000001,
-            UPDATE_AFTER_BIND_BIT = 0x00000002,
-        }
-    },
-    {
-        VkDependencyFlags,
-        enum VkDependencyFlagBits{
-            BY_REGION_BIT = 0x00000001,
-            VIEW_LOCAL_BIT = 0x00000002,
-            DEVICE_GROUP_BIT = 0x00000004,
-        }
-    },
-    {
-        VkSemaphoreWaitFlags,
-        enum VkSemaphoreWaitFlagBits{
-            ANY_BIT = 0x00000001,
-        }
-    },
-    {
-        VkSubgroupFeatureFlags,
-        enum VkSubgroupFeatureFlagBits{
-            BASIC_BIT = 0x00000001,
-            VOTE_BIT = 0x00000002,
-            ARITHMETIC_BIT = 0x00000004,
-            BALLOT_BIT = 0x00000008,
-            SHUFFLE_BIT = 0x00000010,
-            SHUFFLE_RELATIVE_BIT = 0x00000020,
-            CLUSTERED_BIT = 0x00000040,
-            QUAD_BIT = 0x00000080,
-        }
-    },
-    {
-        VkDescriptorSetLayoutCreateFlags,
-        enum VkDescriptorSetLayoutCreateFlagBits{
-            UPDATE_AFTER_BIND_POOL_BIT = 0x00000002,
-        }
-    },
-    {
-        VkExternalMemoryHandleTypeFlags,
-        enum VkExternalMemoryHandleTypeFlagBits{
-            OPAQUE_FD_BIT = 0x00000001,
-            OPAQUE_WIN32_BIT = 0x00000002,
-            OPAQUE_WIN32_KMT_BIT = 0x00000004,
-            D3D11_TEXTURE_BIT = 0x00000008,
-            D3D11_TEXTURE_KMT_BIT = 0x00000010,
-            D3D12_HEAP_BIT = 0x00000020,
-            D3D12_RESOURCE_BIT = 0x00000040,
-        }
-    },
-    {
-        VkExternalMemoryFeatureFlags,
-        enum VkExternalMemoryFeatureFlagBits{
-            DEDICATED_ONLY_BIT = 0x00000001,
-            EXPORTABLE_BIT = 0x00000002,
-            IMPORTABLE_BIT = 0x00000004,
-        }
-    },
-    {
-        VkExternalSemaphoreHandleTypeFlags,
-        enum VkExternalSemaphoreHandleTypeFlagBits{
-            OPAQUE_FD_BIT = 0x00000001,
-            OPAQUE_WIN32_BIT = 0x00000002,
-            OPAQUE_WIN32_KMT_BIT = 0x00000004,
-            D3D12_FENCE_BIT = 0x00000008,
-            SYNC_FD_BIT = 0x00000010,
-        }
-    },
-    {
-        VkExternalSemaphoreFeatureFlags,
-        enum VkExternalSemaphoreFeatureFlagBits{
-            EXPORTABLE_BIT = 0x00000001,
-            IMPORTABLE_BIT = 0x00000002,
-        }
-    },
-    {
-        VkExternalFenceHandleTypeFlags,
-        enum VkExternalFenceHandleTypeFlagBits{
-            OPAQUE_FD_BIT = 0x00000001,
-            OPAQUE_WIN32_BIT = 0x00000002,
-            OPAQUE_WIN32_KMT_BIT = 0x00000004,
-            SYNC_FD_BIT = 0x00000008,
-        }
-    },
-    {
-        VkExternalFenceFeatureFlags,
-        enum VkExternalFenceFeatureFlagBits{
-            EXPORTABLE_BIT = 0x00000001,
-            IMPORTABLE_BIT = 0x00000002,
-        }
-    },
-    {
-        VkPeerMemoryFeatureFlags,
-        enum VkPeerMemoryFeatureFlagBits{
-            COPY_SRC_BIT = 0x00000001,
-            COPY_DST_BIT = 0x00000002,
-            GENERIC_SRC_BIT = 0x00000004,
-            GENERIC_DST_BIT = 0x00000008,
-        }
-    },
-    {
-        VkMemoryAllocateFlags,
-        enum VkMemoryAllocateFlagBits{
-            DEVICE_MASK_BIT = 0x00000001,
-            DEVICE_ADDRESS_BIT = 0x00000002,
-            DEVICE_ADDRESS_CAPTURE_REPLAY_BIT = 0x00000004,
-        }
-    },
-    {
-        VkDescriptorBindingFlags,
-        enum VkDescriptorBindingFlagBits{
-            UPDATE_AFTER_BIND_BIT = 0x00000001,
-            UPDATE_UNUSED_WHILE_PENDING_BIT = 0x00000002,
-            PARTIALLY_BOUND_BIT = 0x00000004,
-            VARIABLE_DESCRIPTOR_COUNT_BIT = 0x00000008,
-        }
-    },
-    {
-        VkResolveModeFlags,
-        enum VkResolveModeFlagBits{
-            NONE = 0,
-            SAMPLE_ZERO_BIT = 0x00000001,
-            AVERAGE_BIT = 0x00000002,
-            MIN_BIT = 0x00000004,
-            MAX_BIT = 0x00000008,
-        }
-    },
-    {
-        VkFramebufferCreateFlags,
-        enum VkFramebufferCreateFlagBits{
-            IMAGELESS_BIT = 0x00000001,
-        }
-    },
-    {
-        VkDeviceCreateFlags,
-        enum VkDeviceCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkInstanceCreateFlags,
-        enum VkInstanceCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkBufferViewCreateFlags,
-        enum VkBufferViewCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkImageViewCreateFlags,
-        enum VkImageViewCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkShaderModuleCreateFlags,
-        enum VkShaderModuleCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineShaderStageCreateFlags,
-        enum VkPipelineShaderStageCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineVertexInputStateCreateFlags,
-        enum VkPipelineVertexInputStateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineInputAssemblyStateCreateFlags,
-        enum VkPipelineInputAssemblyStateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineTessellationStateCreateFlags,
-        enum VkPipelineTessellationStateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineViewportStateCreateFlags,
-        enum VkPipelineViewportStateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineRasterizationStateCreateFlags,
-        enum VkPipelineRasterizationStateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineMultisampleStateCreateFlags,
-        enum VkPipelineMultisampleStateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineColorBlendStateCreateFlags,
-        enum VkPipelineColorBlendStateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineDynamicStateCreateFlags,
-        enum VkPipelineDynamicStateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineDepthStencilStateCreateFlags,
-        enum VkPipelineDepthStencilStateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineCacheCreateFlags,
-        enum VkPipelineCacheCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkPipelineLayoutCreateFlags,
-        enum VkPipelineLayoutCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkSamplerCreateFlags,
-        enum VkSamplerCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkRenderPassCreateFlags,
-        enum VkRenderPassCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkEventCreateFlags,
-        enum VkEventCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkSemaphoreCreateFlags,
-        enum VkSemaphoreCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkQueryPoolCreateFlags,
-        enum VkQueryPoolCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkDescriptorUpdateTemplateCreateFlags,
-        enum VkDescriptorUpdateTemplateCreateFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkSubpassDescriptionFlags,
-        enum VkSubpassDescriptionFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkMemoryMapFlags,
-        enum VkMemoryMapFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkDescriptorPoolResetFlags,
-        enum VkDescriptorPoolResetFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkCommandPoolTrimFlags,
-        enum VkCommandPoolTrimFlagBits{
-            _RESERVED = 0,
-        }
-    },
-    {
-        VkFenceImportFlags,
-        enum VkFenceImportFlagBits{
-            TEMPORARY_BIT = 0x00000001,
-        }
+    VkCullModeFlags = enum VkCullModeFlagBits{
+        NONE = 0,
+        FRONT_BIT = 0x00000001,
+        BACK_BIT = 0x00000002,
+        FRONT_AND_BACK = 0x00000003,
+    },
+    VkQueueFlags = enum VkQueueFlagBits{
+        GRAPHICS_BIT = 0x00000001,
+        COMPUTE_BIT = 0x00000002,
+        TRANSFER_BIT = 0x00000004,
+        SPARSE_BINDING_BIT = 0x00000008,
+        PROTECTED_BIT = 0x00000010,
+    },
+    VkDeviceQueueCreateFlags = enum VkDeviceQueueCreateFlagBits{
+        PROTECTED_BIT = 0x00000001,
+    },
+    VkMemoryPropertyFlags = enum VkMemoryPropertyFlagBits{
+        DEVICE_LOCAL_BIT = 0x00000001,
+        HOST_VISIBLE_BIT = 0x00000002,
+        HOST_COHERENT_BIT = 0x00000004,
+        HOST_CACHED_BIT = 0x00000008,
+        LAZILY_ALLOCATED_BIT = 0x00000010,
+        PROTECTED_BIT = 0x00000020,
+    },
+    VkMemoryHeapFlags = enum VkMemoryHeapFlagBits{
+        DEVICE_LOCAL_BIT = 0x00000001,
+        MULTI_INSTANCE_BIT = 0x00000002,
+    },
+    VkAccessFlags = enum VkAccessFlagBits{
+        INDIRECT_COMMAND_READ_BIT = 0x00000001,
+        INDEX_READ_BIT = 0x00000002,
+        VERTEX_ATTRIBUTE_READ_BIT = 0x00000004,
+        UNIFORM_READ_BIT = 0x00000008,
+        INPUT_ATTACHMENT_READ_BIT = 0x00000010,
+        SHADER_READ_BIT = 0x00000020,
+        SHADER_WRITE_BIT = 0x00000040,
+        COLOR_ATTACHMENT_READ_BIT = 0x00000080,
+        COLOR_ATTACHMENT_WRITE_BIT = 0x00000100,
+        DEPTH_STENCIL_ATTACHMENT_READ_BIT = 0x00000200,
+        DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = 0x00000400,
+        TRANSFER_READ_BIT = 0x00000800,
+        TRANSFER_WRITE_BIT = 0x00001000,
+        HOST_READ_BIT = 0x00002000,
+        HOST_WRITE_BIT = 0x00004000,
+        MEMORY_READ_BIT = 0x00008000,
+        MEMORY_WRITE_BIT = 0x00010000,
+    },
+    VkBufferUsageFlags = enum VkBufferUsageFlagBits{
+        TRANSFER_SRC_BIT = 0x00000001,
+        TRANSFER_DST_BIT = 0x00000002,
+        UNIFORM_TEXEL_BUFFER_BIT = 0x00000004,
+        STORAGE_TEXEL_BUFFER_BIT = 0x00000008,
+        UNIFORM_BUFFER_BIT = 0x00000010,
+        STORAGE_BUFFER_BIT = 0x00000020,
+        INDEX_BUFFER_BIT = 0x00000040,
+        VERTEX_BUFFER_BIT = 0x00000080,
+        INDIRECT_BUFFER_BIT = 0x00000100,
+        SHADER_DEVICE_ADDRESS_BIT = 0x00020000,
+    },
+    VkBufferCreateFlags = enum VkBufferCreateFlagBits{
+        SPARSE_BINDING_BIT = 0x00000001,
+        SPARSE_RESIDENCY_BIT = 0x00000002,
+        SPARSE_ALIASED_BIT = 0x00000004,
+        PROTECTED_BIT = 0x00000008,
+        DEVICE_ADDRESS_CAPTURE_REPLAY_BIT = 0x00000010,
+    },
+    VkShaderStageFlags = enum VkShaderStageFlagBits{
+        VERTEX_BIT = 0x00000001,
+        TESSELLATION_CONTROL_BIT = 0x00000002,
+        TESSELLATION_EVALUATION_BIT = 0x00000004,
+        GEOMETRY_BIT = 0x00000008,
+        FRAGMENT_BIT = 0x00000010,
+        COMPUTE_BIT = 0x00000020,
+        ALL_GRAPHICS = 0x0000001F,
+        ALL = 0x7FFFFFFF,
+    },
+    VkImageUsageFlags = enum VkImageUsageFlagBits{
+        TRANSFER_SRC_BIT = 0x00000001,
+        TRANSFER_DST_BIT = 0x00000002,
+        SAMPLED_BIT = 0x00000004,
+        STORAGE_BIT = 0x00000008,
+        COLOR_ATTACHMENT_BIT = 0x00000010,
+        DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000020,
+        TRANSIENT_ATTACHMENT_BIT = 0x00000040,
+        INPUT_ATTACHMENT_BIT = 0x00000080,
+    },
+    VkImageCreateFlags = enum VkImageCreateFlagBits{
+        SPARSE_BINDING_BIT = 0x00000001,
+        SPARSE_RESIDENCY_BIT = 0x00000002,
+        SPARSE_ALIASED_BIT = 0x00000004,
+        MUTABLE_FORMAT_BIT = 0x00000008,
+        CUBE_COMPATIBLE_BIT = 0x00000010,
+        ALIAS_BIT = 0x00000400,
+        SPLIT_INSTANCE_BIND_REGIONS_BIT = 0x00000040,
+        IC_2D_ARRAY_COMPATIBLE_BIT = 0x00000020, // VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT
+        BLOCK_TEXEL_VIEW_COMPATIBLE_BIT = 0x00000080,
+        EXTENDED_USAGE_BIT = 0x00000100,
+        PROTECTED_BIT = 0x00000800,
+        DISJOINT_BIT = 0x00000200,
+    },
+    VkPipelineCreateFlags = enum VkPipelineCreateFlagBits{
+        DISABLE_OPTIMIZATION_BIT = 0x00000001,
+        ALLOW_DERIVATIVES_BIT = 0x00000002,
+        DERIVATIVE_BIT = 0x00000004,
+        VIEW_INDEX_FROM_DEVICE_INDEX_BIT = 0x00000008,
+        DISPATCH_BASE_BIT = 0x00000010,
+    },
+    VkColorComponentFlags = enum VkColorComponentFlagBits{
+        R_BIT = 0x00000001,
+        G_BIT = 0x00000002,
+        B_BIT = 0x00000004,
+        A_BIT = 0x00000008,
+    },
+    VkFenceCreateFlags = enum VkFenceCreateFlagBits{
+        SIGNALED_BIT = 0x00000001,
+    },
+    VkFormatFeatureFlags = enum VkFormatFeatureFlagBits{
+        SAMPLED_IMAGE_BIT = 0x00000001,
+        STORAGE_IMAGE_BIT = 0x00000002,
+        STORAGE_IMAGE_ATOMIC_BIT = 0x00000004,
+        UNIFORM_TEXEL_BUFFER_BIT = 0x00000008,
+        STORAGE_TEXEL_BUFFER_BIT = 0x00000010,
+        STORAGE_TEXEL_BUFFER_ATOMIC_BIT = 0x00000020,
+        VERTEX_BUFFER_BIT = 0x00000040,
+        COLOR_ATTACHMENT_BIT = 0x00000080,
+        COLOR_ATTACHMENT_BLEND_BIT = 0x00000100,
+        DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000200,
+        BLIT_SRC_BIT = 0x00000400,
+        BLIT_DST_BIT = 0x00000800,
+        SAMPLED_IMAGE_FILTER_LINEAR_BIT = 0x00001000,
+        TRANSFER_SRC_BIT = 0x00004000,
+        TRANSFER_DST_BIT = 0x00008000,
+        MIDPOINT_CHROMA_SAMPLES_BIT = 0x00020000,
+        SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT = 0x00040000,
+        SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT = 0x00080000,
+        SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT = 0x00100000,
+        SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT = 0x00200000,
+        DISJOINT_BIT = 0x00400000,
+        COSITED_CHROMA_SAMPLES_BIT = 0x00800000,
+        SAMPLED_IMAGE_FILTER_MINMAX_BIT = 0x00010000,
+    },
+    VkQueryControlFlags = enum VkQueryControlFlagBits{
+        PRECISE_BIT = 0x00000001,
+    },
+    VkQueryResultFlags = enum VkQueryResultFlagBits{
+        U64_BIT = 0x00000001, // VK_QUERY_RESULT_64_BIT
+        WAIT_BIT = 0x00000002,
+        WITH_AVAILABILITY_BIT = 0x00000004,
+        PARTIAL_BIT = 0x00000008,
+    },
+    VkCommandBufferUsageFlags = enum VkCommandBufferUsageFlagBits{
+        ONE_TIME_SUBMIT_BIT = 0x00000001,
+        RENDER_PASS_CONTINUE_BIT = 0x00000002,
+        SIMULTANEOUS_USE_BIT = 0x00000004,
+    },
+    VkQueryPipelineStatisticFlags = enum VkQueryPipelineStatisticFlagBits{
+        INPUT_ASSEMBLY_VERTICES_BIT = 0x00000001,
+        INPUT_ASSEMBLY_PRIMITIVES_BIT = 0x00000002,
+        VERTEX_SHADER_INVOCATIONS_BIT = 0x00000004,
+        GEOMETRY_SHADER_INVOCATIONS_BIT = 0x00000008,
+        GEOMETRY_SHADER_PRIMITIVES_BIT = 0x00000010,
+        CLIPPING_INVOCATIONS_BIT = 0x00000020,
+        CLIPPING_PRIMITIVES_BIT = 0x00000040,
+        FRAGMENT_SHADER_INVOCATIONS_BIT = 0x00000080,
+        TESSELLATION_CONTROL_SHADER_PATCHES_BIT = 0x00000100,
+        TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT = 0x00000200,
+        COMPUTE_SHADER_INVOCATIONS_BIT = 0x00000400,
+    },
+    VkImageAspectFlags = enum VkImageAspectFlagBits{
+        COLOR_BIT = 0x00000001,
+        DEPTH_BIT = 0x00000002,
+        STENCIL_BIT = 0x00000004,
+        METADATA_BIT = 0x00000008,
+        PLANE_0_BIT = 0x00000010,
+        PLANE_1_BIT = 0x00000020,
+        PLANE_2_BIT = 0x00000040,
+    },
+    VkSparseImageFormatFlags = enum VkSparseImageFormatFlagBits{
+        SINGLE_MIPTAIL_BIT = 0x00000001,
+        ALIGNED_MIP_SIZE_BIT = 0x00000002,
+        NONSTANDARD_BLOCK_SIZE_BIT = 0x00000004,
+    },
+    VkSparseMemoryBindFlags = enum VkSparseMemoryBindFlagBits{
+        METADATA_BIT = 0x00000001,
+    },
+    VkPipelineStageFlags = enum VkPipelineStageFlagBits{
+        TOP_OF_PIPE_BIT = 0x00000001,
+        DRAW_INDIRECT_BIT = 0x00000002,
+        VERTEX_INPUT_BIT = 0x00000004,
+        VERTEX_SHADER_BIT = 0x00000008,
+        TESSELLATION_CONTROL_SHADER_BIT = 0x00000010,
+        TESSELLATION_EVALUATION_SHADER_BIT = 0x00000020,
+        GEOMETRY_SHADER_BIT = 0x00000040,
+        FRAGMENT_SHADER_BIT = 0x00000080,
+        EARLY_FRAGMENT_TESTS_BIT = 0x00000100,
+        LATE_FRAGMENT_TESTS_BIT = 0x00000200,
+        COLOR_ATTACHMENT_OUTPUT_BIT = 0x00000400,
+        COMPUTE_SHADER_BIT = 0x00000800,
+        TRANSFER_BIT = 0x00001000,
+        BOTTOM_OF_PIPE_BIT = 0x00002000,
+        HOST_BIT = 0x00004000,
+        ALL_GRAPHICS_BIT = 0x00008000,
+        ALL_COMMANDS_BIT = 0x00010000,
+    },
+    VkCommandPoolCreateFlags = enum VkCommandPoolCreateFlagBits{
+        TRANSIENT_BIT = 0x00000001,
+        RESET_COMMAND_BUFFER_BIT = 0x00000002,
+        PROTECTED_BIT = 0x00000004,
+    },
+    VkCommandPoolResetFlags = enum VkCommandPoolResetFlagBits{
+        RELEASE_RESOURCES_BIT = 0x00000001,
+    },
+    VkCommandBufferResetFlags = enum VkCommandBufferResetFlagBits{
+        RELEASE_RESOURCES_BIT = 0x00000001,
+    },
+    VkSampleCountFlags = enum VkSampleCountFlagBits{
+        SC_1_BIT = 0x00000001, // VK_SAMPLE_COUNT_1_BIT
+        SC_2_BIT = 0x00000002, // VK_SAMPLE_COUNT_2_BIT
+        SC_4_BIT = 0x00000004, // VK_SAMPLE_COUNT_4_BIT
+        SC_8_BIT = 0x00000008, // VK_SAMPLE_COUNT_8_BIT
+        SC_16_BIT = 0x00000010, // VK_SAMPLE_COUNT_16_BIT
+        SC_32_BIT = 0x00000020, // VK_SAMPLE_COUNT_32_BIT
+        SC_64_BIT = 0x00000040, // VK_SAMPLE_COUNT_64_BIT
+    },
+    VkAttachmentDescriptionFlags = enum VkAttachmentDescriptionFlagBits{
+        MAY_ALIAS_BIT = 0x00000001,
+    },
+    VkStencilFaceFlags = enum VkStencilFaceFlagBits{
+        FRONT_BIT = 0x00000001,
+        BACK_BIT = 0x00000002,
+        FRONT_AND_BACK = 0x00000003,
+    },
+    VkDescriptorPoolCreateFlags = enum VkDescriptorPoolCreateFlagBits{
+        FREE_DESCRIPTOR_SET_BIT = 0x00000001,
+        UPDATE_AFTER_BIND_BIT = 0x00000002,
+    },
+    VkDependencyFlags = enum VkDependencyFlagBits{
+        BY_REGION_BIT = 0x00000001,
+        VIEW_LOCAL_BIT = 0x00000002,
+        DEVICE_GROUP_BIT = 0x00000004,
+    },
+    VkSemaphoreWaitFlags = enum VkSemaphoreWaitFlagBits{
+        ANY_BIT = 0x00000001,
+    },
+    VkSubgroupFeatureFlags = enum VkSubgroupFeatureFlagBits{
+        BASIC_BIT = 0x00000001,
+        VOTE_BIT = 0x00000002,
+        ARITHMETIC_BIT = 0x00000004,
+        BALLOT_BIT = 0x00000008,
+        SHUFFLE_BIT = 0x00000010,
+        SHUFFLE_RELATIVE_BIT = 0x00000020,
+        CLUSTERED_BIT = 0x00000040,
+        QUAD_BIT = 0x00000080,
+    },
+    VkDescriptorSetLayoutCreateFlags = enum VkDescriptorSetLayoutCreateFlagBits{
+        UPDATE_AFTER_BIND_POOL_BIT = 0x00000002,
+    },
+    VkExternalMemoryHandleTypeFlags = enum VkExternalMemoryHandleTypeFlagBits{
+        OPAQUE_FD_BIT = 0x00000001,
+        OPAQUE_WIN32_BIT = 0x00000002,
+        OPAQUE_WIN32_KMT_BIT = 0x00000004,
+        D3D11_TEXTURE_BIT = 0x00000008,
+        D3D11_TEXTURE_KMT_BIT = 0x00000010,
+        D3D12_HEAP_BIT = 0x00000020,
+        D3D12_RESOURCE_BIT = 0x00000040,
+    },
+    VkExternalMemoryFeatureFlags = enum VkExternalMemoryFeatureFlagBits{
+        DEDICATED_ONLY_BIT = 0x00000001,
+        EXPORTABLE_BIT = 0x00000002,
+        IMPORTABLE_BIT = 0x00000004,
+    },
+    VkExternalSemaphoreHandleTypeFlags = enum VkExternalSemaphoreHandleTypeFlagBits{
+        OPAQUE_FD_BIT = 0x00000001,
+        OPAQUE_WIN32_BIT = 0x00000002,
+        OPAQUE_WIN32_KMT_BIT = 0x00000004,
+        D3D12_FENCE_BIT = 0x00000008,
+        SYNC_FD_BIT = 0x00000010,
+    },
+    VkExternalSemaphoreFeatureFlags = enum VkExternalSemaphoreFeatureFlagBits{
+        EXPORTABLE_BIT = 0x00000001,
+        IMPORTABLE_BIT = 0x00000002,
+    },
+    VkExternalFenceHandleTypeFlags = enum VkExternalFenceHandleTypeFlagBits{
+        OPAQUE_FD_BIT = 0x00000001,
+        OPAQUE_WIN32_BIT = 0x00000002,
+        OPAQUE_WIN32_KMT_BIT = 0x00000004,
+        SYNC_FD_BIT = 0x00000008,
+    },
+    VkExternalFenceFeatureFlags = enum VkExternalFenceFeatureFlagBits{
+        EXPORTABLE_BIT = 0x00000001,
+        IMPORTABLE_BIT = 0x00000002,
+    },
+    VkPeerMemoryFeatureFlags = enum VkPeerMemoryFeatureFlagBits{
+        COPY_SRC_BIT = 0x00000001,
+        COPY_DST_BIT = 0x00000002,
+        GENERIC_SRC_BIT = 0x00000004,
+        GENERIC_DST_BIT = 0x00000008,
+    },
+    VkMemoryAllocateFlags = enum VkMemoryAllocateFlagBits{
+        DEVICE_MASK_BIT = 0x00000001,
+        DEVICE_ADDRESS_BIT = 0x00000002,
+        DEVICE_ADDRESS_CAPTURE_REPLAY_BIT = 0x00000004,
+    },
+    VkDescriptorBindingFlags = enum VkDescriptorBindingFlagBits{
+        UPDATE_AFTER_BIND_BIT = 0x00000001,
+        UPDATE_UNUSED_WHILE_PENDING_BIT = 0x00000002,
+        PARTIALLY_BOUND_BIT = 0x00000004,
+        VARIABLE_DESCRIPTOR_COUNT_BIT = 0x00000008,
+    },
+    VkResolveModeFlags = enum VkResolveModeFlagBits{
+        NONE = 0,
+        SAMPLE_ZERO_BIT = 0x00000001,
+        AVERAGE_BIT = 0x00000002,
+        MIN_BIT = 0x00000004,
+        MAX_BIT = 0x00000008,
+    },
+    VkFramebufferCreateFlags = enum VkFramebufferCreateFlagBits{
+        IMAGELESS_BIT = 0x00000001,
+    },
+    VkDeviceCreateFlags = enum VkDeviceCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkInstanceCreateFlags = enum VkInstanceCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkBufferViewCreateFlags = enum VkBufferViewCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkImageViewCreateFlags = enum VkImageViewCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkShaderModuleCreateFlags = enum VkShaderModuleCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineShaderStageCreateFlags = enum VkPipelineShaderStageCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineVertexInputStateCreateFlags = enum VkPipelineVertexInputStateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineInputAssemblyStateCreateFlags = enum VkPipelineInputAssemblyStateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineTessellationStateCreateFlags = enum VkPipelineTessellationStateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineViewportStateCreateFlags = enum VkPipelineViewportStateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineRasterizationStateCreateFlags = enum VkPipelineRasterizationStateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineMultisampleStateCreateFlags = enum VkPipelineMultisampleStateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineColorBlendStateCreateFlags = enum VkPipelineColorBlendStateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineDynamicStateCreateFlags = enum VkPipelineDynamicStateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineDepthStencilStateCreateFlags = enum VkPipelineDepthStencilStateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineCacheCreateFlags = enum VkPipelineCacheCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkPipelineLayoutCreateFlags = enum VkPipelineLayoutCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkSamplerCreateFlags = enum VkSamplerCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkRenderPassCreateFlags = enum VkRenderPassCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkEventCreateFlags = enum VkEventCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkSemaphoreCreateFlags = enum VkSemaphoreCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkQueryPoolCreateFlags = enum VkQueryPoolCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkDescriptorUpdateTemplateCreateFlags = enum VkDescriptorUpdateTemplateCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkSubpassDescriptionFlags = enum VkSubpassDescriptionFlagBits{
+        _RESERVED = 0,
+    },
+    VkMemoryMapFlags = enum VkMemoryMapFlagBits{
+        _RESERVED = 0,
+    },
+    VkDescriptorPoolResetFlags = enum VkDescriptorPoolResetFlagBits{
+        _RESERVED = 0,
+    },
+    VkCommandPoolTrimFlags = enum VkCommandPoolTrimFlagBits{
+        _RESERVED = 0,
+    },
+    VkFenceImportFlags = enum VkFenceImportFlagBits{
+        TEMPORARY_BIT = 0x00000001,
     },
 }
 
 enums! {
+    enum VkStructureType {
+        APPLICATION_INFO = 0,
+        INSTANCE_CREATE_INFO = 1,
+        DEVICE_QUEUE_CREATE_INFO = 2,
+        DEVICE_CREATE_INFO = 3,
+        SUBMIT_INFO = 4,
+        MEMORY_ALLOCATE_INFO = 5,
+        MAPPED_MEMORY_RANGE = 6,
+        BIND_SPARSE_INFO = 7,
+        FENCE_CREATE_INFO = 8,
+        SEMAPHORE_CREATE_INFO = 9,
+        EVENT_CREATE_INFO = 10,
+        QUERY_POOL_CREATE_INFO = 11,
+        BUFFER_CREATE_INFO = 12,
+        BUFFER_VIEW_CREATE_INFO = 13,
+        IMAGE_CREATE_INFO = 14,
+        IMAGE_VIEW_CREATE_INFO = 15,
+        SHADER_MODULE_CREATE_INFO = 16,
+        PIPELINE_CACHE_CREATE_INFO = 17,
+        PIPELINE_SHADER_STAGE_CREATE_INFO = 18,
+        PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = 19,
+        PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = 20,
+        PIPELINE_TESSELLATION_STATE_CREATE_INFO = 21,
+        PIPELINE_VIEWPORT_STATE_CREATE_INFO = 22,
+        PIPELINE_RASTERIZATION_STATE_CREATE_INFO = 23,
+        PIPELINE_MULTISAMPLE_STATE_CREATE_INFO = 24,
+        PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO = 25,
+        PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = 26,
+        PIPELINE_DYNAMIC_STATE_CREATE_INFO = 27,
+        GRAPHICS_PIPELINE_CREATE_INFO = 28,
+        COMPUTE_PIPELINE_CREATE_INFO = 29,
+        PIPELINE_LAYOUT_CREATE_INFO = 30,
+        SAMPLER_CREATE_INFO = 31,
+        DESCRIPTOR_SET_LAYOUT_CREATE_INFO = 32,
+        DESCRIPTOR_POOL_CREATE_INFO = 33,
+        DESCRIPTOR_SET_ALLOCATE_INFO = 34,
+        WRITE_DESCRIPTOR_SET = 35,
+        COPY_DESCRIPTOR_SET = 36,
+        FRAMEBUFFER_CREATE_INFO = 37,
+        RENDER_PASS_CREATE_INFO = 38,
+        COMMAND_POOL_CREATE_INFO = 39,
+        COMMAND_BUFFER_ALLOCATE_INFO = 40,
+        COMMAND_BUFFER_INHERITANCE_INFO = 41,
+        COMMAND_BUFFER_BEGIN_INFO = 42,
+        RENDER_PASS_BEGIN_INFO = 43,
+        BUFFER_MEMORY_BARRIER = 44,
+        IMAGE_MEMORY_BARRIER = 45,
+        MEMORY_BARRIER = 46,
+        LOADER_INSTANCE_CREATE_INFO = 47, // reserved for internal use by the loader
+        LOADER_DEVICE_CREATE_INFO = 48,   // reserved for internal use by the loader
+        PHYSICAL_DEVICE_SUBGROUP_PROPERTIES = 1000094000,
+        BIND_BUFFER_MEMORY_INFO = 1000157000,
+        BIND_IMAGE_MEMORY_INFO = 1000157001,
+        PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES = 1000083000,
+        MEMORY_DEDICATED_REQUIREMENTS = 1000127000,
+        MEMORY_DEDICATED_ALLOCATE_INFO = 1000127001,
+        MEMORY_ALLOCATE_FLAGS_INFO = 1000060000,
+        DEVICE_GROUP_RENDER_PASS_BEGIN_INFO = 1000060003,
+        DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO = 1000060004,
+        DEVICE_GROUP_SUBMIT_INFO = 1000060005,
+        DEVICE_GROUP_BIND_SPARSE_INFO = 1000060006,
+        BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO = 1000060013,
+        BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO = 1000060014,
+        PHYSICAL_DEVICE_GROUP_PROPERTIES = 1000070000,
+        DEVICE_GROUP_DEVICE_CREATE_INFO = 1000070001,
+        BUFFER_MEMORY_REQUIREMENTS_INFO_2 = 1000146000,
+        IMAGE_MEMORY_REQUIREMENTS_INFO_2 = 1000146001,
+        IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2 = 1000146002,
+        MEMORY_REQUIREMENTS_2 = 1000146003,
+        SPARSE_IMAGE_MEMORY_REQUIREMENTS_2 = 1000146004,
+        PHYSICAL_DEVICE_FEATURES_2 = 1000059000,
+        PHYSICAL_DEVICE_PROPERTIES_2 = 1000059001,
+        FORMAT_PROPERTIES_2 = 1000059002,
+        IMAGE_FORMAT_PROPERTIES_2 = 1000059003,
+        PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2 = 1000059004,
+        QUEUE_FAMILY_PROPERTIES_2 = 1000059005,
+        PHYSICAL_DEVICE_MEMORY_PROPERTIES_2 = 1000059006,
+        SPARSE_IMAGE_FORMAT_PROPERTIES_2 = 1000059007,
+        PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2 = 1000059008,
+        PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES = 1000117000,
+        RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO = 1000117001,
+        IMAGE_VIEW_USAGE_CREATE_INFO = 1000117002,
+        PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO = 1000117003,
+        RENDER_PASS_MULTIVIEW_CREATE_INFO = 1000053000,
+        PHYSICAL_DEVICE_MULTIVIEW_FEATURES = 1000053001,
+        PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES = 1000053002,
+        PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES = 1000120000,
+        PROTECTED_SUBMIT_INFO = 1000145000,
+        PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES = 1000145001,
+        PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES = 1000145002,
+        DEVICE_QUEUE_INFO_2 = 1000145003,
+        SAMPLER_YCBCR_CONVERSION_CREATE_INFO = 1000156000,
+        SAMPLER_YCBCR_CONVERSION_INFO = 1000156001,
+        BIND_IMAGE_PLANE_MEMORY_INFO = 1000156002,
+        IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO = 1000156003,
+        PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES = 1000156004,
+        SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES = 1000156005,
+        DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO = 1000085000,
+        PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO = 1000071000,
+        EXTERNAL_IMAGE_FORMAT_PROPERTIES = 1000071001,
+        PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO = 1000071002,
+        EXTERNAL_BUFFER_PROPERTIES = 1000071003,
+        PHYSICAL_DEVICE_ID_PROPERTIES = 1000071004,
+        EXTERNAL_MEMORY_BUFFER_CREATE_INFO = 1000072000,
+        EXTERNAL_MEMORY_IMAGE_CREATE_INFO = 1000072001,
+        EXPORT_MEMORY_ALLOCATE_INFO = 1000072002,
+        PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO = 1000112000,
+        EXTERNAL_FENCE_PROPERTIES = 1000112001,
+        EXPORT_FENCE_CREATE_INFO = 1000113000,
+        EXPORT_SEMAPHORE_CREATE_INFO = 1000077000,
+        PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO = 1000076000,
+        EXTERNAL_SEMAPHORE_PROPERTIES = 1000076001,
+        PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES = 1000168000,
+        DESCRIPTOR_SET_LAYOUT_SUPPORT = 1000168001,
+        PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES = 1000063000,
+        PHYSICAL_DEVICE_VULKAN_1_1_FEATURES = 49,
+        PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES = 50,
+        PHYSICAL_DEVICE_VULKAN_1_2_FEATURES = 51,
+        PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES = 52,
+        IMAGE_FORMAT_LIST_CREATE_INFO = 1000147000,
+        ATTACHMENT_DESCRIPTION_2 = 1000109000,
+        ATTACHMENT_REFERENCE_2 = 1000109001,
+        SUBPASS_DESCRIPTION_2 = 1000109002,
+        SUBPASS_DEPENDENCY_2 = 1000109003,
+        RENDER_PASS_CREATE_INFO_2 = 1000109004,
+        SUBPASS_BEGIN_INFO = 1000109005,
+        SUBPASS_END_INFO = 1000109006,
+        PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES = 1000177000,
+        PHYSICAL_DEVICE_DRIVER_PROPERTIES = 1000196000,
+        PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES = 1000180000,
+        PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES = 1000082000,
+        PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES = 1000197000,
+        DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO = 1000161000,
+        PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES = 1000161001,
+        PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES = 1000161002,
+        DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO = 1000161003,
+        DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT = 1000161004,
+        PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES = 1000199000,
+        SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE = 1000199001,
+        PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES = 1000221000,
+        IMAGE_STENCIL_USAGE_CREATE_INFO = 1000246000,
+        PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES = 1000130000,
+        SAMPLER_REDUCTION_MODE_CREATE_INFO = 1000130001,
+        PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES = 1000211000,
+        PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES = 1000108000,
+        FRAMEBUFFER_ATTACHMENTS_CREATE_INFO = 1000108001,
+        FRAMEBUFFER_ATTACHMENT_IMAGE_INFO = 1000108002,
+        RENDER_PASS_ATTACHMENT_BEGIN_INFO = 1000108003,
+        PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES = 1000253000,
+        PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES = 1000175000,
+        PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES = 1000241000,
+        ATTACHMENT_REFERENCE_STENCIL_LAYOUT = 1000241001,
+        ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT = 1000241002,
+        PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES = 1000261000,
+        PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES = 1000207000,
+        PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES = 1000207001,
+        SEMAPHORE_TYPE_CREATE_INFO = 1000207002,
+        TIMELINE_SEMAPHORE_SUBMIT_INFO = 1000207003,
+        SEMAPHORE_WAIT_INFO = 1000207004,
+        SEMAPHORE_SIGNAL_INFO = 1000207005,
+        PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES = 1000257000,
+        BUFFER_DEVICE_ADDRESS_INFO = 1000244001,
+        BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO = 1000257002,
+        MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO = 1000257003,
+        DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO = 1000257004,
+
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        DEBUG_UTILS_OBJECT_NAME_INFO_EXT = 1000128000,
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        DEBUG_UTILS_OBJECT_TAG_INFO_EXT = 1000128001,
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        DEBUG_UTILS_LABEL_EXT = 1000128002,
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT = 1000128003,
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT = 1000128004,
+
+        #[cfg(feature = "VK_EXT_index_type_uint8")]
+        PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_EXT = 1000265000,
+
+        #[cfg(feature = "VK_EXT_memory_budget")]
+        PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT = 1000237000,
+
+        #[cfg(feature = "VK_KHR_external_fence_fd")]
+        IMPORT_FENCE_FD_INFO_KHR = 1000115000,
+        #[cfg(feature = "VK_KHR_external_fence_fd")]
+        FENCE_GET_FD_INFO_KHR = 1000115001,
+
+        #[cfg(feature = "VK_KHR_external_fence_win32")]
+        IMPORT_FENCE_WIN32_HANDLE_INFO_KHR = 1000114000,
+        #[cfg(feature = "VK_KHR_external_fence_win32")]
+        EXPORT_FENCE_WIN32_HANDLE_INFO_KHR = 1000114001,
+        #[cfg(feature = "VK_KHR_external_fence_win32")]
+        FENCE_GET_WIN32_HANDLE_INFO_KHR = 1000114002,
+
+        #[cfg(feature = "VK_KHR_swapchain")]
+        SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
+        #[cfg(feature = "VK_KHR_swapchain")]
+        PRESENT_INFO_KHR = 1000001001,
+        #[cfg(feature = "VK_KHR_swapchain")]
+        DEVICE_GROUP_PRESENT_CAPABILITIES_KHR = 1000060007,
+        #[cfg(feature = "VK_KHR_swapchain")]
+        IMAGE_SWAPCHAIN_CREATE_INFO_KHR = 1000060008,
+        #[cfg(feature = "VK_KHR_swapchain")]
+        BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR = 1000060009,
+        #[cfg(feature = "VK_KHR_swapchain")]
+        ACQUIRE_NEXT_IMAGE_INFO_KHR = 1000060010,
+        #[cfg(feature = "VK_KHR_swapchain")]
+        DEVICE_GROUP_PRESENT_INFO_KHR = 1000060011,
+        #[cfg(feature = "VK_KHR_swapchain")]
+        DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR = 1000060012,
+
+        #[cfg(feature = "VK_KHR_win32_surface")]
+        WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
+    },
     enum VkImageLayout{
         UNDEFINED = 0,
         GENERAL = 1,
@@ -652,6 +661,8 @@ enums! {
         DEPTH_READ_ONLY_OPTIMAL = 1000241001,
         STENCIL_ATTACHMENT_OPTIMAL = 1000241002,
         STENCIL_READ_ONLY_OPTIMAL = 1000241003,
+        #[cfg(feature = "VK_KHR_swapchain")]
+        PRESENT_SRC_KHR = 1000001002,
     },
     enum VkAttachmentLoadOp{
         LOAD = 0,
@@ -746,6 +757,8 @@ enums! {
     enum VkIndexType{
         UINT16 = 0,
         UINT32 = 1,
+        #[cfg(feature = "VK_EXT_index_type_uint8")]
+        UINT8_EXT = 1000265000,
     },
     enum VkFilter{
         NEAREST = 0,
@@ -1079,172 +1092,6 @@ enums! {
         G16_B16R16_2PLANE_422_UNORM = 1000156032,
         G16_B16_R16_3PLANE_444_UNORM = 1000156033,
     },
-    enum VkStructureType{
-        APPLICATION_INFO = 0,
-        INSTANCE_CREATE_INFO = 1,
-        DEVICE_QUEUE_CREATE_INFO = 2,
-        DEVICE_CREATE_INFO = 3,
-        SUBMIT_INFO = 4,
-        MEMORY_ALLOCATE_INFO = 5,
-        MAPPED_MEMORY_RANGE = 6,
-        BIND_SPARSE_INFO = 7,
-        FENCE_CREATE_INFO = 8,
-        SEMAPHORE_CREATE_INFO = 9,
-        EVENT_CREATE_INFO = 10,
-        QUERY_POOL_CREATE_INFO = 11,
-        BUFFER_CREATE_INFO = 12,
-        BUFFER_VIEW_CREATE_INFO = 13,
-        IMAGE_CREATE_INFO = 14,
-        IMAGE_VIEW_CREATE_INFO = 15,
-        SHADER_MODULE_CREATE_INFO = 16,
-        PIPELINE_CACHE_CREATE_INFO = 17,
-        PIPELINE_SHADER_STAGE_CREATE_INFO = 18,
-        PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = 19,
-        PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = 20,
-        PIPELINE_TESSELLATION_STATE_CREATE_INFO = 21,
-        PIPELINE_VIEWPORT_STATE_CREATE_INFO = 22,
-        PIPELINE_RASTERIZATION_STATE_CREATE_INFO = 23,
-        PIPELINE_MULTISAMPLE_STATE_CREATE_INFO = 24,
-        PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO = 25,
-        PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = 26,
-        PIPELINE_DYNAMIC_STATE_CREATE_INFO = 27,
-        GRAPHICS_PIPELINE_CREATE_INFO = 28,
-        COMPUTE_PIPELINE_CREATE_INFO = 29,
-        PIPELINE_LAYOUT_CREATE_INFO = 30,
-        SAMPLER_CREATE_INFO = 31,
-        DESCRIPTOR_SET_LAYOUT_CREATE_INFO = 32,
-        DESCRIPTOR_POOL_CREATE_INFO = 33,
-        DESCRIPTOR_SET_ALLOCATE_INFO = 34,
-        WRITE_DESCRIPTOR_SET = 35,
-        COPY_DESCRIPTOR_SET = 36,
-        FRAMEBUFFER_CREATE_INFO = 37,
-        RENDER_PASS_CREATE_INFO = 38,
-        COMMAND_POOL_CREATE_INFO = 39,
-        COMMAND_BUFFER_ALLOCATE_INFO = 40,
-        COMMAND_BUFFER_INHERITANCE_INFO = 41,
-        COMMAND_BUFFER_BEGIN_INFO = 42,
-        RENDER_PASS_BEGIN_INFO = 43,
-        BUFFER_MEMORY_BARRIER = 44,
-        IMAGE_MEMORY_BARRIER = 45,
-        MEMORY_BARRIER = 46,
-        LOADER_INSTANCE_CREATE_INFO = 47, // reserved for internal use by the loader
-        LOADER_DEVICE_CREATE_INFO = 48, // reserved for internal use by the loader
-        PHYSICAL_DEVICE_SUBGROUP_PROPERTIES = 1000094000,
-        BIND_BUFFER_MEMORY_INFO = 1000157000,
-        BIND_IMAGE_MEMORY_INFO = 1000157001,
-        PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES = 1000083000,
-        MEMORY_DEDICATED_REQUIREMENTS = 1000127000,
-        MEMORY_DEDICATED_ALLOCATE_INFO = 1000127001,
-        MEMORY_ALLOCATE_FLAGS_INFO = 1000060000,
-        DEVICE_GROUP_RENDER_PASS_BEGIN_INFO = 1000060003,
-        DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO = 1000060004,
-        DEVICE_GROUP_SUBMIT_INFO = 1000060005,
-        DEVICE_GROUP_BIND_SPARSE_INFO = 1000060006,
-        BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO = 1000060013,
-        BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO = 1000060014,
-        PHYSICAL_DEVICE_GROUP_PROPERTIES = 1000070000,
-        DEVICE_GROUP_DEVICE_CREATE_INFO = 1000070001,
-        BUFFER_MEMORY_REQUIREMENTS_INFO_2 = 1000146000,
-        IMAGE_MEMORY_REQUIREMENTS_INFO_2 = 1000146001,
-        IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2 = 1000146002,
-        MEMORY_REQUIREMENTS_2 = 1000146003,
-        SPARSE_IMAGE_MEMORY_REQUIREMENTS_2 = 1000146004,
-        PHYSICAL_DEVICE_FEATURES_2 = 1000059000,
-        PHYSICAL_DEVICE_PROPERTIES_2 = 1000059001,
-        FORMAT_PROPERTIES_2 = 1000059002,
-        IMAGE_FORMAT_PROPERTIES_2 = 1000059003,
-        PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2 = 1000059004,
-        QUEUE_FAMILY_PROPERTIES_2 = 1000059005,
-        PHYSICAL_DEVICE_MEMORY_PROPERTIES_2 = 1000059006,
-        SPARSE_IMAGE_FORMAT_PROPERTIES_2 = 1000059007,
-        PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2 = 1000059008,
-        PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES = 1000117000,
-        RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO = 1000117001,
-        IMAGE_VIEW_USAGE_CREATE_INFO = 1000117002,
-        PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO = 1000117003,
-        RENDER_PASS_MULTIVIEW_CREATE_INFO = 1000053000,
-        PHYSICAL_DEVICE_MULTIVIEW_FEATURES = 1000053001,
-        PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES = 1000053002,
-        PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES = 1000120000,
-        PROTECTED_SUBMIT_INFO = 1000145000,
-        PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES = 1000145001,
-        PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES = 1000145002,
-        DEVICE_QUEUE_INFO_2 = 1000145003,
-        SAMPLER_YCBCR_CONVERSION_CREATE_INFO = 1000156000,
-        SAMPLER_YCBCR_CONVERSION_INFO = 1000156001,
-        BIND_IMAGE_PLANE_MEMORY_INFO = 1000156002,
-        IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO = 1000156003,
-        PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES = 1000156004,
-        SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES = 1000156005,
-        DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO = 1000085000,
-        PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO = 1000071000,
-        EXTERNAL_IMAGE_FORMAT_PROPERTIES = 1000071001,
-        PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO = 1000071002,
-        EXTERNAL_BUFFER_PROPERTIES = 1000071003,
-        PHYSICAL_DEVICE_ID_PROPERTIES = 1000071004,
-        EXTERNAL_MEMORY_BUFFER_CREATE_INFO = 1000072000,
-        EXTERNAL_MEMORY_IMAGE_CREATE_INFO = 1000072001,
-        EXPORT_MEMORY_ALLOCATE_INFO = 1000072002,
-        PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO = 1000112000,
-        EXTERNAL_FENCE_PROPERTIES = 1000112001,
-        EXPORT_FENCE_CREATE_INFO = 1000113000,
-        EXPORT_SEMAPHORE_CREATE_INFO = 1000077000,
-        PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO = 1000076000,
-        EXTERNAL_SEMAPHORE_PROPERTIES = 1000076001,
-        PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES = 1000168000,
-        DESCRIPTOR_SET_LAYOUT_SUPPORT = 1000168001,
-        PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES = 1000063000,
-        PHYSICAL_DEVICE_VULKAN_1_1_FEATURES = 49,
-        PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES = 50,
-        PHYSICAL_DEVICE_VULKAN_1_2_FEATURES = 51,
-        PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES = 52,
-        IMAGE_FORMAT_LIST_CREATE_INFO = 1000147000,
-        ATTACHMENT_DESCRIPTION_2 = 1000109000,
-        ATTACHMENT_REFERENCE_2 = 1000109001,
-        SUBPASS_DESCRIPTION_2 = 1000109002,
-        SUBPASS_DEPENDENCY_2 = 1000109003,
-        RENDER_PASS_CREATE_INFO_2 = 1000109004,
-        SUBPASS_BEGIN_INFO = 1000109005,
-        SUBPASS_END_INFO = 1000109006,
-        PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES = 1000177000,
-        PHYSICAL_DEVICE_DRIVER_PROPERTIES = 1000196000,
-        PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES = 1000180000,
-        PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES = 1000082000,
-        PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES = 1000197000,
-        DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO = 1000161000,
-        PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES = 1000161001,
-        PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES = 1000161002,
-        DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO = 1000161003,
-        DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT = 1000161004,
-        PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES = 1000199000,
-        SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE = 1000199001,
-        PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES = 1000221000,
-        IMAGE_STENCIL_USAGE_CREATE_INFO = 1000246000,
-        PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES = 1000130000,
-        SAMPLER_REDUCTION_MODE_CREATE_INFO = 1000130001,
-        PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES = 1000211000,
-        PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES = 1000108000,
-        FRAMEBUFFER_ATTACHMENTS_CREATE_INFO = 1000108001,
-        FRAMEBUFFER_ATTACHMENT_IMAGE_INFO = 1000108002,
-        RENDER_PASS_ATTACHMENT_BEGIN_INFO = 1000108003,
-        PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES = 1000253000,
-        PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES = 1000175000,
-        PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES = 1000241000,
-        ATTACHMENT_REFERENCE_STENCIL_LAYOUT = 1000241001,
-        ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT = 1000241002,
-        PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES = 1000261000,
-        PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES = 1000207000,
-        PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES = 1000207001,
-        SEMAPHORE_TYPE_CREATE_INFO = 1000207002,
-        TIMELINE_SEMAPHORE_SUBMIT_INFO = 1000207003,
-        SEMAPHORE_WAIT_INFO = 1000207004,
-        SEMAPHORE_SIGNAL_INFO = 1000207005,
-        PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES = 1000257000,
-        BUFFER_DEVICE_ADDRESS_INFO = 1000244001,
-        BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO = 1000257002,
-        MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO = 1000257003,
-        DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO = 1000257004,
-    },
     enum VkSubpassContents{
         INLINE = 0,
         SECONDARY_COMMAND_BUFFERS = 1,
@@ -1273,6 +1120,16 @@ enums! {
         ERROR_INVALID_EXTERNAL_HANDLE = -1000072003,
         ERROR_FRAGMENTATION = -1000161000,
         ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS = -1000257000,
+
+        #[cfg(feature = "VK_KHR_surface")]
+        ERROR_SURFACE_LOST_KHR = -1000000000,
+        #[cfg(feature = "VK_KHR_surface")]
+        ERROR_NATIVE_WINDOW_IN_USE_KHR = -1000000001,
+
+        #[cfg(feature = "VK_KHR_swapchain")]
+        SUBOPTIMAL_KHR = 1000001003,
+        #[cfg(feature = "VK_KHR_swapchain")]
+        ERROR_OUT_OF_DATE_KHR = -1000001004,
     },
     enum VkDynamicState{
         VIEWPORT = 0,
@@ -1317,6 +1174,17 @@ enums! {
         COMMAND_POOL = 25,
         SAMPLER_YCBCR_CONVERSION = 1000156000,
         DESCRIPTOR_UPDATE_TEMPLATE = 1000085000,
+
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        DEBUG_UTILS_MESSENGER_EXT = 1000128000,
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        ERROR_VALIDATION_FAILED_EXT = -1000011001,
+
+        #[cfg(feature = "VK_KHR_surface")]
+        SURFACE_KHR = 1000000000,
+
+        #[cfg(feature = "VK_KHR_swapchain")]
+        SWAPCHAIN_KHR = 1000001000,
     },
     enum VkSemaphoreType{
         BINARY = 0,
@@ -1379,12 +1247,12 @@ enums! {
 impl VkResult {
     #[inline(always)]
     pub fn is_err(&self) -> bool {
-        self.0 < 0
+        (*self as i32) < 0
     }
 
     #[inline(always)]
     pub fn is_ok(&self) -> bool {
-        self.0 >= 0
+        (*self as i32) >= 0
     }
 }
 
@@ -1444,35 +1312,35 @@ pub type PFN_vkInternalFreeNotification = extern "C" fn(
     allocationScope: VkSystemAllocationScope,
 );
 
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkBaseOutStructure {
-    pub sType: VkStructureType,
-    pub pNext: *mut VkBaseOutStructure,
-}
-impl Default for VkBaseOutStructure {
-    fn default() -> Self {
-        VkBaseOutStructure {
-            sType: VkStructureType(-1),
-            pNext: ptr::null_mut(),
-        }
-    }
-}
+// #[repr(C)]
+// #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+// pub struct VkBaseOutStructure {
+//     pub sType: VkStructureType,
+//     pub pNext: *mut VkBaseOutStructure,
+// }
+// impl Default for VkBaseOutStructure {
+//     fn default() -> Self {
+//         VkBaseOutStructure {
+//             sType: VkStructureType(-1),
+//             pNext: ptr::null_mut(),
+//         }
+//     }
+// }
 
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkBaseInStructure {
-    pub sType: VkStructureType,
-    pub pNext: *const VkBaseInStructure,
-}
-impl Default for VkBaseInStructure {
-    fn default() -> Self {
-        VkBaseInStructure {
-            sType: VkStructureType(-1),
-            pNext: ptr::null(),
-        }
-    }
-}
+// #[repr(C)]
+// #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+// pub struct VkBaseInStructure {
+//     pub sType: VkStructureType,
+//     pub pNext: *const VkBaseInStructure,
+// }
+// impl Default for VkBaseInStructure {
+//     fn default() -> Self {
+//         VkBaseInStructure {
+//             sType: VkStructureType(-1),
+//             pNext: ptr::null(),
+//         }
+//     }
+// }
 
 #[repr(C)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
@@ -6588,6 +6456,48 @@ instance_level_functions! {
     fn vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice: VkPhysicalDevice, pQueueFamilyPropertyCount: *mut u32, pQueueFamilyProperties: *mut VkQueueFamilyProperties2);
     fn vkGetPhysicalDeviceSparseImageFormatProperties2(physicalDevice: VkPhysicalDevice, pFormatInfo: *const VkPhysicalDeviceSparseImageFormatInfo2, pPropertyCount: *mut u32, pProperties: *mut VkSparseImageFormatProperties2);
     fn vkEnumeratePhysicalDeviceGroups(instance: VkInstance, pPhysicalDeviceGroupCount: *mut u32, pPhysicalDeviceGroupProperties: *mut VkPhysicalDeviceGroupProperties)->VkResult;
+
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkSetDebugUtilsObjectNameEXT(device: VkDevice, pNameInfo: *const VkDebugUtilsObjectNameInfoEXT)->VkResult;
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkSetDebugUtilsObjectTagEXT(device: VkDevice, pTagInfo: *const VkDebugUtilsObjectTagInfoEXT)->VkResult;
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkQueueBeginDebugUtilsLabelEXT(queue: core::VkQueue, pLabelInfo: *const VkDebugUtilsLabelEXT);
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkQueueEndDebugUtilsLabelEXT(queue: core::VkQueue);
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkQueueInsertDebugUtilsLabelEXT(queue: core::VkQueue, pLabelInfo: *const VkDebugUtilsLabelEXT);
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkCmdBeginDebugUtilsLabelEXT(commandBuffer: core::VkCommandBuffer, pLabelInfo: *const VkDebugUtilsLabelEXT);
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkCmdEndDebugUtilsLabelEXT(commandBuffer: core::VkCommandBuffer);
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkCmdInsertDebugUtilsLabelEXT(commandBuffer: core::VkCommandBuffer, pLabelInfo: *const VkDebugUtilsLabelEXT);
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkCreateDebugUtilsMessengerEXT(instance: VkInstance, pCreateInfo: *const VkDebugUtilsMessengerCreateInfoEXT, pAllocator: *const core::VkAllocationCallbacks, pMessenger: *mut VkDebugUtilsMessengerEXT)->VkResult;
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkDestroyDebugUtilsMessengerEXT(instance: VkInstance, messenger: VkDebugUtilsMessengerEXT, pAllocator: *const core::VkAllocationCallbacks);
+    #[cfg(feature = "VK_EXT_debug_utils")]
+    fn vkSubmitDebugUtilsMessageEXT(instance: VkInstance, messageSeverity: VkDebugUtilsMessageSeverityFlagBitsEXT, messageTypes: VkDebugUtilsMessageTypeFlagsEXT, pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT);
+
+    #[cfg(feature = "VK_KHR_surface")]
+    fn vkDestroySurfaceKHR(instance: VkInstance, surface: VkSurfaceKHR, pAllocator: *const VkAllocationCallbacks);
+    #[cfg(feature = "VK_KHR_surface")]
+    fn vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32, surface: VkSurfaceKHR, pSupported: *mut VkBool32)->VkResult;
+    #[cfg(feature = "VK_KHR_surface")]
+    fn vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceCapabilities: *mut VkSurfaceCapabilitiesKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_surface")]
+    fn vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceFormatCount: *mut u32, pSurfaceFormats: *mut VkSurfaceFormatKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_surface")]
+    fn vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pPresentModeCount: *mut u32, pPresentModes: *mut VkPresentModeKHR)->VkResult;
+
+    #[cfg(feature = "VK_KHR_swapchain")]
+    fn vkGetPhysicalDevicePresentRectanglesKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pRectCount: *mut u32, pRects: *mut VkRect2D)->VkResult;
+
+    #[cfg(feature = "VK_KHR_win32_surface")]
+    fn vkCreateWin32SurfaceKHR(instance: VkInstance, pCreateInfo: *const VkWin32SurfaceCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pSurface: *mut VkSurfaceKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_win32_surface")]
+    fn vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32)->VkBool32;
 }
 
 device_level_functions! {
@@ -6743,4 +6653,31 @@ device_level_functions! {
     fn vkWaitSemaphores(device: VkDevice, pWaitInfo: *const VkSemaphoreWaitInfo, timeout: u64)->VkResult;
     fn vkSignalSemaphore(device: VkDevice, pSignalInfo: *const VkSemaphoreSignalInfo)->VkResult;
     fn vkResetQueryPool(device: VkDevice, queryPool: VkQueryPool, firstQuery: u32, queryCount: u32);
+
+    #[cfg(feature = "VK_KHR_external_fence_fd")]
+    fn vkImportFenceFdKHR(device: VkDevice, pImportFenceFdInfo: *const VkImportFenceFdInfoKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_external_fence_fd")]
+    fn vkGetFenceFdKHR(device: VkDevice, pGetFdInfo: *const VkFenceGetFdInfoKHR, pFd: *mut c_int)->VkResult;
+
+    #[cfg(feature = "VK_KHR_external_fence_win32")]
+    fn vkImportFenceWin32HandleKHR(device: VkDevice, pImportFenceWin32HandleInfo: *const VkImportFenceWin32HandleInfoKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_external_fence_win32")]
+    fn vkGetFenceWin32HandleKHR(device: VkDevice, pGetWin32HandleInfo: *const VkFenceGetWin32HandleInfoKHR, pHandle: *mut HANDLE)->VkResult;
+
+    #[cfg(feature = "VK_KHR_swapchain")]
+    fn vkCreateSwapchainKHR(device: VkDevice, pCreateInfo: *const VkSwapchainCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pSwapchain: *mut VkSwapchainKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_swapchain")]
+    fn vkDestroySwapchainKHR(device: VkDevice, swapchain: VkSwapchainKHR, pAllocator: *const VkAllocationCallbacks);
+    #[cfg(feature = "VK_KHR_swapchain")]
+    fn vkGetSwapchainImagesKHR(device: VkDevice, swapchain: VkSwapchainKHR, pSwapchainImageCount: *mut u32, pSwapchainImages: *mut VkImage)->VkResult;
+    #[cfg(feature = "VK_KHR_swapchain")]
+    fn vkAcquireNextImageKHR(device: VkDevice, swapchain: VkSwapchainKHR, timeout: u64, semaphore: VkSemaphore, fence: VkFence, pImageIndex: *mut u32)->VkResult;
+    #[cfg(feature = "VK_KHR_swapchain")]
+    fn vkQueuePresentKHR(queue: VkQueue, pPresentInfo: *const VkPresentInfoKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_swapchain")]
+    fn vkGetDeviceGroupPresentCapabilitiesKHR(device: VkDevice, pDeviceGroupPresentCapabilities: *mut VkDeviceGroupPresentCapabilitiesKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_swapchain")]
+    fn vkGetDeviceGroupSurfacePresentModesKHR(device: VkDevice, surface: VkSurfaceKHR, pModes: *mut VkDeviceGroupPresentModeFlagsKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_swapchain")]
+    fn vkAcquireNextImage2KHR(device: VkDevice, pAcquireInfo: *const VkAcquireNextImageInfoKHR, pImageIndex: *mut u32)->VkResult;
 }

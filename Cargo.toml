@@ -11,14 +11,33 @@ edition = "2018"
 build = "build.rs"
 
 [features]
-docs = []
+default = [
+    "VulkanMemoryAllocator",
 
-[package.metadata.docs.rs]
-features = ["docs",]
+    "VK_KHR_surface",
+    "VK_KHR_swapchain",
+    "VK_EXT_debug_utils",
+    "VK_EXT_index_type_uint8",
+    "VK_EXT_memory_budget",
+]
+
+VulkanMemoryAllocator = []
+
+VK_KHR_surface = []
+VK_KHR_swapchain = []
+VK_EXT_debug_utils = []
+VK_EXT_index_type_uint8 = []
+VK_EXT_memory_budget = []
+
+VK_KHR_win32_surface = []
+VK_KHR_external_fence_win32 = []
+
+VK_KHR_external_fence_fd = []
 
 [dependencies]
 lazy_static = "1.4"
 libloading = "0.6"
+bitflags = "1.0"
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }

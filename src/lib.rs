@@ -3,6 +3,8 @@ use std::fmt::{Debug, Display, Error, Formatter};
 
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate bitflags;
 
 pub type VkSampleMask = u32;
 pub type VkFlags = u32;
@@ -23,7 +25,6 @@ pub type DWORD = u32;
 #[allow(non_camel_case_types)]
 pub type SECURITY_ATTRIBUTES = c_void; // TODO
 
-#[macro_export]
 macro_rules! handle {
     ($x:ident,$y:ty) => {
         #[repr(C)]
@@ -95,248 +96,72 @@ macro_rules! link_vulkan_structures {
     }
 }
 
-#[macro_export]
 macro_rules! enums {
     (
         $(
+            $(#[$enum_attr:meta])*
             enum $enum_name:ident{
-                $($variant_name:ident = $value:literal),*$(,)?
+                $(
+                    $(#[$variant_attr:meta])*
+                    $variant_name:ident = $value:literal
+                ),*$(,)?
             }
         ),*$(,)?
     )=>{
         $(
-            #[repr(transparent)]
+            $(#[$enum_attr])*
+            #[repr(C)]
             #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-            pub struct $enum_name(pub i32);
-            impl $enum_name{
-                $(
-                    pub const $variant_name: $enum_name = $enum_name($value);
-                )*
-            }
-        )*
-    }
-}
-
-macro_rules! extend_core_enums {
-    (
-        $(
-            enum $enum_name:ident{
-                $($variant_name:ident = $value:literal),*$(,)?
-            }
-        ),*$(,)?
-    )=>{
-        pub mod extend_core_enums{
-        $(
             pub enum $enum_name{
-            }
-            impl $enum_name{
                 $(
-                    pub const $variant_name: crate::$enum_name = crate::$enum_name($value);
+                    $(#[$variant_attr])*
+                    $variant_name = $value,
                 )*
             }
         )*
-        }
     }
 }
 
-#[macro_export]
 macro_rules! bitmasks {
     (
         $(
-            {
-                $flags_name:ident,
-                enum $flag_bits_name:ident{
-                    $($bit_name:ident = $value:literal),*$(,)?
-                }$(,)?
+            $(#[$flags_attr:meta])*
+            $flags_name:ident = enum $flag_bits_name:ident{
+                $(
+                    $(#[$bit_attr:meta])*
+                    $bit_name:ident = $value:literal
+                ),*$(,)?
             }
         ),*$(,)?
     )=>{
         $(
-            #[repr(transparent)]
-            #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-            pub struct $flags_name(pub u32);
-            pub type $flag_bits_name = $flags_name;
-            impl $flag_bits_name {
-                $(
-                    pub const $bit_name: $flag_bits_name = $flags_name($value);
-                )*
-            }
-
-            impl std::ops::Not for $flags_name {
-                type Output = $flags_name;
-                #[inline(always)]
-                fn not(self) -> Self::Output {
-                    $flags_name(!self.0)
+            bitflags! {
+                $(#[$flags_attr])*
+                #[repr(transparent)]
+                #[derive(Default)]
+                pub struct $flag_bits_name: u32 {
+                    $(
+                        $(#[$bit_attr])*
+                        const $bit_name = $value;
+                    )*
                 }
             }
-
-            impl std::ops::BitAnd for $flags_name {
-                type Output = Self;
-                #[inline(always)]
-                fn bitand(self, rhs: Self) -> Self::Output {
-                    $flags_name(self.0&rhs.0)
-                }
-            }
-            impl std::ops::BitAnd<u32> for $flags_name {
-                type Output = Self;
-                #[inline(always)]
-                fn bitand(self, rhs: u32) -> Self::Output {
-                    $flags_name(self.0&rhs)
-                }
-            }
-            impl std::ops::BitAnd<$flags_name> for u32 {
-                type Output = $flags_name;
-                #[inline(always)]
-                fn bitand(self, rhs: $flags_name) -> Self::Output {
-                    $flags_name(self&rhs.0)
-                }
-            }
-
-            impl std::ops::BitAndAssign for $flags_name {
-                #[inline(always)]
-                fn bitand_assign(&mut self, rhs: Self) {
-                    self.0&=rhs.0;
-                }
-            }
-            impl std::ops::BitAndAssign<u32> for $flags_name {
-                #[inline(always)]
-                fn bitand_assign(&mut self, rhs: u32) {
-                    self.0&=rhs;
-                }
-            }
-            impl std::ops::BitAndAssign<$flags_name> for u32 {
-                #[inline(always)]
-                fn bitand_assign(&mut self, rhs: $flags_name) {
-                    *self&=rhs.0;
-                }
-            }
-
-            impl std::ops::BitOr for $flags_name {
-                type Output = Self;
-                #[inline(always)]
-                fn bitor(self, rhs: Self) -> Self::Output {
-                    $flags_name(self.0|rhs.0)
-                }
-            }
-            impl std::ops::BitOr<u32> for $flags_name {
-                type Output = Self;
-                #[inline(always)]
-                fn bitor(self, rhs: u32) -> Self::Output {
-                    $flags_name(self.0|rhs)
-                }
-            }
-            impl std::ops::BitOr<$flags_name> for u32 {
-                type Output = $flags_name;
-                #[inline(always)]
-                fn bitor(self, rhs: $flags_name) -> Self::Output {
-                    $flags_name(self|rhs.0)
-                }
-            }
-
-            impl std::ops::BitOrAssign for $flags_name {
-                #[inline(always)]
-                fn bitor_assign(&mut self, rhs: Self) {
-                    self.0|=rhs.0;
-                }
-            }
-            impl std::ops::BitOrAssign<u32> for $flags_name {
-                #[inline(always)]
-                fn bitor_assign(&mut self, rhs: u32) {
-                    self.0|=rhs;
-                }
-            }
-            impl std::ops::BitOrAssign<$flags_name> for u32 {
-                #[inline(always)]
-                fn bitor_assign(&mut self, rhs: $flags_name) {
-                    *self|=rhs.0;
-                }
-            }
-
-            impl std::ops::BitXor for $flags_name {
-                type Output = Self;
-                #[inline(always)]
-                fn bitxor(self, rhs: Self) -> Self::Output {
-                    $flags_name(self.0^rhs.0)
-                }
-            }
-            impl std::ops::BitXor<u32> for $flags_name {
-                type Output = Self;
-                #[inline(always)]
-                fn bitxor(self, rhs: u32) -> Self::Output {
-                    $flags_name(self.0^rhs)
-                }
-            }
-            impl std::ops::BitXor<$flags_name> for u32 {
-                type Output = $flags_name;
-                #[inline(always)]
-                fn bitxor(self, rhs: $flags_name) -> Self::Output {
-                    $flags_name(self^rhs.0)
-                }
-            }
-
-            impl std::ops::BitXorAssign for $flags_name {
-                #[inline(always)]
-                fn bitxor_assign(&mut self, rhs: Self) {
-                    self.0^=rhs.0;
-                }
-            }
-            impl std::ops::BitXorAssign<u32> for $flags_name {
-                #[inline(always)]
-                fn bitxor_assign(&mut self, rhs: u32) {
-                    self.0^=rhs;
-                }
-            }
-            impl std::ops::BitXorAssign<$flags_name> for u32 {
-                #[inline(always)]
-                fn bitxor_assign(&mut self, rhs: $flags_name) {
-                    *self^=rhs.0;
-                }
-            }
-
-            impl PartialEq<u32> for $flags_name {
-                fn eq(&self, other: &u32) -> bool {
-                    self.0 == *other
-                }
-            }
-            impl PartialEq<$flags_name> for u32{
-                fn eq(&self, other: &$flags_name) -> bool {
-                    *self == other.0
-                }
-            }
+            pub type $flags_name = $flag_bits_name;
         )*
     };
 }
 
-macro_rules! _extend_core_bitmasks {
+macro_rules! instance_level_functions {
     (
         $(
-            {
-                $flags_name:ident,
-                enum $flag_bits_name:ident{
-                    $($bit_name:ident = $value:literal),*$(,)?
-                }$(,)?
-            }
-        ),*$(,)?
-    )=>{
-        pub mod extend_core_bitmasks{
-        $(
-            pub struct $flag_bits_name {
-            }
-            impl $flag_bits_name {
-                $(
-                    pub const $bit_name: crate::$flag_bits_name = crate::$flags_name($value);
-                )*
-            }
+            $(#[$function_attr:meta])*
+            fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;
         )*
-        }
-    }
-}
-
-macro_rules! instance_level_functions {
-    ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
+    )=>{
         #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
         pub struct InstanceLevelFunctions {
             $(
+                $(#[$function_attr])*
                 pub $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
             )*
         }
@@ -348,6 +173,7 @@ macro_rules! instance_level_functions {
                 unsafe {
                     let functions = InstanceLevelFunctions {
                         $(
+                            $(#[$function_attr])*
                             $function_name: match get_instance_proc_addr(
                                 instance,
                                 CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes()))
@@ -366,6 +192,7 @@ macro_rules! instance_level_functions {
                 }
             }
             $(
+                $(#[$function_attr])*
                 #[inline(always)]
                 pub unsafe fn $function_name(&self, $($parameter_name:$parameter_type),*)$(->$return_type)?{
                     (self.$function_name)($($parameter_name),*)
@@ -376,10 +203,16 @@ macro_rules! instance_level_functions {
 }
 
 macro_rules! device_level_functions {
-    ( $(fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;)* )=>{
+    (
+        $(
+            $(#[$function_attr:meta])*
+            fn $function_name:ident($($parameter_name:ident:$parameter_type:ty),*)$(->$return_type:ty)?;
+        )*
+    )=>{
         #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
         pub struct DeviceLevelFunctions {
             $(
+                $(#[$function_attr])*
                 pub $function_name: extern "C" fn($($parameter_name:$parameter_type),*)$(->$return_type)?,
             )*
         }
@@ -391,6 +224,7 @@ macro_rules! device_level_functions {
                 unsafe {
                     let functions = DeviceLevelFunctions {
                         $(
+                            $(#[$function_attr])*
                             $function_name: match get_instance_proc_addr(
                                 instance,
                                 CStr::from_bytes_with_nul_unchecked(concat!(stringify!($function_name), '\0').as_bytes()))
@@ -415,6 +249,7 @@ macro_rules! device_level_functions {
                 unsafe {
                     let functions = DeviceLevelFunctions {
                         $(
+                            $(#[$function_attr])*
                             $function_name: match get_device_proc_addr(
                                 core_functions,
                                 device,
@@ -434,6 +269,7 @@ macro_rules! device_level_functions {
                 }
             }
             $(
+                $(#[$function_attr])*
                 #[inline(always)]
                 pub unsafe fn $function_name(&self, $($parameter_name:$parameter_type),*)$(->$return_type)?{
                     (self.$function_name)($($parameter_name),*)
@@ -622,10 +458,32 @@ impl Display for ApiVersion {
     }
 }
 
-mod core;
-pub use crate::core::*;
 use std::os::raw::c_void;
+mod core;
+mod ext;
+mod khr;
+#[cfg(feature = "VulkanMemoryAllocator")]
+mod vma;
 
-pub mod ext;
-pub mod khr;
-pub mod vma;
+pub use crate::core::*;
+
+#[cfg(feature = "VK_EXT_debug_utils")]
+pub use crate::ext::debug_utils::*;
+#[cfg(feature = "VK_EXT_index_type_uint8")]
+pub use crate::ext::index_type_uint8::*;
+#[cfg(feature = "VK_EXT_memory_budget")]
+pub use crate::ext::memory_budget::*;
+
+#[cfg(feature = "VK_KHR_external_fence_fd")]
+pub use crate::khr::external_fence_fd::*;
+#[cfg(feature = "VK_KHR_external_fence_win32")]
+pub use crate::khr::external_fence_win32::*;
+#[cfg(feature = "VK_KHR_surface")]
+pub use crate::khr::surface::*;
+#[cfg(feature = "VK_KHR_swapchain")]
+pub use crate::khr::swapchain::*;
+#[cfg(feature = "VK_KHR_win32_surface")]
+pub use crate::khr::win32_surface::*;
+
+#[cfg(feature = "VulkanMemoryAllocator")]
+pub use vma::*;

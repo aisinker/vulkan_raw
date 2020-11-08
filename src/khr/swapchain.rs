@@ -9,53 +9,24 @@ use std::ptr;
 use crate::khr::surface::*;
 use crate::NonDispatchableHandle;
 use crate::*;
-use std::os::raw::c_char;
+// use std::os::raw::c_char;
 
-pub const SPEC_VERSION: u32 = 70;
-pub const EXTENSION_NAME: *const c_char = b"VK_KHR_swapchain\0".as_ptr() as *const c_char;
+// pub const SPEC_VERSION: u32 = 70;
+// pub const EXTENSION_NAME: *const c_char = b"VK_KHR_swapchain\0".as_ptr() as *const c_char;
 
 handle!(VkSwapchainKHR, NonDispatchableHandle);
 
 bitmasks! {
-    {
-        VkDeviceGroupPresentModeFlagsKHR,
-        enum VkDeviceGroupPresentModeFlagBitsKHR{
-            LOCAL_BIT_KHR = 0x00000001,
-            REMOTE_BIT_KHR = 0x00000002,
-            SUM_BIT_KHR = 0x00000004,
-            LOCAL_MULTI_DEVICE_BIT_KHR = 0x00000008,
-        }
+    VkDeviceGroupPresentModeFlagsKHR = enum VkDeviceGroupPresentModeFlagBitsKHR{
+        LOCAL_BIT_KHR = 0x00000001,
+        REMOTE_BIT_KHR = 0x00000002,
+        SUM_BIT_KHR = 0x00000004,
+        LOCAL_MULTI_DEVICE_BIT_KHR = 0x00000008,
     },
-    {
-        VkSwapchainCreateFlagsKHR,
-        enum VkSwapchainCreateFlagBitsKHR{
-            SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR = 0x00000001,
-            PROTECTED_BIT_KHR = 0x00000002,
-            MUTABLE_FORMAT_BIT_KHR = 0x00000004,
-        }
-    },
-}
-
-extend_core_enums! {
-    enum VkObjectType{
-        SWAPCHAIN_KHR = 1000001000,
-    },
-    enum VkStructureType{
-        SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
-        PRESENT_INFO_KHR = 1000001001,
-        DEVICE_GROUP_PRESENT_CAPABILITIES_KHR = 1000060007,
-        IMAGE_SWAPCHAIN_CREATE_INFO_KHR = 1000060008,
-        BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR = 1000060009,
-        ACQUIRE_NEXT_IMAGE_INFO_KHR = 1000060010,
-        DEVICE_GROUP_PRESENT_INFO_KHR = 1000060011,
-        DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR = 1000060012,
-    },
-    enum VkImageLayout{
-        PRESENT_SRC_KHR = 1000001002,
-    },
-    enum VkResult{
-        SUBOPTIMAL_KHR = 1000001003,
-        ERROR_OUT_OF_DATE_KHR = -1000001004,
+    VkSwapchainCreateFlagsKHR = enum VkSwapchainCreateFlagBitsKHR{
+        SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR = 0x00000001,
+        PROTECTED_BIT_KHR = 0x00000002,
+        MUTABLE_FORMAT_BIT_KHR = 0x00000004,
     },
 }
 
@@ -84,7 +55,7 @@ pub struct VkSwapchainCreateInfoKHR {
 impl Default for VkSwapchainCreateInfoKHR {
     fn default() -> Self {
         VkSwapchainCreateInfoKHR {
-            sType: extend_core_enums::VkStructureType::SWAPCHAIN_CREATE_INFO_KHR,
+            sType: VkStructureType::SWAPCHAIN_CREATE_INFO_KHR,
             pNext: ptr::null(),
             flags: Default::default(),
             surface: Default::default(),
@@ -121,7 +92,7 @@ pub struct VkPresentInfoKHR {
 impl Default for VkPresentInfoKHR {
     fn default() -> Self {
         VkPresentInfoKHR {
-            sType: extend_core_enums::VkStructureType::PRESENT_INFO_KHR,
+            sType: VkStructureType::PRESENT_INFO_KHR,
             pNext: ptr::null(),
             waitSemaphoreCount: Default::default(),
             pWaitSemaphores: ptr::null(),
@@ -144,7 +115,7 @@ pub struct VkDeviceGroupPresentCapabilitiesKHR {
 impl Default for VkDeviceGroupPresentCapabilitiesKHR {
     fn default() -> Self {
         VkDeviceGroupPresentCapabilitiesKHR {
-            sType: extend_core_enums::VkStructureType::DEVICE_GROUP_PRESENT_CAPABILITIES_KHR,
+            sType: VkStructureType::DEVICE_GROUP_PRESENT_CAPABILITIES_KHR,
             pNext: ptr::null(),
             presentMask: Default::default(),
             modes: Default::default(),
@@ -162,7 +133,7 @@ pub struct VkImageSwapchainCreateInfoKHR {
 impl Default for VkImageSwapchainCreateInfoKHR {
     fn default() -> Self {
         VkImageSwapchainCreateInfoKHR {
-            sType: extend_core_enums::VkStructureType::IMAGE_SWAPCHAIN_CREATE_INFO_KHR,
+            sType: VkStructureType::IMAGE_SWAPCHAIN_CREATE_INFO_KHR,
             pNext: ptr::null(),
             swapchain: Default::default(),
         }
@@ -180,7 +151,7 @@ pub struct VkBindImageMemorySwapchainInfoKHR {
 impl Default for VkBindImageMemorySwapchainInfoKHR {
     fn default() -> Self {
         VkBindImageMemorySwapchainInfoKHR {
-            sType: extend_core_enums::VkStructureType::BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR,
+            sType: VkStructureType::BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR,
             pNext: ptr::null(),
             swapchain: Default::default(),
             imageIndex: Default::default(),
@@ -202,7 +173,7 @@ pub struct VkAcquireNextImageInfoKHR {
 impl Default for VkAcquireNextImageInfoKHR {
     fn default() -> Self {
         VkAcquireNextImageInfoKHR {
-            sType: extend_core_enums::VkStructureType::ACQUIRE_NEXT_IMAGE_INFO_KHR,
+            sType: VkStructureType::ACQUIRE_NEXT_IMAGE_INFO_KHR,
             pNext: ptr::null(),
             swapchain: Default::default(),
             timeout: Default::default(),
@@ -225,7 +196,7 @@ pub struct VkDeviceGroupPresentInfoKHR {
 impl Default for VkDeviceGroupPresentInfoKHR {
     fn default() -> Self {
         VkDeviceGroupPresentInfoKHR {
-            sType: extend_core_enums::VkStructureType::DEVICE_GROUP_PRESENT_INFO_KHR,
+            sType: VkStructureType::DEVICE_GROUP_PRESENT_INFO_KHR,
             pNext: ptr::null(),
             swapchainCount: Default::default(),
             pDeviceMasks: ptr::null(),
@@ -244,24 +215,9 @@ pub struct VkDeviceGroupSwapchainCreateInfoKHR {
 impl Default for VkDeviceGroupSwapchainCreateInfoKHR {
     fn default() -> Self {
         VkDeviceGroupSwapchainCreateInfoKHR {
-            sType: extend_core_enums::VkStructureType::DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR,
+            sType: VkStructureType::DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR,
             pNext: ptr::null(),
             modes: Default::default(),
         }
     }
-}
-
-device_level_functions! {
-    fn vkCreateSwapchainKHR(device: VkDevice, pCreateInfo: *const VkSwapchainCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pSwapchain: *mut VkSwapchainKHR)->VkResult;
-    fn vkDestroySwapchainKHR(device: VkDevice, swapchain: VkSwapchainKHR, pAllocator: *const VkAllocationCallbacks);
-    fn vkGetSwapchainImagesKHR(device: VkDevice, swapchain: VkSwapchainKHR, pSwapchainImageCount: *mut u32, pSwapchainImages: *mut VkImage)->VkResult;
-    fn vkAcquireNextImageKHR(device: VkDevice, swapchain: VkSwapchainKHR, timeout: u64, semaphore: VkSemaphore, fence: VkFence, pImageIndex: *mut u32)->VkResult;
-    fn vkQueuePresentKHR(queue: VkQueue, pPresentInfo: *const VkPresentInfoKHR)->VkResult;
-    fn vkGetDeviceGroupPresentCapabilitiesKHR(device: VkDevice, pDeviceGroupPresentCapabilities: *mut VkDeviceGroupPresentCapabilitiesKHR)->VkResult;
-    fn vkGetDeviceGroupSurfacePresentModesKHR(device: VkDevice, surface: VkSurfaceKHR, pModes: *mut VkDeviceGroupPresentModeFlagsKHR)->VkResult;
-    fn vkAcquireNextImage2KHR(device: VkDevice, pAcquireInfo: *const VkAcquireNextImageInfoKHR, pImageIndex: *mut u32)->VkResult;
-}
-
-instance_level_functions! {
-    fn vkGetPhysicalDevicePresentRectanglesKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pRectCount: *mut u32, pRects: *mut VkRect2D)->VkResult;
 }

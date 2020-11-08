@@ -14,56 +14,41 @@ handle!(VmaAllocation, DispatchableHandle);
 handle!(VmaDefragmentationContext, DispatchableHandle);
 
 bitmasks! {
-    {
-        VmaAllocationCreateFlags,
-        enum VmaAllocationCreateFlagBits{
-            DEDICATED_MEMORY_BIT = 0x00000001,
-            NEVER_ALLOCATE_BIT = 0x00000002,
-            MAPPED_BIT = 0x00000004,
-            CAN_BECOME_LOST_BIT = 0x00000008,
-            CAN_MAKE_OTHER_LOST_BIT = 0x00000010,
-            USER_DATA_COPY_STRING_BIT = 0x00000020,
-            UPPER_ADDRESS_BIT = 0x00000040,
-            DONT_BIND_BIT = 0x00000080,
-            WITHIN_BUDGET_BIT = 0x00000100,
-            STRATEGY_BEST_FIT_BIT  = 0x00010000,
-            STRATEGY_WORST_FIT_BIT = 0x00020000,
-            STRATEGY_FIRST_FIT_BIT = 0x00040000,
-            STRATEGY_MIN_MEMORY_BIT =  0x00010000, // STRATEGY_BEST_FIT_BIT,
-            STRATEGY_MIN_TIME_BIT = 0x00040000, // STRATEGY_FIRST_FIT_BIT,
-            STRATEGY_MIN_FRAGMENTATION_BIT = 0x00020000, // STRATEGY_WORST_FIT_BIT,
-            STRATEGY_MASK = 0x00070000, // STRATEGY_BEST_FIT_BIT|STRATEGY_WORST_FIT_BIT|STRATEGY_FIRST_FIT_BIT,
-        }
+    VmaAllocationCreateFlags = enum VmaAllocationCreateFlagBits{
+        DEDICATED_MEMORY_BIT = 0x00000001,
+        NEVER_ALLOCATE_BIT = 0x00000002,
+        MAPPED_BIT = 0x00000004,
+        CAN_BECOME_LOST_BIT = 0x00000008,
+        CAN_MAKE_OTHER_LOST_BIT = 0x00000010,
+        USER_DATA_COPY_STRING_BIT = 0x00000020,
+        UPPER_ADDRESS_BIT = 0x00000040,
+        DONT_BIND_BIT = 0x00000080,
+        WITHIN_BUDGET_BIT = 0x00000100,
+        STRATEGY_BEST_FIT_BIT  = 0x00010000,
+        STRATEGY_WORST_FIT_BIT = 0x00020000,
+        STRATEGY_FIRST_FIT_BIT = 0x00040000,
+        STRATEGY_MIN_MEMORY_BIT =  0x00010000, // STRATEGY_BEST_FIT_BIT,
+        STRATEGY_MIN_TIME_BIT = 0x00040000, // STRATEGY_FIRST_FIT_BIT,
+        STRATEGY_MIN_FRAGMENTATION_BIT = 0x00020000, // STRATEGY_WORST_FIT_BIT,
+        STRATEGY_MASK = 0x00070000, // STRATEGY_BEST_FIT_BIT|STRATEGY_WORST_FIT_BIT|STRATEGY_FIRST_FIT_BIT,
     },
-    {
-        VmaAllocatorCreateFlags,
-        enum VmaAllocatorCreateFlagBits{
-            EXTERNALLY_SYNCHRONIZED_BIT = 0x00000001,
-            KHR_DEDICATED_ALLOCATION_BIT = 0x00000002,
-            KHR_BIND_MEMORY2_BIT = 0x00000004,
-            EXT_MEMORY_BUDGET_BIT = 0x00000008,
-        }
+    VmaAllocatorCreateFlags = enum VmaAllocatorCreateFlagBits{
+        EXTERNALLY_SYNCHRONIZED_BIT = 0x00000001,
+        KHR_DEDICATED_ALLOCATION_BIT = 0x00000002,
+        KHR_BIND_MEMORY2_BIT = 0x00000004,
+        EXT_MEMORY_BUDGET_BIT = 0x00000008,
     },
-    {
-        VmaRecordFlags,
-        enum VmaRecordFlagBits{
-            FLUSH_AFTER_CALL_BIT = 0x00000001,
-        }
+    VmaRecordFlags = enum VmaRecordFlagBits{
+        FLUSH_AFTER_CALL_BIT = 0x00000001,
     },
-    {
-        VmaPoolCreateFlags,
-        enum VmaPoolCreateFlagBits{
-            IGNORE_BUFFER_IMAGE_GRANULARITY_BIT = 0x00000002,
-            LINEAR_ALGORITHM_BIT = 0x00000004,
-            BUDDY_ALGORITHM_BIT = 0x00000008,
-            ALGORITHM_MASK = 0x0000000c, // LINEAR_ALGORITHM_BIT|BUDDY_ALGORITHM_BIT,
-        }
+    VmaPoolCreateFlags = enum VmaPoolCreateFlagBits{
+        IGNORE_BUFFER_IMAGE_GRANULARITY_BIT = 0x00000002,
+        LINEAR_ALGORITHM_BIT = 0x00000004,
+        BUDDY_ALGORITHM_BIT = 0x00000008,
+        ALGORITHM_MASK = 0x0000000c, // LINEAR_ALGORITHM_BIT|BUDDY_ALGORITHM_BIT,
     },
-    {
-        VmaDefragmentationFlags,
-        enum VmaDefragmentationFlagBits{
-            _RESERVED = 0,
-        }
+    VmaDefragmentationFlags = enum VmaDefragmentationFlagBits{
+        _RESERVED = 0,
     }
 }
 

@@ -5,26 +5,16 @@
 use std::ffi::c_void;
 use std::ptr;
 
-use crate::khr::surface::*;
 use crate::*;
-use std::os::raw::c_char;
+// use std::os::raw::c_char;
 
-pub const SPEC_VERSION: u32 = 6;
-pub const EXTENSION_NAME: *const c_char = b"VK_KHR_win32_surface\0".as_ptr() as *const c_char;
+// pub const SPEC_VERSION: u32 = 6;
+// pub const EXTENSION_NAME: *const c_char = b"VK_KHR_win32_surface\0".as_ptr() as *const c_char;
 
 bitmasks! {
-    {
-        VkWin32SurfaceCreateFlagsKHR,
-        enum VkWin32SurfaceCreateFlagBitsKHR{
-            _RESERVED = 0,
-        }
+    VkWin32SurfaceCreateFlagsKHR = enum VkWin32SurfaceCreateFlagBitsKHR{
+        _RESERVED = 0,
     }
-}
-
-extend_core_enums! {
-    enum VkStructureType{
-        WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
-    },
 }
 
 #[repr(C)]
@@ -39,16 +29,11 @@ pub struct VkWin32SurfaceCreateInfoKHR {
 impl Default for VkWin32SurfaceCreateInfoKHR {
     fn default() -> Self {
         VkWin32SurfaceCreateInfoKHR {
-            sType: extend_core_enums::VkStructureType::WIN32_SURFACE_CREATE_INFO_KHR,
+            sType: VkStructureType::WIN32_SURFACE_CREATE_INFO_KHR,
             pNext: ptr::null(),
             flags: Default::default(),
             hinstance: Default::default(),
             hwnd: Default::default(),
         }
     }
-}
-
-instance_level_functions! {
-    fn vkCreateWin32SurfaceKHR(instance: VkInstance, pCreateInfo: *const VkWin32SurfaceCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pSurface: *mut VkSurfaceKHR)->VkResult;
-    fn vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32)->VkBool32;
 }

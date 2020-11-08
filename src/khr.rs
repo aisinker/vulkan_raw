@@ -1,10 +1,10 @@
-pub mod surface;
-pub mod swapchain;
-
-#[cfg(target_family = "windows")]
-pub mod external_fence_win32;
-#[cfg(target_family = "windows")]
-pub mod win32_surface;
-
-#[cfg(target_family = "unix")]
+#[cfg(feature = "VK_KHR_external_fence_fd")]
 pub mod external_fence_fd;
+#[cfg(feature = "VK_KHR_external_fence_win32")]
+pub mod external_fence_win32;
+#[cfg(feature = "VK_KHR_surface")]
+pub mod surface;
+#[cfg(feature = "VK_KHR_swapchain")]
+pub mod swapchain;
+#[cfg(feature = "VK_KHR_win32_surface")]
+pub mod win32_surface;
