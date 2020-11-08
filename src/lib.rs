@@ -628,3 +628,4 @@ use std::os::raw::c_void;
 
 pub mod ext;
 pub mod khr;
+pub mod vma;
