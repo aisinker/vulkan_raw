@@ -2,11 +2,11 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
+use crate::*;
 use std::ffi::c_void;
 use std::fmt::{Debug, Display, Error, Formatter};
 use std::os::raw::c_char;
 use std::ptr;
-use crate::*;
 
 handle!(VmaAllocator, DispatchableHandle);
 handle!(VmaPool, DispatchableHandle);
@@ -92,7 +92,7 @@ pub type PFN_vmaFreeDeviceMemoryFunction = extern "C" fn(
     size: VkDeviceSize,
 );
 pub type PFN_vkGetPhysicalDeviceProperties =
-extern "C" fn(physicalDevice: VkPhysicalDevice, pProperties: *mut VkPhysicalDeviceProperties);
+    extern "C" fn(physicalDevice: VkPhysicalDevice, pProperties: *mut VkPhysicalDeviceProperties);
 pub type PFN_vkGetPhysicalDeviceMemoryProperties = extern "C" fn(
     physicalDevice: VkPhysicalDevice,
     pMemoryProperties: *mut VkPhysicalDeviceMemoryProperties,
@@ -145,7 +145,7 @@ pub type PFN_vkGetBufferMemoryRequirements = extern "C" fn(
     pMemoryRequirements: *const VkMemoryRequirements,
 );
 pub type PFN_vkGetImageMemoryRequirements =
-extern "C" fn(device: VkDevice, image: VkImage, pMemoryRequirements: *mut VkMemoryRequirements);
+    extern "C" fn(device: VkDevice, image: VkImage, pMemoryRequirements: *mut VkMemoryRequirements);
 pub type PFN_vkCreateBuffer = extern "C" fn(
     device: VkDevice,
     pCreateInfo: *const VkBufferCreateInfo,
@@ -153,7 +153,7 @@ pub type PFN_vkCreateBuffer = extern "C" fn(
     pBuffer: *mut VkBuffer,
 ) -> VkResult;
 pub type PFN_vkDestroyBuffer =
-extern "C" fn(device: VkDevice, buffer: VkBuffer, pAllocator: *const VkAllocationCallbacks);
+    extern "C" fn(device: VkDevice, buffer: VkBuffer, pAllocator: *const VkAllocationCallbacks);
 pub type PFN_vkCreateImage = extern "C" fn(
     device: VkDevice,
     pCreateInfo: *const VkImageCreateInfo,
@@ -161,7 +161,7 @@ pub type PFN_vkCreateImage = extern "C" fn(
     pImage: *mut VkImage,
 ) -> VkResult;
 pub type PFN_vkDestroyImage =
-extern "C" fn(device: VkDevice, image: VkImage, pAllocator: *const VkAllocationCallbacks);
+    extern "C" fn(device: VkDevice, image: VkImage, pAllocator: *const VkAllocationCallbacks);
 pub type PFN_vkCmdCopyBuffer = extern "C" fn(
     commandBuffer: VkCommandBuffer,
     srcBuffer: VkBuffer,
@@ -571,7 +571,7 @@ pub struct VmaPoolCreateInfo {
 }
 
 #[deprecated(
-note = "This is a part of the old interface. It is recommended to use structure VmaDefragmentationInfo2 and function vmaDefragmentationBegin() instead."
+    note = "This is a part of the old interface. It is recommended to use structure VmaDefragmentationInfo2 and function vmaDefragmentationBegin() instead."
 )]
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
@@ -744,7 +744,7 @@ extern "C" {
         pPool: *mut VmaPool,
     ) -> VkResult;
     #[deprecated(
-    note = "This is a part of the old interface. It is recommended to use structure VmaDefragmentationInfo2 and function vmaDefragmentationBegin() instead."
+        note = "This is a part of the old interface. It is recommended to use structure VmaDefragmentationInfo2 and function vmaDefragmentationBegin() instead."
     )]
     #[allow(deprecated)]
     pub fn vmaDefragment(
