@@ -1121,6 +1121,9 @@ enums! {
         ERROR_FRAGMENTATION = -1000161000,
         ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS = -1000257000,
 
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        ERROR_VALIDATION_FAILED_EXT = -1000011001,
+
         #[cfg(feature = "VK_KHR_surface")]
         ERROR_SURFACE_LOST_KHR = -1000000000,
         #[cfg(feature = "VK_KHR_surface")]
@@ -1177,8 +1180,6 @@ enums! {
 
         #[cfg(feature = "VK_EXT_debug_utils")]
         DEBUG_UTILS_MESSENGER_EXT = 1000128000,
-        #[cfg(feature = "VK_EXT_debug_utils")]
-        ERROR_VALIDATION_FAILED_EXT = -1000011001,
 
         #[cfg(feature = "VK_KHR_surface")]
         SURFACE_KHR = 1000000000,
