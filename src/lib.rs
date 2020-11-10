@@ -128,7 +128,7 @@ macro_rules! bitmasks {
             $(#[$flags_attr:meta])*
             $flags_name:ident = enum $flag_bits_name:ident{
                 $(
-                    $(#[$bit_attr:meta])*
+                    $(#[$inner:ident $($args:tt)*])*
                     $bit_name:ident = $value:literal
                 ),*$(,)?
             }
@@ -141,7 +141,7 @@ macro_rules! bitmasks {
                 #[derive(Default)]
                 pub struct $flag_bits_name: u32 {
                     $(
-                        $(#[$bit_attr])*
+                        $(#[$inner $($args)*])*
                         const $bit_name = $value;
                     )*
                 }
@@ -478,6 +478,8 @@ pub use crate::ext::memory_budget::*;
 pub use crate::khr::external_fence_fd::*;
 #[cfg(feature = "VK_KHR_external_fence_win32")]
 pub use crate::khr::external_fence_win32::*;
+#[cfg(feature = "VK_KHR_pipeline_library")]
+pub use crate::khr::pipeline_library::*;
 #[cfg(feature = "VK_KHR_surface")]
 pub use crate::khr::surface::*;
 #[cfg(feature = "VK_KHR_swapchain")]

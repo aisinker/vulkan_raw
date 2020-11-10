@@ -16,6 +16,9 @@ default = [
 
     "VK_KHR_surface",
     "VK_KHR_swapchain",
+    "VK_KHR_deferred_host_operations",
+    "VK_KHR_pipeline_library",
+    "VK_KHR_ray_tracing",
     "VK_EXT_debug_utils",
     "VK_EXT_index_type_uint8",
     "VK_EXT_memory_budget",
@@ -25,6 +28,9 @@ VulkanMemoryAllocator = []
 
 VK_KHR_surface = []
 VK_KHR_swapchain = []
+VK_KHR_deferred_host_operations = []
+VK_KHR_pipeline_library = []
+VK_KHR_ray_tracing = []
 VK_EXT_debug_utils = []
 VK_EXT_index_type_uint8 = []
 VK_EXT_memory_budget = []

@@ -130,6 +130,8 @@ bitmasks! {
         DERIVATIVE_BIT = 0x00000004,
         VIEW_INDEX_FROM_DEVICE_INDEX_BIT = 0x00000008,
         DISPATCH_BASE_BIT = 0x00000010,
+        #[cfg(feature = "VK_KHR_pipeline_library")]
+        LIBRARY_BIT_KHR = 0x00000800,
     },
     VkColorComponentFlags = enum VkColorComponentFlagBits{
         R_BIT = 0x00000001,
@@ -644,6 +646,9 @@ enums! {
 
         #[cfg(feature = "VK_KHR_win32_surface")]
         WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
+
+        #[cfg(feature = "VK_KHR_pipeline_library")]
+        PIPELINE_LIBRARY_CREATE_INFO_KHR = 1000290000,
     },
     enum VkImageLayout{
         UNDEFINED = 0,

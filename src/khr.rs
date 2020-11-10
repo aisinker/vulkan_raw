@@ -2,6 +2,8 @@
 pub mod external_fence_fd;
 #[cfg(feature = "VK_KHR_external_fence_win32")]
 pub mod external_fence_win32;
+#[cfg(feature = "VK_KHR_pipeline_library")]
+pub mod pipeline_library;
 #[cfg(feature = "VK_KHR_surface")]
 pub mod surface;
 #[cfg(feature = "VK_KHR_swapchain")]
