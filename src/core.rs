@@ -20,6 +20,9 @@ use crate::khr::swapchain::*;
 #[cfg(feature = "VK_KHR_win32_surface")]
 use crate::khr::win32_surface::*;
 
+#[cfg(feature = "VK_KHR_deferred_host_operations")]
+use crate::khr::deferred_host_operations::*;
+
 use std::fmt::Debug;
 use std::hash::Hash;
 
@@ -649,6 +652,9 @@ enums! {
 
         #[cfg(feature = "VK_KHR_pipeline_library")]
         PIPELINE_LIBRARY_CREATE_INFO_KHR = 1000290000,
+
+        #[cfg(feature = "VK_KHR_deferred_host_operations")]
+        DEFERRED_OPERATION_INFO_KHR = 1000268000,
     },
     enum VkImageLayout{
         UNDEFINED = 0,
@@ -1138,6 +1144,15 @@ enums! {
         SUBOPTIMAL_KHR = 1000001003,
         #[cfg(feature = "VK_KHR_swapchain")]
         ERROR_OUT_OF_DATE_KHR = -1000001004,
+
+        #[cfg(feature = "VK_KHR_deferred_host_operations")]
+        OPERATION_DEFERRED_KHR = 1000268002,
+        #[cfg(feature = "VK_KHR_deferred_host_operations")]
+        OPERATION_NOT_DEFERRED_KHR = 1000268003,
+        #[cfg(feature = "VK_KHR_deferred_host_operations")]
+        THREAD_DONE_KHR = 1000268001,
+        #[cfg(feature = "VK_KHR_deferred_host_operations")]
+        THREAD_IDLE_KHR = 1000268000,
     },
     enum VkDynamicState{
         VIEWPORT = 0,
@@ -1191,6 +1206,9 @@ enums! {
 
         #[cfg(feature = "VK_KHR_swapchain")]
         SWAPCHAIN_KHR = 1000001000,
+
+        #[cfg(feature = "VK_KHR_deferred_host_operations")]
+        DEFERRED_OPERATION_KHR = 1000268000,
     },
     enum VkSemaphoreType{
         BINARY = 0,
@@ -6686,4 +6704,15 @@ device_level_functions! {
     fn vkGetDeviceGroupSurfacePresentModesKHR(device: VkDevice, surface: VkSurfaceKHR, pModes: *mut VkDeviceGroupPresentModeFlagsKHR)->VkResult;
     #[cfg(feature = "VK_KHR_swapchain")]
     fn vkAcquireNextImage2KHR(device: VkDevice, pAcquireInfo: *const VkAcquireNextImageInfoKHR, pImageIndex: *mut u32)->VkResult;
+
+    #[cfg(feature = "VK_KHR_deferred_host_operations")]
+    fn vkCreateDeferredOperationKHR(device: VkDevice, pAllocator: *const VkAllocationCallbacks, pDeferredOperation: *mut VkDeferredOperationKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_deferred_host_operations")]
+    fn vkDeferredOperationJoinKHR(device: VkDevice, operation: VkDeferredOperationKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_deferred_host_operations")]
+    fn vkDestroyDeferredOperationKHR(device: VkDevice, operation: VkDeferredOperationKHR, pAllocator: *const VkAllocationCallbacks);
+    #[cfg(feature = "VK_KHR_deferred_host_operations")]
+    fn vkGetDeferredOperationMaxConcurrencyKHR(device: VkDevice, operation: VkDeferredOperationKHR)->u32;
+    #[cfg(feature = "VK_KHR_deferred_host_operations")]
+    fn vkGetDeferredOperationResultKHR(device: VkDevice, operation: VkDeferredOperationKHR)->VkResult;
 }

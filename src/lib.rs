@@ -469,21 +469,31 @@ pub use crate::core::*;
 
 #[cfg(feature = "VK_EXT_debug_utils")]
 pub use crate::ext::debug_utils::*;
+
 #[cfg(feature = "VK_EXT_index_type_uint8")]
 pub use crate::ext::index_type_uint8::*;
+
 #[cfg(feature = "VK_EXT_memory_budget")]
 pub use crate::ext::memory_budget::*;
 
 #[cfg(feature = "VK_KHR_external_fence_fd")]
 pub use crate::khr::external_fence_fd::*;
+
 #[cfg(feature = "VK_KHR_external_fence_win32")]
 pub use crate::khr::external_fence_win32::*;
+
 #[cfg(feature = "VK_KHR_pipeline_library")]
 pub use crate::khr::pipeline_library::*;
+
+#[cfg(feature = "VK_KHR_deferred_host_operations")]
+pub use crate::khr::deferred_host_operations::*;
+
 #[cfg(feature = "VK_KHR_surface")]
 pub use crate::khr::surface::*;
+
 #[cfg(feature = "VK_KHR_swapchain")]
 pub use crate::khr::swapchain::*;
+
 #[cfg(feature = "VK_KHR_win32_surface")]
 pub use crate::khr::win32_surface::*;
 
