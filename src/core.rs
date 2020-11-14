@@ -1297,7 +1297,7 @@ enums! {
         #[cfg(feature = "VK_KHR_deferred_host_operations")]
         DEFERRED_OPERATION_KHR = 1000268000,
 
-        #[cfg(feature = "VK_KHR_ray_traing")]
+        #[cfg(feature = "VK_KHR_ray_tracing")]
         ACCELERATION_STRUCTURE_KHR = 1000165000,
     },
     enum VkSemaphoreType{
