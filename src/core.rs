@@ -256,9 +256,9 @@ bitmasks! {
         ALL_GRAPHICS_BIT = 0x00008000,
         ALL_COMMANDS_BIT = 0x00010000,
 
-        #[cfg(feature = "VK_KHR_tracing")]
+        #[cfg(feature = "VK_KHR_ray_tracing")]
         RAY_TRACING_SHADER_BIT_KHR = 0x00200000,
-        #[cfg(feature = "VK_KHR_tracing")]
+        #[cfg(feature = "VK_KHR_ray_tracing")]
         ACCELERATION_STRUCTURE_BUILD_BIT_KHR = 0x02000000,
     },
     VkCommandPoolCreateFlags = enum VkCommandPoolCreateFlagBits{
@@ -1238,7 +1238,7 @@ enums! {
         #[cfg(feature = "VK_KHR_deferred_host_operations")]
         THREAD_IDLE_KHR = 1000268000,
 
-        #[cfg(feature = "VK_KHR_tracing")]
+        #[cfg(feature = "VK_KHR_ray_tracing")]
         ERROR_INCOMPATIBLE_VERSION_KHR = -1000150000,
     },
     enum VkDynamicState{
