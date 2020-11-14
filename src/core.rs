@@ -8,21 +8,6 @@ use std::ptr;
 
 use crate::*;
 
-#[cfg(feature = "VK_EXT_debug_utils")]
-use crate::ext::debug_utils::*;
-
-#[cfg(feature = "VK_KHR_external_fence_fd")]
-use crate::khr::external_fence_fd::*;
-#[cfg(feature = "VK_KHR_external_fence_win32")]
-use crate::khr::external_fence_win32::*;
-#[cfg(feature = "VK_KHR_swapchain")]
-use crate::khr::swapchain::*;
-#[cfg(feature = "VK_KHR_win32_surface")]
-use crate::khr::win32_surface::*;
-
-#[cfg(feature = "VK_KHR_deferred_host_operations")]
-use crate::khr::deferred_host_operations::*;
-
 use std::fmt::Debug;
 use std::hash::Hash;
 
@@ -73,6 +58,11 @@ bitmasks! {
         HOST_WRITE_BIT = 0x00004000,
         MEMORY_READ_BIT = 0x00008000,
         MEMORY_WRITE_BIT = 0x00010000,
+
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_READ_BIT_KHR = 0x00200000,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_WRITE_BIT_KHR = 0x00400000,
     },
     VkBufferUsageFlags = enum VkBufferUsageFlagBits{
         TRANSFER_SRC_BIT = 0x00000001,
@@ -85,6 +75,9 @@ bitmasks! {
         VERTEX_BUFFER_BIT = 0x00000080,
         INDIRECT_BUFFER_BIT = 0x00000100,
         SHADER_DEVICE_ADDRESS_BIT = 0x00020000,
+
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_BIT_KHR = 0x00000400,
     },
     VkBufferCreateFlags = enum VkBufferCreateFlagBits{
         SPARSE_BINDING_BIT = 0x00000001,
@@ -102,6 +95,19 @@ bitmasks! {
         COMPUTE_BIT = 0x00000020,
         ALL_GRAPHICS = 0x0000001F,
         ALL = 0x7FFFFFFF,
+
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAYGEN_BIT_KHR = 0x00000100,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ANY_HIT_BIT_KHR = 0x00000200,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        CLOSEST_HIT_BIT_KHR = 0x00000400,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        MISS_BIT_KHR = 0x00000800,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        INTERSECTION_BIT_KHR = 0x00001000,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        CALLABLE_BIT_KHR = 0x00002000,
     },
     VkImageUsageFlags = enum VkImageUsageFlagBits{
         TRANSFER_SRC_BIT = 0x00000001,
@@ -133,8 +139,22 @@ bitmasks! {
         DERIVATIVE_BIT = 0x00000004,
         VIEW_INDEX_FROM_DEVICE_INDEX_BIT = 0x00000008,
         DISPATCH_BASE_BIT = 0x00000010,
+
         #[cfg(feature = "VK_KHR_pipeline_library")]
         LIBRARY_BIT_KHR = 0x00000800,
+
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_NO_NULL_ANY_HIT_SHADERS_BIT_KHR = 0x00004000,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_NO_NULL_CLOSEST_HIT_SHADERS_BIT_KHR = 0x00008000,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_NO_NULL_MISS_SHADERS_BIT_KHR = 0x00010000,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_NO_NULL_INTERSECTION_SHADERS_BIT_KHR = 0x00020000,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_SKIP_TRIANGLES_BIT_KHR = 0x00001000,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_SKIP_AABBS_BIT_KHR = 0x00002000,
     },
     VkColorComponentFlags = enum VkColorComponentFlagBits{
         R_BIT = 0x00000001,
@@ -169,6 +189,9 @@ bitmasks! {
         DISJOINT_BIT = 0x00400000,
         COSITED_CHROMA_SAMPLES_BIT = 0x00800000,
         SAMPLED_IMAGE_FILTER_MINMAX_BIT = 0x00010000,
+
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_VERTEX_BUFFER_BIT_KHR = 0x20000000,
     },
     VkQueryControlFlags = enum VkQueryControlFlagBits{
         PRECISE_BIT = 0x00000001,
@@ -232,6 +255,11 @@ bitmasks! {
         HOST_BIT = 0x00004000,
         ALL_GRAPHICS_BIT = 0x00008000,
         ALL_COMMANDS_BIT = 0x00010000,
+
+        #[cfg(feature = "VK_KHR_tracing")]
+        RAY_TRACING_SHADER_BIT_KHR = 0x00200000,
+        #[cfg(feature = "VK_KHR_tracing")]
+        ACCELERATION_STRUCTURE_BUILD_BIT_KHR = 0x02000000,
     },
     VkCommandPoolCreateFlags = enum VkCommandPoolCreateFlagBits{
         TRANSIENT_BIT = 0x00000001,
@@ -655,6 +683,47 @@ enums! {
 
         #[cfg(feature = "VK_KHR_deferred_host_operations")]
         DEFERRED_OPERATION_INFO_KHR = 1000268000,
+
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        BIND_ACCELERATION_STRUCTURE_MEMORY_INFO_KHR = 1000165006,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR = 1000165007,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR = 1000150000,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_CREATE_GEOMETRY_TYPE_INFO_KHR = 1000150001,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR = 1000150002,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_GEOMETRY_AABBS_DATA_KHR = 1000150003,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR = 1000150004,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR = 1000150005,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_GEOMETRY_KHR = 1000150006,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_INFO_KHR = 1000150008,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_VERSION_KHR = 1000150009,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        COPY_ACCELERATION_STRUCTURE_INFO_KHR = 1000150010,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        COPY_ACCELERATION_STRUCTURE_TO_MEMORY_INFO_KHR = 1000150011,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        COPY_MEMORY_TO_ACCELERATION_STRUCTURE_INFO_KHR = 1000150012,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        PHYSICAL_DEVICE_RAY_TRACING_FEATURES_KHR = 1000150013,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_KHR = 1000150014,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_PIPELINE_CREATE_INFO_KHR = 1000150015,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR = 1000150016,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_CREATE_INFO_KHR = 1000150017,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR = 1000150018,
     },
     enum VkImageLayout{
         UNDEFINED = 0,
@@ -672,6 +741,7 @@ enums! {
         DEPTH_READ_ONLY_OPTIMAL = 1000241001,
         STENCIL_ATTACHMENT_OPTIMAL = 1000241002,
         STENCIL_READ_ONLY_OPTIMAL = 1000241003,
+
         #[cfg(feature = "VK_KHR_swapchain")]
         PRESENT_SRC_KHR = 1000001002,
     },
@@ -727,11 +797,19 @@ enums! {
         UNIFORM_BUFFER_DYNAMIC = 8,
         STORAGE_BUFFER_DYNAMIC = 9,
         INPUT_ATTACHMENT = 10,
+
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_KHR = 1000165000,
     },
     enum VkQueryType{
         OCCLUSION = 0,
         PIPELINE_STATISTICS = 1,
         TIMESTAMP = 2,
+
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR = 1000165000,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        ACCELERATION_STRUCTURE_SERIALIZATION_SIZE_KHR = 1000150000,
     },
     enum VkBorderColor{
         FLOAT_TRANSPARENT_BLACK = 0,
@@ -744,6 +822,8 @@ enums! {
     enum VkPipelineBindPoint{
         GRAPHICS = 0,
         COMPUTE = 1,
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        RAY_TRACING_KHR = 1000165000,
     },
     enum VkPipelineCacheHeaderVersion{
         ONE = 1,
@@ -768,8 +848,12 @@ enums! {
     enum VkIndexType{
         UINT16 = 0,
         UINT32 = 1,
+
         #[cfg(feature = "VK_EXT_index_type_uint8")]
         UINT8_EXT = 1000265000,
+
+        #[cfg(feature = "VK_KHR_ray_tracing")]
+        NONE_KHR = 1000165000,
     },
     enum VkFilter{
         NEAREST = 0,
@@ -1153,6 +1237,9 @@ enums! {
         THREAD_DONE_KHR = 1000268001,
         #[cfg(feature = "VK_KHR_deferred_host_operations")]
         THREAD_IDLE_KHR = 1000268000,
+
+        #[cfg(feature = "VK_KHR_tracing")]
+        ERROR_INCOMPATIBLE_VERSION_KHR = -1000150000,
     },
     enum VkDynamicState{
         VIEWPORT = 0,
@@ -1209,6 +1296,9 @@ enums! {
 
         #[cfg(feature = "VK_KHR_deferred_host_operations")]
         DEFERRED_OPERATION_KHR = 1000268000,
+
+        #[cfg(feature = "VK_KHR_ray_traing")]
+        ACCELERATION_STRUCTURE_KHR = 1000165000,
     },
     enum VkSemaphoreType{
         BINARY = 0,
@@ -3113,7 +3203,6 @@ impl Default for VkRenderPassBeginInfo {
     }
 }
 
-// FIXME: Because of unions with non-`Copy` fields are unstable, so VkClearColorValue need to have Copy trait currently.
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union VkClearColorValue {
@@ -6715,4 +6804,50 @@ device_level_functions! {
     fn vkGetDeferredOperationMaxConcurrencyKHR(device: VkDevice, operation: VkDeferredOperationKHR)->u32;
     #[cfg(feature = "VK_KHR_deferred_host_operations")]
     fn vkGetDeferredOperationResultKHR(device: VkDevice, operation: VkDeferredOperationKHR)->VkResult;
+
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkBindAccelerationStructureMemoryKHR(device: VkDevice, bindInfoCount: u32, pBindInfos: *const VkBindAccelerationStructureMemoryInfoKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkBuildAccelerationStructureKHR(device: VkDevice, infoCount: u32, pInfos: *const VkAccelerationStructureBuildGeometryInfoKHR, ppOffsetInfos: *const *const VkAccelerationStructureBuildOffsetInfoKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCmdBuildAccelerationStructureIndirectKHR(commandBuffer: VkCommandBuffer, pInfo: *const VkAccelerationStructureBuildGeometryInfoKHR, indirectBuffer: VkBuffer, indirectOffset: VkDeviceSize, indirectStride: u32);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCmdBuildAccelerationStructureKHR(commandBuffer: VkCommandBuffer, infoCount: u32, pInfos: *const VkAccelerationStructureBuildGeometryInfoKHR, ppOffsetInfos: *const *const VkAccelerationStructureBuildOffsetInfoKHR);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCmdCopyAccelerationStructureKHR(commandBuffer: VkCommandBuffer, pInfo: *const VkCopyAccelerationStructureInfoKHR);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCmdCopyAccelerationStructureToMemoryKHR(commandBuffer: VkCommandBuffer, pInfo: *const VkCopyAccelerationStructureToMemoryInfoKHR);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCmdCopyMemoryToAccelerationStructureKHR(commandBuffer: VkCommandBuffer, pInfo: *const VkCopyMemoryToAccelerationStructureInfoKHR);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCmdTraceRaysIndirectKHR(commandBuffer: VkCommandBuffer, pRaygenShaderBindingTable: *const VkStridedBufferRegionKHR, pMissShaderBindingTable: *const VkStridedBufferRegionKHR, pHitShaderBindingTable: *const VkStridedBufferRegionKHR, pCallableShaderBindingTable: *const VkStridedBufferRegionKHR, buffer: VkBuffer, offset: VkDeviceSize);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCmdTraceRaysKHR(commandBuffer: VkCommandBuffer, pRaygenShaderBindingTable: *const VkStridedBufferRegionKHR, pMissShaderBindingTable: *const VkStridedBufferRegionKHR, pHitShaderBindingTable: *const VkStridedBufferRegionKHR, pCallableShaderBindingTable: *const VkStridedBufferRegionKHR, width: u32, height: u32, depth: u32);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCmdWriteAccelerationStructuresPropertiesKHR(commandBuffer: VkCommandBuffer, accelerationStructureCount: u32, pAccelerationStructures: *const VkAccelerationStructureKHR, queryType: VkQueryType, queryPool: VkQueryPool, firstQuery: u32);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCopyAccelerationStructureKHR(device: VkDevice, pInfo: *const VkCopyAccelerationStructureInfoKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCopyAccelerationStructureToMemoryKHR(device: VkDevice, pInfo: *const VkCopyAccelerationStructureToMemoryInfoKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCopyMemoryToAccelerationStructureKHR(device: VkDevice, pInfo: *const VkCopyMemoryToAccelerationStructureInfoKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCreateAccelerationStructureKHR(device: VkDevice, pCreateInfo: *const VkAccelerationStructureCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pAccelerationStructure: *mut VkAccelerationStructureKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkCreateRayTracingPipelinesKHR(device: VkDevice, pipelineCache: VkPipelineCache, createInfoCount: u32, pCreateInfos: *const VkRayTracingPipelineCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pPipelines: *mut VkPipeline)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkDestroyAccelerationStructureKHR(device: VkDevice, accelerationStructure: VkAccelerationStructureKHR, pAllocator: *const VkAllocationCallbacks);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkGetAccelerationStructureDeviceAddressKHR(device: VkDevice, pInfo: *const VkAccelerationStructureDeviceAddressInfoKHR)->VkDeviceAddress;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkGetAccelerationStructureMemoryRequirementsKHR(device: VkDevice, pInfo: *const VkAccelerationStructureMemoryRequirementsInfoKHR, pMemoryRequirements: *mut VkMemoryRequirements2);
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkGetDeviceAccelerationStructureCompatibilityKHR(device: VkDevice, version: *const VkAccelerationStructureVersionKHR)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkGetRayTracingCaptureReplayShaderGroupHandlesKHR(device: VkDevice, pipeline: VkPipeline, firstGroup: u32, groupCount: u32, dataSize: usize, pData: *mut c_void)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkGetRayTracingShaderGroupHandlesKHR(device: VkDevice, pipeline: VkPipeline, firstGroup: u32, groupCount: u32, dataSize: usize, pData: *mut c_void)->VkResult;
+    #[cfg(feature = "VK_KHR_ray_tracing")]
+    fn vkWriteAccelerationStructuresPropertiesKHR(device: VkDevice, accelerationStructureCount: u32, pAccelerationStructures: *const VkAccelerationStructureKHR, queryType: VkQueryType, dataSize: usize, pData: *mut c_void, stride: usize)->VkResult;
+
 }

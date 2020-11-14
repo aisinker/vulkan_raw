@@ -497,5 +497,8 @@ pub use crate::khr::swapchain::*;
 #[cfg(feature = "VK_KHR_win32_surface")]
 pub use crate::khr::win32_surface::*;
 
+#[cfg(feature = "VK_KHR_ray_tracing")]
+pub use crate::khr::ray_tracing::*;
+
 #[cfg(feature = "VulkanMemoryAllocator")]
 pub use vma::*;

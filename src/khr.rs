@@ -18,3 +18,6 @@ pub mod swapchain;
 
 #[cfg(feature = "VK_KHR_win32_surface")]
 pub mod win32_surface;
+
+#[cfg(feature = "VK_KHR_ray_tracing")]
+pub mod ray_tracing;
