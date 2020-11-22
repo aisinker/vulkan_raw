@@ -275,7 +275,7 @@ impl Default for VkAccelerationStructureGeometryTrianglesDataKHR {
                 hostAddress: ptr::null(),
             },
             vertexStride: Default::default(),
-            indexType: VkIndexType::UINT16,
+            indexType: VkIndexType::NONE_KHR,
             indexData: VkDeviceOrHostAddressConstKHR {
                 hostAddress: ptr::null(),
             },
