@@ -15,14 +15,18 @@ enums! {
         DEVICE_KHR = 1,
         HOST_OR_DEVICE_KHR = 2,
     },
-    enum VkAccelerationStructureMemoryRequirementsTypeKHR {
-        OBJECT_KHR = 0,
-        BUILD_SCRATCH_KHR = 1,
-        UPDATE_SCRATCH_KHR = 2,
+    enum VkAccelerationStructureCompatibilityKHR{
+        COMPATIBLE_KHR = 0,
+        INCOMPATIBLE_KHR = 1,
     },
     enum VkAccelerationStructureTypeKHR {
         TOP_LEVEL_KHR = 0,
         BOTTOM_LEVEL_KHR = 1,
+        GENERIC_KHR = 2,
+    },
+    enum VkBuildAccelerationStructureModeKHR{
+        BUILD_KHR = 0,
+        UPDATE_KHR = 1,
     },
     enum VkCopyAccelerationStructureModeKHR {
         CLONE_KHR = 0,
@@ -33,16 +37,14 @@ enums! {
     enum VkGeometryTypeKHR {
         TRIANGLES_KHR = 0,
         AABBS_KHR = 1,
-        INSTANCES_KHR = 1000150000,
-    },
-    enum VkRayTracingShaderGroupTypeKHR {
-        GENERAL_KHR = 0,
-        TRIANGLES_HIT_GROUP_KHR = 1,
-        PROCEDURAL_HIT_GROUP_KHR = 2,
+        INSTANCES_KHR = 2,
     },
 }
 
 bitmasks! {
+    VkAccelerationStructureCreateFlagsKHR = enum VkAccelerationStructureCreateFlagBitsKHR{
+        DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_KHR = 0x00000001,
+    },
     VkBuildAccelerationStructureFlagsKHR = enum VkBuildAccelerationStructureFlagBitsKHR {
         ALLOW_UPDATE_BIT_KHR = 0x00000001,
         ALLOW_COMPACTION_BIT_KHR = 0x00000002,
@@ -80,11 +82,11 @@ pub struct VkAccelerationStructureBuildGeometryInfoKHR {
     pub pNext: *const c_void,
     pub r#type: VkAccelerationStructureTypeKHR,
     pub flags: VkBuildAccelerationStructureFlagsKHR,
-    pub update: VkBool32,
+    pub mode: VkBuildAccelerationStructureModeKHR,
     pub srcAccelerationStructure: VkAccelerationStructureKHR,
     pub dstAccelerationStructure: VkAccelerationStructureKHR,
-    pub geometryArrayOfPointers: VkBool32,
     pub geometryCount: u32,
+    pub pGeometries: *const VkAccelerationStructureGeometryKHR,
     pub ppGeometries: *const *const VkAccelerationStructureGeometryKHR,
     pub scratchData: VkDeviceOrHostAddressKHR,
 }
@@ -95,11 +97,11 @@ impl Default for VkAccelerationStructureBuildGeometryInfoKHR {
             pNext: ptr::null(),
             r#type: VkAccelerationStructureTypeKHR::TOP_LEVEL_KHR,
             flags: Default::default(),
-            update: Default::default(),
+            mode: VkBuildAccelerationStructureModeKHR::BUILD_KHR,
             srcAccelerationStructure: Default::default(),
             dstAccelerationStructure: Default::default(),
-            geometryArrayOfPointers: Default::default(),
             geometryCount: Default::default(),
+            pGeometries: ptr::null(),
             ppGeometries: ptr::null(),
             scratchData: VkDeviceOrHostAddressKHR {
                 hostAddress: ptr::null_mut(),
@@ -110,7 +112,7 @@ impl Default for VkAccelerationStructureBuildGeometryInfoKHR {
 
 #[repr(C)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub struct VkAccelerationStructureBuildOffsetInfoKHR {
+pub struct VkAccelerationStructureBuildRangeInfoKHR {
     pub primitiveCount: u32,
     pub primitiveOffset: u32,
     pub firstVertex: u32,
@@ -119,27 +121,21 @@ pub struct VkAccelerationStructureBuildOffsetInfoKHR {
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkAccelerationStructureCreateGeometryTypeInfoKHR {
+pub struct VkAccelerationStructureBuildSizesInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
-    pub geometryType: VkGeometryTypeKHR,
-    pub maxPrimitiveCount: u32,
-    pub indexType: VkIndexType,
-    pub maxVertexCount: u32,
-    pub vertexFormat: VkFormat,
-    pub allowsTransforms: VkBool32,
+    pub accelerationStructureSize: VkDeviceSize,
+    pub updateScratchSize: VkDeviceSize,
+    pub buildScratchSize: VkDeviceSize,
 }
-impl Default for VkAccelerationStructureCreateGeometryTypeInfoKHR {
+impl Default for VkAccelerationStructureBuildSizesInfoKHR {
     fn default() -> Self {
         Self {
-            sType: VkStructureType::ACCELERATION_STRUCTURE_CREATE_GEOMETRY_TYPE_INFO_KHR,
+            sType: VkStructureType::ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR,
             pNext: ptr::null(),
-            geometryType: VkGeometryTypeKHR::TRIANGLES_KHR,
-            maxPrimitiveCount: Default::default(),
-            indexType: VkIndexType::UINT16,
-            maxVertexCount: 0,
-            vertexFormat: VkFormat::UNDEFINED,
-            allowsTransforms: VkBool32::FALSE,
+            accelerationStructureSize: Default::default(),
+            updateScratchSize: Default::default(),
+            buildScratchSize: Default::default(),
         }
     }
 }
@@ -149,11 +145,11 @@ impl Default for VkAccelerationStructureCreateGeometryTypeInfoKHR {
 pub struct VkAccelerationStructureCreateInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
-    pub compactedSize: VkDeviceSize,
+    pub createFlags: VkAccelerationStructureCreateFlagsKHR,
+    pub buffer: VkBuffer,
+    pub offset: VkDeviceSize,
+    pub size: VkDeviceSize,
     pub r#type: VkAccelerationStructureTypeKHR,
-    pub flags: VkBuildAccelerationStructureFlagsKHR,
-    pub maxGeometryCount: u32,
-    pub pGeometryInfos: *const VkAccelerationStructureCreateGeometryTypeInfoKHR,
     pub deviceAddress: VkDeviceAddress,
 }
 impl Default for VkAccelerationStructureCreateInfoKHR {
@@ -161,11 +157,11 @@ impl Default for VkAccelerationStructureCreateInfoKHR {
         Self {
             sType: VkStructureType::ACCELERATION_STRUCTURE_CREATE_INFO_KHR,
             pNext: ptr::null(),
-            compactedSize: Default::default(),
+            createFlags: Default::default(),
+            buffer: Default::default(),
+            offset: Default::default(),
+            size: Default::default(),
             r#type: VkAccelerationStructureTypeKHR::TOP_LEVEL_KHR,
-            flags: Default::default(),
-            maxGeometryCount: Default::default(),
-            pGeometryInfos: ptr::null(),
             deviceAddress: Default::default(),
         }
     }
@@ -261,6 +257,7 @@ pub struct VkAccelerationStructureGeometryTrianglesDataKHR {
     pub vertexFormat: VkFormat,
     pub vertexData: VkDeviceOrHostAddressConstKHR,
     pub vertexStride: VkDeviceSize,
+    pub maxVertex: u32,
     pub indexType: VkIndexType,
     pub indexData: VkDeviceOrHostAddressConstKHR,
     pub transformData: VkDeviceOrHostAddressConstKHR,
@@ -276,6 +273,7 @@ impl Default for VkAccelerationStructureGeometryTrianglesDataKHR {
             },
             vertexStride: Default::default(),
             indexType: VkIndexType::NONE_KHR,
+            maxVertex: 0,
             indexData: VkDeviceOrHostAddressConstKHR {
                 hostAddress: ptr::null(),
             },
@@ -381,63 +379,17 @@ impl VkAccelerationStructureInstanceKHR {
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkAccelerationStructureMemoryRequirementsInfoKHR {
+pub struct VkAccelerationStructureVersionInfoKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
-    pub r#type: VkAccelerationStructureMemoryRequirementsTypeKHR,
-    pub buildType: VkAccelerationStructureBuildTypeKHR,
-    pub accelerationStructure: VkAccelerationStructureKHR,
+    pub pVersionData: *const u8,
 }
-impl Default for VkAccelerationStructureMemoryRequirementsInfoKHR {
+impl Default for VkAccelerationStructureVersionInfoKHR {
     fn default() -> Self {
         Self {
-            sType: VkStructureType::ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_INFO_KHR,
+            sType: VkStructureType::ACCELERATION_STRUCTURE_VERSION_INFO_KHR,
             pNext: ptr::null(),
-            r#type: VkAccelerationStructureMemoryRequirementsTypeKHR::OBJECT_KHR,
-            buildType: VkAccelerationStructureBuildTypeKHR::HOST_KHR,
-            accelerationStructure: Default::default(),
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkAccelerationStructureVersionKHR {
-    pub sType: VkStructureType,
-    pub pNext: *const c_void,
-    pub versionData: *const u8,
-}
-impl Default for VkAccelerationStructureVersionKHR {
-    fn default() -> Self {
-        Self {
-            sType: VkStructureType::ACCELERATION_STRUCTURE_VERSION_KHR,
-            pNext: ptr::null(),
-            versionData: ptr::null(),
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkBindAccelerationStructureMemoryInfoKHR {
-    pub sType: VkStructureType,
-    pub pNext: *const c_void,
-    pub accelerationStructure: VkAccelerationStructureKHR,
-    pub memory: VkDeviceMemory,
-    pub memoryOffset: VkDeviceSize,
-    pub deviceIndexCount: u32,
-    pub pDeviceIndices: *const u32,
-}
-impl Default for VkBindAccelerationStructureMemoryInfoKHR {
-    fn default() -> Self {
-        Self {
-            sType: VkStructureType::BIND_ACCELERATION_STRUCTURE_MEMORY_INFO_KHR,
-            pNext: ptr::null(),
-            accelerationStructure: Default::default(),
-            memory: Default::default(),
-            memoryOffset: Default::default(),
-            deviceIndexCount: Default::default(),
-            pDeviceIndices: ptr::null(),
+            pVersionData: ptr::null(),
         }
     }
 }
@@ -510,108 +462,6 @@ impl Default for VkCopyMemoryToAccelerationStructureInfoKHR {
 }
 
 #[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkRayTracingPipelineCreateInfoKHR {
-    pub sType: VkStructureType,
-    pub pNext: *const c_void,
-    pub flags: VkPipelineCreateFlags,
-    pub stageCount: u32,
-    pub pStages: *const VkPipelineShaderStageCreateInfo,
-    pub groupCount: u32,
-    pub pGroups: *const VkRayTracingShaderGroupCreateInfoKHR,
-    pub maxRecursionDepth: u32,
-    pub libraries: VkPipelineLibraryCreateInfoKHR,
-    pub pLibraryInterface: *const VkRayTracingPipelineInterfaceCreateInfoKHR,
-    pub layout: VkPipelineLayout,
-    pub basePipelineHandle: VkPipeline,
-    pub basePipelineIndex: i32,
-}
-impl Default for VkRayTracingPipelineCreateInfoKHR {
-    fn default() -> Self {
-        Self {
-            sType: VkStructureType::RAY_TRACING_PIPELINE_CREATE_INFO_KHR,
-            pNext: ptr::null(),
-            flags: Default::default(),
-            stageCount: Default::default(),
-            pStages: ptr::null(),
-            groupCount: Default::default(),
-            pGroups: ptr::null(),
-            maxRecursionDepth: Default::default(),
-            libraries: Default::default(),
-            pLibraryInterface: ptr::null(),
-            layout: Default::default(),
-            basePipelineHandle: Default::default(),
-            basePipelineIndex: Default::default(),
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkRayTracingPipelineInterfaceCreateInfoKHR {
-    pub sType: VkStructureType,
-    pub pNext: *const c_void,
-    pub maxPayloadSize: u32,
-    pub maxAttributeSize: u32,
-    pub maxCallableSize: u32,
-}
-impl Default for VkRayTracingPipelineInterfaceCreateInfoKHR {
-    fn default() -> Self {
-        Self {
-            sType: VkStructureType::RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR,
-            pNext: ptr::null(),
-            maxPayloadSize: Default::default(),
-            maxAttributeSize: Default::default(),
-            maxCallableSize: Default::default(),
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkRayTracingShaderGroupCreateInfoKHR {
-    pub sType: VkStructureType,
-    pub pNext: *const c_void,
-    pub r#type: VkRayTracingShaderGroupTypeKHR,
-    pub generalShader: u32,
-    pub closestHitShader: u32,
-    pub anyHitShader: u32,
-    pub intersectionShader: u32,
-    pub pShaderGroupCaptureReplayHandle: *const c_void,
-}
-impl Default for VkRayTracingShaderGroupCreateInfoKHR {
-    fn default() -> Self {
-        Self {
-            sType: VkStructureType::RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR,
-            pNext: ptr::null(),
-            r#type: VkRayTracingShaderGroupTypeKHR::GENERAL_KHR,
-            generalShader: Default::default(),
-            closestHitShader: Default::default(),
-            anyHitShader: Default::default(),
-            intersectionShader: Default::default(),
-            pShaderGroupCaptureReplayHandle: ptr::null(),
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub struct VkStridedBufferRegionKHR {
-    pub buffer: VkBuffer,
-    pub offset: VkDeviceSize,
-    pub stride: VkDeviceSize,
-    pub size: VkDeviceSize,
-}
-
-#[repr(C)]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub struct VkTraceRaysIndirectCommandKHR {
-    pub width: u32,
-    pub height: u32,
-    pub depth: u32,
-}
-
-#[repr(C)]
 #[derive(Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct VkTransformMatrixKHR {
     pub matrix: [[f32; 4]; 3],
@@ -619,66 +469,56 @@ pub struct VkTransformMatrixKHR {
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkPhysicalDeviceRayTracingFeaturesKHR {
+pub struct VkPhysicalDeviceAccelerationStructureFeaturesKHR {
     pub sType: VkStructureType,
-    pub pNext: *const c_void,
-    pub rayTracing: VkBool32,
-    pub rayTracingShaderGroupHandleCaptureReplay: VkBool32,
-    pub rayTracingShaderGroupHandleCaptureReplayMixed: VkBool32,
-    pub rayTracingAccelerationStructureCaptureReplay: VkBool32,
-    pub rayTracingIndirectTraceRays: VkBool32,
-    pub rayTracingIndirectAccelerationStructureBuild: VkBool32,
-    pub rayTracingHostAccelerationStructureCommands: VkBool32,
-    pub rayQuery: VkBool32,
-    pub rayTracingPrimitiveCulling: VkBool32,
+    pub pNext: *mut c_void,
+    pub accelerationStructure: VkBool32,
+    pub accelerationStructureCaptureReplay: VkBool32,
+    pub accelerationStructureIndirectBuild: VkBool32,
+    pub accelerationStructureHostCommands: VkBool32,
+    pub descriptorBindingAccelerationStructureUpdateAfterBind: VkBool32,
 }
-impl Default for VkPhysicalDeviceRayTracingFeaturesKHR {
+impl Default for VkPhysicalDeviceAccelerationStructureFeaturesKHR {
     fn default() -> Self {
         Self {
-            sType: VkStructureType::PHYSICAL_DEVICE_RAY_TRACING_FEATURES_KHR,
-            pNext: ptr::null(),
-            rayTracing: Default::default(),
-            rayTracingShaderGroupHandleCaptureReplay: Default::default(),
-            rayTracingShaderGroupHandleCaptureReplayMixed: Default::default(),
-            rayTracingAccelerationStructureCaptureReplay: Default::default(),
-            rayTracingIndirectTraceRays: Default::default(),
-            rayTracingIndirectAccelerationStructureBuild: Default::default(),
-            rayTracingHostAccelerationStructureCommands: Default::default(),
-            rayQuery: Default::default(),
-            rayTracingPrimitiveCulling: Default::default(),
+            sType: VkStructureType::PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
+            pNext: ptr::null_mut(),
+            accelerationStructure: VkBool32::FALSE,
+            accelerationStructureCaptureReplay: VkBool32::FALSE,
+            accelerationStructureIndirectBuild: VkBool32::FALSE,
+            accelerationStructureHostCommands: VkBool32::FALSE,
+            descriptorBindingAccelerationStructureUpdateAfterBind: VkBool32::FALSE,
         }
     }
 }
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VkPhysicalDeviceRayTracingPropertiesKHR {
+pub struct VkPhysicalDeviceAccelerationStructurePropertiesKHR {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
-    pub shaderGroupHandleSize: u32,
-    pub maxRecursionDepth: u32,
-    pub maxShaderGroupStride: u32,
-    pub shaderGroupBaseAlignment: u32,
     pub maxGeometryCount: u64,
     pub maxInstanceCount: u64,
     pub maxPrimitiveCount: u64,
+    pub maxPerStageDescriptorAccelerationStructures: u32,
+    pub maxPerStageDescriptorUpdateAfterBindAccelerationStructures: u32,
     pub maxDescriptorSetAccelerationStructures: u32,
-    pub shaderGroupHandleCaptureReplaySize: u32,
+    pub maxDescriptorSetUpdateAfterBindAccelerationStructures: u32,
+    pub minAccelerationStructureScratchOffsetAlignment: u32,
 }
-impl Default for VkPhysicalDeviceRayTracingPropertiesKHR {
+impl Default for VkPhysicalDeviceAccelerationStructurePropertiesKHR {
     fn default() -> Self {
         Self {
-            sType: VkStructureType::PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_KHR,
+            sType: VkStructureType::PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR,
             pNext: ptr::null(),
-            shaderGroupHandleSize: Default::default(),
-            maxRecursionDepth: Default::default(),
-            maxShaderGroupStride: Default::default(),
-            shaderGroupBaseAlignment: Default::default(),
-            maxGeometryCount: Default::default(),
-            maxInstanceCount: Default::default(),
-            maxPrimitiveCount: Default::default(),
-            maxDescriptorSetAccelerationStructures: Default::default(),
-            shaderGroupHandleCaptureReplaySize: Default::default(),
+            maxGeometryCount: 0,
+            maxInstanceCount: 0,
+            maxPrimitiveCount: 0,
+            maxPerStageDescriptorAccelerationStructures: 0,
+            maxPerStageDescriptorUpdateAfterBindAccelerationStructures: 0,
+            maxDescriptorSetAccelerationStructures: 0,
+            maxDescriptorSetUpdateAfterBindAccelerationStructures: 0,
+            minAccelerationStructureScratchOffsetAlignment: 0,
         }
     }
 }
@@ -696,7 +536,7 @@ impl Default for VkWriteDescriptorSetAccelerationStructureKHR {
         Self {
             sType: VkStructureType::WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR,
             pNext: ptr::null(),
-            accelerationStructureCount: Default::default(),
+            accelerationStructureCount: 0,
             pAccelerationStructures: ptr::null(),
         }
     }
