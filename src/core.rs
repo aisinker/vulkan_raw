@@ -6818,7 +6818,7 @@ device_level_functions! {
     #[cfg(feature = "VK_KHR_acceleration_structure")]
     fn vkBuildAccelerationStructuresKHR(device: VkDevice, deferredOperation: VkDeferredOperationKHR, infoCount: u32, pInfos: *const VkAccelerationStructureBuildGeometryInfoKHR, ppBuildRangeInfos: *const *const VkAccelerationStructureBuildRangeInfoKHR)->VkResult;
     #[cfg(feature = "VK_KHR_acceleration_structure")]
-    fn vkCmdBuildAccelerationStructuresIndirectKHR(commandBuffer: VkCommandBuffer, pInfo: *const VkAccelerationStructureBuildGeometryInfoKHR, pIndirectDeviceAddresses: *const VkDeviceAddress, pIndirectStrides: *const u32, ppMaxPrimitiveCounts: *const *const u32);
+    fn vkCmdBuildAccelerationStructuresIndirectKHR(commandBuffer: VkCommandBuffer, infoCount: u32, pInfo: *const VkAccelerationStructureBuildGeometryInfoKHR, pIndirectDeviceAddresses: *const VkDeviceAddress, pIndirectStrides: *const u32, ppMaxPrimitiveCounts: *const *const u32);
     #[cfg(feature = "VK_KHR_acceleration_structure")]
     fn vkCmdBuildAccelerationStructuresKHR(commandBuffer: VkCommandBuffer, infoCount: u32, pInfos: *const VkAccelerationStructureBuildGeometryInfoKHR, ppBuildRangeInfos: *const *const VkAccelerationStructureBuildRangeInfoKHR);
     #[cfg(feature = "VK_KHR_acceleration_structure")]
