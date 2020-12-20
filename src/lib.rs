@@ -329,6 +329,8 @@ pub const VK_REMAINING_MIP_LEVELS: u32 = 0xFFFF_FFFF;
 pub const VK_REMAINING_ARRAY_LAYERS: u32 = 0xFFFF_FFFF;
 pub const VK_WHOLE_SIZE: u64 = 0xFFFF_FFFF_FFFF_FFFF;
 pub const VK_ATTACHMENT_UNUSED: u32 = 0xFFFF_FFFF;
+pub const VK_SHADER_UNUSED_KHR: u32 = 0xFFFF_FFFF;
+
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct VkBool32(u32);
