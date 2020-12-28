@@ -293,6 +293,15 @@ pub struct VkAccelerationStructureInstanceKHR {
     pub accelerationStructureReference: u64,
 }
 impl VkAccelerationStructureInstanceKHR {
+    pub fn new() -> Self {
+        Self {
+            transform: Default::default(),
+            instanceCustomIndex_mask: 0,
+            instanceShaderBindingTableRecordOffset_flags: 0,
+            accelerationStructureReference: Default::default(),
+        }
+    }
+
     pub fn set_instance_custom_index(&mut self, index: u32) {
         if cfg!(target_endian = "little") {
             self.instanceCustomIndex_mask =
