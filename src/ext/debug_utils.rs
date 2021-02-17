@@ -12,7 +12,11 @@ use crate::*;
 // pub const SPEC_VERSION: u32 = 2;
 // pub const EXTENSION_NAME: *const c_char = b"VK_EXT_debug_utils\0".as_ptr() as *const c_char;
 
-handle!(VkDebugUtilsMessengerEXT, NonDispatchableHandle);
+handle!(
+    VkDebugUtilsMessengerEXT,
+    NonDispatchableHandle,
+    VkObjectType::DEBUG_UTILS_MESSENGER_EXT
+);
 
 bitmasks! {
     VkDebugUtilsMessengerCreateFlagsEXT = enum VkDebugUtilsMessengerCreateFlagBitsEXT{

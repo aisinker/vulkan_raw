@@ -55,7 +55,7 @@ impl Default for VkRayTracingPipelineCreateInfoKHR {
             pDynamicState: ptr::null(),
             layout: Default::default(),
             basePipelineHandle: Default::default(),
-            basePipelineIndex: Default::default(),
+            basePipelineIndex: -1,
         }
     }
 }

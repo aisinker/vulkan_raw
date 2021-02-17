@@ -1380,33 +1380,93 @@ impl VkResult {
     }
 }
 
-handle!(VkInstance, DispatchableHandle);
-handle!(VkPhysicalDevice, DispatchableHandle);
-handle!(VkDevice, DispatchableHandle);
-handle!(VkQueue, DispatchableHandle);
-handle!(VkCommandBuffer, DispatchableHandle);
-handle!(VkSemaphore, NonDispatchableHandle);
-handle!(VkFence, NonDispatchableHandle);
-handle!(VkDeviceMemory, NonDispatchableHandle);
-handle!(VkBuffer, NonDispatchableHandle);
-handle!(VkImage, NonDispatchableHandle);
-handle!(VkEvent, NonDispatchableHandle);
-handle!(VkQueryPool, NonDispatchableHandle);
-handle!(VkBufferView, NonDispatchableHandle);
-handle!(VkImageView, NonDispatchableHandle);
-handle!(VkShaderModule, NonDispatchableHandle);
-handle!(VkPipelineCache, NonDispatchableHandle);
-handle!(VkPipelineLayout, NonDispatchableHandle);
-handle!(VkRenderPass, NonDispatchableHandle);
-handle!(VkPipeline, NonDispatchableHandle);
-handle!(VkDescriptorSetLayout, NonDispatchableHandle);
-handle!(VkSampler, NonDispatchableHandle);
-handle!(VkDescriptorPool, NonDispatchableHandle);
-handle!(VkDescriptorSet, NonDispatchableHandle);
-handle!(VkFramebuffer, NonDispatchableHandle);
-handle!(VkCommandPool, NonDispatchableHandle);
-handle!(VkSamplerYcbcrConversion, NonDispatchableHandle);
-handle!(VkDescriptorUpdateTemplate, NonDispatchableHandle);
+handle!(VkInstance, DispatchableHandle, VkObjectType::INSTANCE);
+handle!(
+    VkPhysicalDevice,
+    DispatchableHandle,
+    VkObjectType::PHYSICAL_DEVICE
+);
+handle!(VkDevice, DispatchableHandle, VkObjectType::DEVICE);
+handle!(VkQueue, DispatchableHandle, VkObjectType::QUEUE);
+handle!(
+    VkCommandBuffer,
+    DispatchableHandle,
+    VkObjectType::COMMAND_BUFFER
+);
+handle!(VkSemaphore, NonDispatchableHandle, VkObjectType::SEMAPHORE);
+handle!(VkFence, NonDispatchableHandle, VkObjectType::FENCE);
+handle!(
+    VkDeviceMemory,
+    NonDispatchableHandle,
+    VkObjectType::DEVICE_MEMORY
+);
+handle!(VkBuffer, NonDispatchableHandle, VkObjectType::BUFFER);
+handle!(VkImage, NonDispatchableHandle, VkObjectType::IMAGE);
+handle!(VkEvent, NonDispatchableHandle, VkObjectType::EVENT);
+handle!(VkQueryPool, NonDispatchableHandle, VkObjectType::QUERY_POOL);
+handle!(
+    VkBufferView,
+    NonDispatchableHandle,
+    VkObjectType::BUFFER_VIEW
+);
+handle!(VkImageView, NonDispatchableHandle, VkObjectType::IMAGE_VIEW);
+handle!(
+    VkShaderModule,
+    NonDispatchableHandle,
+    VkObjectType::SHADER_MODULE
+);
+handle!(
+    VkPipelineCache,
+    NonDispatchableHandle,
+    VkObjectType::PIPELINE_CACHE
+);
+handle!(
+    VkPipelineLayout,
+    NonDispatchableHandle,
+    VkObjectType::PIPELINE_LAYOUT
+);
+handle!(
+    VkRenderPass,
+    NonDispatchableHandle,
+    VkObjectType::RENDER_PASS
+);
+handle!(VkPipeline, NonDispatchableHandle, VkObjectType::PIPELINE);
+handle!(
+    VkDescriptorSetLayout,
+    NonDispatchableHandle,
+    VkObjectType::DESCRIPTOR_SET_LAYOUT
+);
+handle!(VkSampler, NonDispatchableHandle, VkObjectType::SAMPLER);
+handle!(
+    VkDescriptorPool,
+    NonDispatchableHandle,
+    VkObjectType::DESCRIPTOR_POOL
+);
+handle!(
+    VkDescriptorSet,
+    NonDispatchableHandle,
+    VkObjectType::DESCRIPTOR_SET
+);
+handle!(
+    VkFramebuffer,
+    NonDispatchableHandle,
+    VkObjectType::FRAMEBUFFER
+);
+handle!(
+    VkCommandPool,
+    NonDispatchableHandle,
+    VkObjectType::COMMAND_POOL
+);
+handle!(
+    VkSamplerYcbcrConversion,
+    NonDispatchableHandle,
+    VkObjectType::SAMPLER_YCBCR_CONVERSION
+);
+handle!(
+    VkDescriptorUpdateTemplate,
+    NonDispatchableHandle,
+    VkObjectType::DESCRIPTOR_UPDATE_TEMPLATE
+);
 
 pub type PFN_vkVoidFunction = extern "C" fn();
 pub type PFN_vkAllocationFunction = extern "C" fn(
@@ -2105,13 +2165,24 @@ pub struct VkImageSubresourceLayers {
 }
 
 #[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkImageSubresourceRange {
     pub aspectMask: VkImageAspectFlags,
     pub baseMipLevel: u32,
     pub levelCount: u32,
     pub baseArrayLayer: u32,
     pub layerCount: u32,
+}
+impl Default for VkImageSubresourceRange {
+    fn default() -> Self {
+        Self {
+            aspectMask: Default::default(),
+            baseMipLevel: 0,
+            levelCount: VK_REMAINING_MIP_LEVELS,
+            baseArrayLayer: 0,
+            layerCount: VK_REMAINING_ARRAY_LAYERS,
+        }
+    }
 }
 
 #[repr(C)]
@@ -2220,10 +2291,14 @@ impl Default for VkImageCreateInfo {
             flags: Default::default(),
             imageType: VkImageType::IT_1D,
             format: VkFormat::UNDEFINED,
-            extent: Default::default(),
-            mipLevels: Default::default(),
-            arrayLayers: Default::default(),
-            samples: Default::default(),
+            extent: VkExtent3D {
+                width: 1,
+                height: 1,
+                depth: 1,
+            },
+            mipLevels: 1,
+            arrayLayers: 1,
+            samples: VkSampleCountFlagBits::SC_1_BIT,
             tiling: VkImageTiling::OPTIMAL,
             usage: Default::default(),
             sharingMode: VkSharingMode::EXCLUSIVE,

@@ -26,27 +26,35 @@ pub type DWORD = u32;
 pub type SECURITY_ATTRIBUTES = c_void; // TODO
 
 macro_rules! handle {
-    ($x:ident,$y:ty) => {
+    ($name:ident, $type:ty$(,$type_enum_variant:path)?) => {
         #[repr(C)]
         #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-        pub struct $x($y);
-        impl $x {
+        pub struct $name($type);
+
+        impl $name {
+            $(
+            pub const TYPE: VkObjectType = $type_enum_variant;
+            )?
+
             pub fn none() -> Self {
-                $x(<$y>::none())
+                $name(<$type>::none())
             }
         }
-        impl Default for $x {
+
+        impl Default for $name {
             fn default() -> Self {
-                $x::none()
+                $name::none()
             }
         }
-        impl Display for $x {
+
+        impl Display for $name {
             fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
                 write!(f, "{}", self.0.to_string())
             }
         }
-        impl From<$x> for u64 {
-            fn from(handle: $x) -> Self {
+
+        impl From<$name> for u64 {
+            fn from(handle: $name) -> Self {
                 handle.0.into()
             }
         }

@@ -4,4 +4,8 @@
 
 use crate::*;
 
-handle!(VkDeferredOperationKHR, NonDispatchableHandle);
+handle!(
+    VkDeferredOperationKHR,
+    NonDispatchableHandle,
+    VkObjectType::DEFERRED_OPERATION_KHR
+);

@@ -14,7 +14,11 @@ use crate::*;
 // pub const SPEC_VERSION: u32 = 70;
 // pub const EXTENSION_NAME: *const c_char = b"VK_KHR_swapchain\0".as_ptr() as *const c_char;
 
-handle!(VkSwapchainKHR, NonDispatchableHandle);
+handle!(
+    VkSwapchainKHR,
+    NonDispatchableHandle,
+    VkObjectType::SWAPCHAIN_KHR
+);
 
 bitmasks! {
     VkDeviceGroupPresentModeFlagsKHR = enum VkDeviceGroupPresentModeFlagBitsKHR{

@@ -7,7 +7,11 @@ use std::ptr;
 
 use crate::*;
 
-handle!(VkAccelerationStructureKHR, NonDispatchableHandle);
+handle!(
+    VkAccelerationStructureKHR,
+    NonDispatchableHandle,
+    VkObjectType::ACCELERATION_STRUCTURE_KHR
+);
 
 enums! {
     enum VkAccelerationStructureBuildTypeKHR {
