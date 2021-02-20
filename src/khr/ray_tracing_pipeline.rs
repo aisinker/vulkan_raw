@@ -97,10 +97,10 @@ impl Default for VkRayTracingShaderGroupCreateInfoKHR {
             sType: VkStructureType::RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR,
             pNext: ptr::null(),
             r#type: VkRayTracingShaderGroupTypeKHR::GENERAL_KHR,
-            generalShader: Default::default(),
-            closestHitShader: Default::default(),
-            anyHitShader: Default::default(),
-            intersectionShader: Default::default(),
+            generalShader: VK_SHADER_UNUSED_KHR,
+            closestHitShader: VK_SHADER_UNUSED_KHR,
+            anyHitShader: VK_SHADER_UNUSED_KHR,
+            intersectionShader: VK_SHADER_UNUSED_KHR,
             pShaderGroupCaptureReplayHandle: ptr::null(),
         }
     }
