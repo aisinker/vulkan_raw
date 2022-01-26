@@ -102,7 +102,7 @@ fn main() {
 - [x] VK_KHR_win32_surface(Revision: 6)
 - [x] VK_KHR_pipeline_library(Revision: 1)
 - [x] VK_KHR_deferred_host_operations(Revision: 4)
-- [x] VK_KHR_acceleration_structure(Revision: 11)
+- [x] VK_KHR_acceleration_structure(Revision: 13)
 - [x] VK_KHR_ray_tracing_pipeline(Revision: 1)
 - [x] VK_KHR_ray_query(Revision: 1)
 - [x] VK_EXT_debug_utils(Revision: 2)
