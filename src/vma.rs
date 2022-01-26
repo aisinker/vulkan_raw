@@ -264,6 +264,7 @@ pub struct VmaStats {
 pub struct VmaDeviceMemoryCallbacks {
     pub pfnAllocate: PFN_vmaAllocateDeviceMemoryFunction,
     pub pfnFree: PFN_vmaFreeDeviceMemoryFunction,
+    pub pUserData: *mut c_void,
 }
 impl Default for VmaDeviceMemoryCallbacks {
     fn default() -> Self {
@@ -286,6 +287,7 @@ impl Default for VmaDeviceMemoryCallbacks {
         Self {
             pfnAllocate: allocate,
             pfnFree: free,
+            pUserData: ptr::null_mut(),
         }
     }
 }
@@ -570,14 +572,30 @@ impl Default for VmaAllocatorCreateInfo {
 }
 
 #[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VmaPoolCreateInfo {
     pub memoryTypeIndex: u32,
     pub flags: VmaPoolCreateFlags,
     pub blockSize: VkDeviceSize,
     pub minBlockCount: usize,
     pub maxBlockCount: usize,
-    pub frameInUseCount: u32,
+    pub priority: f32,
+    pub minAllocationAlignment: VkDeviceSize,
+    pub pMemoryAllocateNext: *mut c_void,
+}
+impl Default for VmaPoolCreateInfo {
+    fn default() -> Self {
+        VmaPoolCreateInfo {
+            memoryTypeIndex: 0,
+            flags: VmaPoolCreateFlags::default(),
+            blockSize: 0,
+            minBlockCount: 0,
+            maxBlockCount: 0,
+            priority: 0f32,
+            minAllocationAlignment: 0,
+            pMemoryAllocateNext: ptr::null_mut(),
+        }
+    }
 }
 
 #[deprecated(
@@ -656,7 +674,6 @@ pub struct VmaPoolStats {
     pub unusedSize: VkDeviceSize,
     pub allocationCount: usize,
     pub unusedRangeCount: usize,
-    pub unusedRangeSizeMax: VkDeviceSize,
     pub blockCount: usize,
 }
 
