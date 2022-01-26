@@ -2,12 +2,12 @@ use std::env;
 
 fn main() {
     let mut build = cc::Build::new();
-    build.include("VulkanMemoryAllocator/src");
+    build.include("VulkanMemoryAllocator/include");
     build.include("Vulkan-Headers/include");
     build.file("VulkanMemoryAllocatorWrapper/vma.cpp");
 
     let target = env::var("TARGET").unwrap();
-    build.flag("-std=c++11");
+    build.flag("/std:c++14");
     if target.contains("darwin") {
         build.cpp_link_stdlib("c++").cpp_set_stdlib("c++");
     } else if target.contains("android") {

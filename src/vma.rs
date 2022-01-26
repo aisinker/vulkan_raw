@@ -78,6 +78,10 @@ pub type PFN_vmaFreeDeviceMemoryFunction = extern "C" fn(
     memory: VkDeviceMemory,
     size: VkDeviceSize,
 );
+pub type PFN_vkGetInstanceProcAddr =
+    extern "C" fn(instance: VkInstance, pName: *const c_char) -> PFN_vkVoidFunction;
+pub type PFN_vkGetDeviceProcAddr =
+    extern "C" fn(device: VkDevice, pName: *const c_char) -> PFN_vkVoidFunction;
 pub type PFN_vkGetPhysicalDeviceProperties =
     extern "C" fn(physicalDevice: VkPhysicalDevice, pProperties: *mut VkPhysicalDeviceProperties);
 pub type PFN_vkGetPhysicalDeviceMemoryProperties = extern "C" fn(
@@ -182,7 +186,7 @@ pub type PFN_vkGetPhysicalDeviceMemoryProperties2KHR = extern "C" fn(
 );
 
 #[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VmaAllocationCreateInfo {
     pub flags: VmaAllocationCreateFlags,
     pub usage: VmaMemoryUsage,
@@ -191,6 +195,7 @@ pub struct VmaAllocationCreateInfo {
     pub memoryTypeBits: u32,
     pub pool: VmaPool,
     pub pUserData: *mut c_void,
+    pub priority: f32,
 }
 impl Default for VmaAllocationCreateInfo {
     fn default() -> Self {
@@ -202,6 +207,7 @@ impl Default for VmaAllocationCreateInfo {
             memoryTypeBits: 0,
             pool: Default::default(),
             pUserData: ptr::null_mut(),
+            priority: 0f32,
         }
     }
 }
@@ -287,6 +293,8 @@ impl Default for VmaDeviceMemoryCallbacks {
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VmaVulkanFunctions {
+    pub vkGetInstanceProcAddr: PFN_vkGetInstanceProcAddr,
+    pub vkGetDeviceProcAddr: PFN_vkGetDeviceProcAddr,
     pub vkGetPhysicalDeviceProperties: PFN_vkGetPhysicalDeviceProperties,
     pub vkGetPhysicalDeviceMemoryProperties: PFN_vkGetPhysicalDeviceMemoryProperties,
     pub vkAllocateMemory: PFN_vkAllocateMemory,
@@ -304,14 +312,29 @@ pub struct VmaVulkanFunctions {
     pub vkCreateImage: PFN_vkCreateImage,
     pub vkDestroyImage: PFN_vkDestroyImage,
     pub vkCmdCopyBuffer: PFN_vkCmdCopyBuffer,
+    //
     pub vkGetBufferMemoryRequirements2KHR: PFN_vkGetBufferMemoryRequirements2KHR,
     pub vkGetImageMemoryRequirements2KHR: PFN_vkGetImageMemoryRequirements2KHR,
+    //
     pub vkBindBufferMemory2KHR: PFN_vkBindBufferMemory2KHR,
     pub vkBindImageMemory2KHR: PFN_vkBindImageMemory2KHR,
+    //
     pub vkGetPhysicalDeviceMemoryProperties2KHR: PFN_vkGetPhysicalDeviceMemoryProperties2KHR,
 }
 impl Default for VmaVulkanFunctions {
     fn default() -> Self {
+        extern "C" fn vkGetInstanceProcAddr(
+            _instance: VkInstance,
+            _pName: *const c_char,
+        ) -> PFN_vkVoidFunction {
+            unimplemented!()
+        }
+        extern "C" fn vkGetDeviceProcAddr(
+            _device: VkDevice,
+            _pName: *const c_char,
+        ) -> PFN_vkVoidFunction {
+            unimplemented!()
+        }
         extern "C" fn vkGetPhysicalDeviceProperties(
             _physicalDevice: VkPhysicalDevice,
             _pProperties: *mut VkPhysicalDeviceProperties,
@@ -470,6 +493,8 @@ impl Default for VmaVulkanFunctions {
             unimplemented!()
         }
         Self {
+            vkGetInstanceProcAddr,
+            vkGetDeviceProcAddr,
             vkGetPhysicalDeviceProperties,
             vkGetPhysicalDeviceMemoryProperties,
             vkAllocateMemory,
@@ -520,12 +545,11 @@ pub struct VmaAllocatorCreateInfo {
     pub preferredLargeHeapBlockSize: VkDeviceSize,
     pub pAllocationCallbacks: *const VkAllocationCallbacks,
     pub pDeviceMemoryCallbacks: *const VmaDeviceMemoryCallbacks,
-    pub frameInUseCount: u32,
     pub pHeapSizeLimit: *const VkDeviceSize,
     pub pVulkanFunctions: *const VmaVulkanFunctions,
-    pub pRecordSettings: *const VmaRecordSettings,
     pub instance: VkInstance,
     pub vulkanApiVersion: u32,
+    pub pTypeExternalMemoryHandleTypes: *const VkExternalMemoryHandleTypeFlags,
 }
 impl Default for VmaAllocatorCreateInfo {
     fn default() -> Self {
@@ -536,12 +560,11 @@ impl Default for VmaAllocatorCreateInfo {
             preferredLargeHeapBlockSize: Default::default(),
             pAllocationCallbacks: ptr::null(),
             pDeviceMemoryCallbacks: ptr::null(),
-            frameInUseCount: 0,
             pHeapSizeLimit: ptr::null(),
             pVulkanFunctions: ptr::null(),
-            pRecordSettings: ptr::null(),
             instance: Default::default(),
             vulkanApiVersion: 0,
+            pTypeExternalMemoryHandleTypes: ptr::null(),
         }
     }
 }

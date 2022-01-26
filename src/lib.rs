@@ -397,7 +397,7 @@ fn get_instance_proc_addr(
     instance: VkInstance,
     name: &CStr,
 ) -> Result<PFN_vkVoidFunction, LoadingError> {
-    let function_pointer = unsafe { vkGetInstanceProcAddr(instance, name.as_ptr()) };
+    let function_pointer = vkGetInstanceProcAddr(instance, name.as_ptr());
     match function_pointer as usize {
         0 => Err(LoadingError(format!(
             "Load function \"{}\"  failed!",

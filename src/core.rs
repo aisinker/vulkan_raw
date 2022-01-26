@@ -6605,16 +6605,16 @@ unsafe extern "C" fn enumerate_instance_version_for_vulkan10(pApiVersion: *mut u
 }
 
 lazy_static! {
-    static ref vulkan_lib: libloading::Library = libloading::Library::new(LIBRARY_NAME).unwrap();
+    static ref vulkan_lib: libloading::Library = unsafe{libloading::Library::new(LIBRARY_NAME).unwrap()};
     // vulkan 1.0
-    pub static ref vkGetInstanceProcAddr: libloading::Symbol<'static, unsafe extern "C" fn(instance: VkInstance, pName: *const c_char)->PFN_vkVoidFunction> = unsafe { vulkan_lib.get(b"vkGetInstanceProcAddr") }.unwrap();
-    pub static ref vkEnumerateInstanceExtensionProperties: unsafe extern "C" fn(pLayerName: *const c_char, pPropertyCount: *mut u32, pProperties: *mut VkExtensionProperties)->VkResult = unsafe {transmute(vkGetInstanceProcAddr(VkInstance::none(), b"vkEnumerateInstanceExtensionProperties\0".as_ptr() as *const c_char))};
-    pub static ref vkEnumerateInstanceLayerProperties: unsafe extern "C" fn(pPropertyCount: *mut u32, pProperties: *mut VkLayerProperties)->VkResult = unsafe {transmute(vkGetInstanceProcAddr(VkInstance::none(), b"vkEnumerateInstanceLayerProperties\0".as_ptr() as *const c_char))};
-    pub static ref vkCreateInstance: unsafe extern "C" fn(pCreateInfo: *const VkInstanceCreateInfo, pAllocator: *const VkAllocationCallbacks, pInstance: *mut VkInstance)->VkResult = unsafe {transmute(vkGetInstanceProcAddr(VkInstance::none(), b"vkCreateInstance\0".as_ptr() as *const c_char))};
+    static ref vkGetInstanceProcAddr_internal: libloading::Symbol<'static, unsafe extern "C" fn(instance: VkInstance, pName: *const c_char)->PFN_vkVoidFunction> = unsafe {vulkan_lib.get(b"vkGetInstanceProcAddr")}.unwrap();
+    pub static ref vkEnumerateInstanceExtensionProperties: unsafe extern "C" fn(pLayerName: *const c_char, pPropertyCount: *mut u32, pProperties: *mut VkExtensionProperties)->VkResult = unsafe {transmute(vkGetInstanceProcAddr_internal(VkInstance::none(), b"vkEnumerateInstanceExtensionProperties\0".as_ptr() as *const c_char))};
+    pub static ref vkEnumerateInstanceLayerProperties: unsafe extern "C" fn(pPropertyCount: *mut u32, pProperties: *mut VkLayerProperties)->VkResult = unsafe {transmute(vkGetInstanceProcAddr_internal(VkInstance::none(), b"vkEnumerateInstanceLayerProperties\0".as_ptr() as *const c_char))};
+    pub static ref vkCreateInstance: unsafe extern "C" fn(pCreateInfo: *const VkInstanceCreateInfo, pAllocator: *const VkAllocationCallbacks, pInstance: *mut VkInstance)->VkResult = unsafe {transmute(vkGetInstanceProcAddr_internal(VkInstance::none(), b"vkCreateInstance\0".as_ptr() as *const c_char))};
     // vulkan 1.1
     pub static ref vkEnumerateInstanceVersion: unsafe extern "C" fn (pApiVersion: *mut u32) = {
         let fp: PFN_vkVoidFunction = unsafe {
-            vkGetInstanceProcAddr(
+            vkGetInstanceProcAddr_internal(
                 VkInstance::none(),
                 b"vkEnumerateInstanceVersion\0".as_ptr() as *const c_char,
             )
@@ -6625,6 +6625,13 @@ lazy_static! {
             unsafe { transmute(fp) }
         }
     };
+}
+
+pub extern "C" fn vkGetInstanceProcAddr(
+    instance: VkInstance,
+    pName: *const c_char,
+) -> PFN_vkVoidFunction {
+    unsafe { vkGetInstanceProcAddr_internal(instance, pName) }
 }
 
 instance_level_functions! {
