@@ -7,7 +7,7 @@ license = "MIT"
 description = "A raw Vulkan API bindings for Rust."
 readme = "README.md"
 keywords = ["vulkan", "graphic", "bindings"]
-edition = "2018"
+edition = "2021"
 build = "build.rs"
 
 [features]
