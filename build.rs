@@ -6,6 +6,12 @@ fn main() {
     build.include("Vulkan-Headers/include");
     build.file("VulkanMemoryAllocatorWrapper/vma.cpp");
 
+    if cfg!(feature = "VK_VERSION_1_3") {
+        build.define("VMA_VULKAN_VERSION", "1003000");
+    } else {
+        build.define("VMA_VULKAN_VERSION", "1002000");
+    }
+
     let target = env::var("TARGET").unwrap();
     build.flag("/std:c++14");
     if target.contains("darwin") {

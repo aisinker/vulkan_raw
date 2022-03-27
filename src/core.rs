@@ -637,6 +637,11 @@ enums! {
         MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO = 1000257003,
         DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO = 1000257004,
 
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEVICE_BUFFER_MEMORY_REQUIREMENTS = 1000413002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEVICE_IMAGE_MEMORY_REQUIREMENTS = 1000413003,
+
         #[cfg(feature = "VK_EXT_debug_utils")]
         DEBUG_UTILS_OBJECT_NAME_INFO_EXT = 1000128000,
         #[cfg(feature = "VK_EXT_debug_utils")]
@@ -6595,6 +6600,48 @@ impl Debug for VkPhysicalDeviceVulkan12Properties {
     }
 }
 
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkDeviceBufferMemoryRequirements {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub pCreateInfo: *const VkBufferCreateInfo,
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkDeviceBufferMemoryRequirements {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::DEVICE_BUFFER_MEMORY_REQUIREMENTS,
+            pNext: ptr::null(),
+            pCreateInfo: ptr::null(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkDeviceImageMemoryRequirements {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub pCreateInfo: *const VkImageCreateInfo,
+    pub planeAspect: VkImageAspectFlagBits,
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkDeviceImageMemoryRequirements {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::DEVICE_IMAGE_MEMORY_REQUIREMENTS,
+            pNext: ptr::null(),
+            pCreateInfo: ptr::null(),
+            planeAspect: Default::default(),
+        }
+    }
+}
+
 #[cfg(target_family = "windows")]
 static LIBRARY_NAME: &'static str = "vulkan-1";
 #[cfg(target_family = "unix")]
@@ -6858,6 +6905,11 @@ device_level_functions! {
     fn vkWaitSemaphores(device: VkDevice, pWaitInfo: *const VkSemaphoreWaitInfo, timeout: u64)->VkResult;
     fn vkSignalSemaphore(device: VkDevice, pSignalInfo: *const VkSemaphoreSignalInfo)->VkResult;
     fn vkResetQueryPool(device: VkDevice, queryPool: VkQueryPool, firstQuery: u32, queryCount: u32);
+    // vulkan 1.3
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkGetDeviceBufferMemoryRequirements(device: VkDevice, pInfo: *const VkDeviceBufferMemoryRequirements, pMemoryRequirements: *mut VkMemoryRequirements2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkGetDeviceImageMemoryRequirements(device: VkDevice, pInfo: *const VkDeviceImageMemoryRequirements, pMemoryRequirements: *mut VkMemoryRequirements2);
 
     #[cfg(feature = "VK_KHR_external_fence_fd")]
     fn vkImportFenceFdKHR(device: VkDevice, pImportFenceFdInfo: *const VkImportFenceFdInfoKHR)->VkResult;

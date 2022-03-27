@@ -12,25 +12,25 @@ handle!(VmaAllocator, DispatchableHandle);
 handle!(VmaPool, DispatchableHandle);
 handle!(VmaAllocation, DispatchableHandle);
 handle!(VmaDefragmentationContext, DispatchableHandle);
+handle!(VmaVirtualAllocation, NonDispatchableHandle);
+handle!(VmaVirtualBlock, DispatchableHandle);
 
 bitmasks! {
     VmaAllocationCreateFlags = enum VmaAllocationCreateFlagBits{
         DEDICATED_MEMORY_BIT = 0x00000001,
         NEVER_ALLOCATE_BIT = 0x00000002,
         MAPPED_BIT = 0x00000004,
-        CAN_BECOME_LOST_BIT = 0x00000008,
-        CAN_MAKE_OTHER_LOST_BIT = 0x00000010,
         USER_DATA_COPY_STRING_BIT = 0x00000020,
         UPPER_ADDRESS_BIT = 0x00000040,
         DONT_BIND_BIT = 0x00000080,
         WITHIN_BUDGET_BIT = 0x00000100,
-        STRATEGY_BEST_FIT_BIT  = 0x00010000,
-        STRATEGY_WORST_FIT_BIT = 0x00020000,
-        STRATEGY_FIRST_FIT_BIT = 0x00040000,
-        STRATEGY_MIN_MEMORY_BIT =  0x00010000, // STRATEGY_BEST_FIT_BIT,
-        STRATEGY_MIN_TIME_BIT = 0x00040000, // STRATEGY_FIRST_FIT_BIT,
-        STRATEGY_MIN_FRAGMENTATION_BIT = 0x00020000, // STRATEGY_WORST_FIT_BIT,
-        STRATEGY_MASK = 0x00070000, // STRATEGY_BEST_FIT_BIT|STRATEGY_WORST_FIT_BIT|STRATEGY_FIRST_FIT_BIT,
+        CAN_ALIAS_BIT = 0x00000200,
+        HOST_ACCESS_SEQUENTIAL_WRITE_BIT = 0x00000400,
+        HOST_ACCESS_RANDOM_BIT = 0x00000800,
+        HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT = 0x00001000,
+        STRATEGY_MIN_MEMORY_BIT = 0x00010000,
+        STRATEGY_MIN_TIME_BIT = 0x00020000,
+        STRATEGY_MIN_OFFSET_BIT  = 0x00040000,
     },
     VmaAllocatorCreateFlags = enum VmaAllocatorCreateFlagBits{
         EXTERNALLY_SYNCHRONIZED_BIT = 0x00000001,
@@ -39,30 +39,41 @@ bitmasks! {
         EXT_MEMORY_BUDGET_BIT = 0x00000008,
         AMD_DEVICE_COHERENT_MEMORY_BIT = 0x00000010,
         BUFFER_DEVICE_ADDRESS_BIT = 0x00000020,
-    },
-    VmaRecordFlags = enum VmaRecordFlagBits{
-        FLUSH_AFTER_CALL_BIT = 0x00000001,
+        EXT_MEMORY_PRIORITY_BIT = 0x00000040,
     },
     VmaPoolCreateFlags = enum VmaPoolCreateFlagBits{
         IGNORE_BUFFER_IMAGE_GRANULARITY_BIT = 0x00000002,
         LINEAR_ALGORITHM_BIT = 0x00000004,
-        BUDDY_ALGORITHM_BIT = 0x00000008,
-        ALGORITHM_MASK = 0x0000000c, // LINEAR_ALGORITHM_BIT|BUDDY_ALGORITHM_BIT,
     },
     VmaDefragmentationFlags = enum VmaDefragmentationFlagBits{
-        _RESERVED = 0,
+        ALGORITHM_FAST_BIT = 0x1,
+        ALGORITHM_BALANCED_BIT = 0x2,
+        ALGORITHM_FULL_BIT = 0x4,
+        ALGORITHM_EXTENSIVE_BIT = 0x8,
+    },
+    VmaVirtualAllocationCreateFlags = enum VmaVirtualAllocationCreateFlagBits{
+        UPPER_ADDRESS_BIT = 0x00000040,
+        STRATEGY_MIN_MEMORY_BIT = 0x00010000,
+        STRATEGY_MIN_TIME_BIT = 0x00020000,
+        STRATEGY_MIN_OFFSET_BIT = 0x00040000,
+    },
+    VmaVirtualBlockCreateFlags = enum VmaVirtualBlockCreateFlagBits{
+        LINEAR_ALGORITHM_BIT = 0x00000001,
     }
 }
 
 enums! {
     enum VmaMemoryUsage{
         UNKNOWN = 0,
-        GPU_ONLY = 1,
-        CPU_ONLY = 2,
-        CPU_TO_GPU = 3,
-        GPU_TO_CPU = 4,
-        CPU_COPY = 5,
         GPU_LAZILY_ALLOCATED = 6,
+        AUTO = 7,
+        AUTO_PREFER_DEVICE = 8,
+        AUTO_PREFER_HOST = 9,
+    },
+    enum VmaDefragmentationMoveOperation{
+        COPY = 0,
+        IGNORE = 1,
+        DESTROY = 2,
     },
 }
 
@@ -71,12 +82,14 @@ pub type PFN_vmaAllocateDeviceMemoryFunction = extern "C" fn(
     memoryType: u32,
     memory: VkDeviceMemory,
     size: VkDeviceSize,
+    pUserData: *mut c_void,
 );
 pub type PFN_vmaFreeDeviceMemoryFunction = extern "C" fn(
     allocator: VmaAllocator,
     memoryType: u32,
     memory: VkDeviceMemory,
     size: VkDeviceSize,
+    pUserData: *mut c_void,
 );
 pub type PFN_vkGetInstanceProcAddr =
     extern "C" fn(instance: VkInstance, pName: *const c_char) -> PFN_vkVoidFunction;
@@ -185,79 +198,19 @@ pub type PFN_vkGetPhysicalDeviceMemoryProperties2KHR = extern "C" fn(
     pMemoryProperties: *mut VkPhysicalDeviceMemoryProperties2,
 );
 
-#[repr(C)]
-#[derive(Clone, PartialEq, PartialOrd, Debug)]
-pub struct VmaAllocationCreateInfo {
-    pub flags: VmaAllocationCreateFlags,
-    pub usage: VmaMemoryUsage,
-    pub requiredFlags: VkMemoryPropertyFlags,
-    pub preferredFlags: VkMemoryPropertyFlags,
-    pub memoryTypeBits: u32,
-    pub pool: VmaPool,
-    pub pUserData: *mut c_void,
-    pub priority: f32,
-}
-impl Default for VmaAllocationCreateInfo {
-    fn default() -> Self {
-        Self {
-            flags: Default::default(),
-            usage: VmaMemoryUsage::UNKNOWN,
-            requiredFlags: Default::default(),
-            preferredFlags: Default::default(),
-            memoryTypeBits: 0,
-            pool: Default::default(),
-            pUserData: ptr::null_mut(),
-            priority: 0f32,
-        }
-    }
-}
+#[cfg(feature = "VK_VERSION_1_3")]
+pub type PFN_vkGetDeviceBufferMemoryRequirements = extern "C" fn(
+    device: VkDevice,
+    pInfo: *const VkDeviceBufferMemoryRequirements,
+    pMemoryRequirements: *mut VkMemoryRequirements2,
+);
 
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VmaAllocationInfo {
-    pub memoryType: u32,
-    pub deviceMemory: VkDeviceMemory,
-    pub offset: VkDeviceSize,
-    pub size: VkDeviceSize,
-    pub pMappedData: *mut c_void,
-    pub pUserData: *mut c_void,
-}
-impl Default for VmaAllocationInfo {
-    fn default() -> Self {
-        Self {
-            memoryType: 0,
-            deviceMemory: Default::default(),
-            offset: Default::default(),
-            size: Default::default(),
-            pMappedData: ptr::null_mut(),
-            pUserData: ptr::null_mut(),
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub struct VmaStatInfo {
-    pub blockCount: u32,
-    pub allocationCount: u32,
-    pub unusedRangeCount: u32,
-    pub usedBytes: VkDeviceSize,
-    pub unusedBytes: VkDeviceSize,
-    pub allocationSizeMin: VkDeviceSize,
-    pub allocationSizeAvg: VkDeviceSize,
-    pub allocationSizeMax: VkDeviceSize,
-    pub unusedRangeSizeMin: VkDeviceSize,
-    pub unusedRangeSizeAvg: VkDeviceSize,
-    pub unusedRangeSizeMax: VkDeviceSize,
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub struct VmaStats {
-    pub memoryType: [VmaStatInfo; VK_MAX_MEMORY_TYPES],
-    pub memoryHeap: [VmaStatInfo; VK_MAX_MEMORY_HEAPS],
-    pub total: VmaStatInfo,
-}
+#[cfg(feature = "VK_VERSION_1_3")]
+pub type PFN_vkGetDeviceImageMemoryRequirements = extern "C" fn(
+    device: VkDevice,
+    pInfo: *const VkDeviceImageMemoryRequirements,
+    pMemoryRequirements: *mut VkMemoryRequirements2,
+);
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
@@ -273,6 +226,7 @@ impl Default for VmaDeviceMemoryCallbacks {
             _memoryType: u32,
             _memory: VkDeviceMemory,
             _size: VkDeviceSize,
+            _pUserData: *mut c_void,
         ) {
             unimplemented!()
         }
@@ -281,6 +235,7 @@ impl Default for VmaDeviceMemoryCallbacks {
             _memoryType: u32,
             _memory: VkDeviceMemory,
             _size: VkDeviceSize,
+            _pUserData: *mut c_void,
         ) {
             unimplemented!()
         }
@@ -314,14 +269,19 @@ pub struct VmaVulkanFunctions {
     pub vkCreateImage: PFN_vkCreateImage,
     pub vkDestroyImage: PFN_vkDestroyImage,
     pub vkCmdCopyBuffer: PFN_vkCmdCopyBuffer,
-    //
+    // vulkan 1.1
     pub vkGetBufferMemoryRequirements2KHR: PFN_vkGetBufferMemoryRequirements2KHR,
     pub vkGetImageMemoryRequirements2KHR: PFN_vkGetImageMemoryRequirements2KHR,
-    //
+    // vulkan 1.1
     pub vkBindBufferMemory2KHR: PFN_vkBindBufferMemory2KHR,
     pub vkBindImageMemory2KHR: PFN_vkBindImageMemory2KHR,
-    //
+    // vulkan 1.1
     pub vkGetPhysicalDeviceMemoryProperties2KHR: PFN_vkGetPhysicalDeviceMemoryProperties2KHR,
+    // vulkan 1.3
+    #[cfg(feature = "VK_VERSION_1_3")]
+    pub vkGetDeviceBufferMemoryRequirements: PFN_vkGetDeviceBufferMemoryRequirements,
+    #[cfg(feature = "VK_VERSION_1_3")]
+    pub vkGetDeviceImageMemoryRequirements: PFN_vkGetDeviceImageMemoryRequirements,
 }
 impl Default for VmaVulkanFunctions {
     fn default() -> Self {
@@ -494,6 +454,22 @@ impl Default for VmaVulkanFunctions {
         ) {
             unimplemented!()
         }
+        #[cfg(feature = "VK_VERSION_1_3")]
+        extern "C" fn vkGetDeviceBufferMemoryRequirements(
+            _device: VkDevice,
+            _pInfo: *const VkDeviceBufferMemoryRequirements,
+            _pMemoryRequirements: *mut VkMemoryRequirements2,
+        ) {
+            unimplemented!()
+        }
+        #[cfg(feature = "VK_VERSION_1_3")]
+        extern "C" fn vkGetDeviceImageMemoryRequirements(
+            _device: VkDevice,
+            _pInfo: *const VkDeviceImageMemoryRequirements,
+            _pMemoryRequirements: *mut VkMemoryRequirements2,
+        ) {
+            unimplemented!()
+        }
         Self {
             vkGetInstanceProcAddr,
             vkGetDeviceProcAddr,
@@ -519,21 +495,10 @@ impl Default for VmaVulkanFunctions {
             vkBindBufferMemory2KHR: vkBindBufferMemory2,
             vkBindImageMemory2KHR: vkBindImageMemory2,
             vkGetPhysicalDeviceMemoryProperties2KHR: vkGetPhysicalDeviceMemoryProperties2,
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VmaRecordSettings {
-    pub flags: VmaRecordFlags,
-    pub pFilePath: *const c_char,
-}
-impl Default for VmaRecordSettings {
-    fn default() -> Self {
-        Self {
-            flags: Default::default(),
-            pFilePath: ptr::null(),
+            #[cfg(feature = "VK_VERSION_1_3")]
+            vkGetDeviceBufferMemoryRequirements,
+            #[cfg(feature = "VK_VERSION_1_3")]
+            vkGetDeviceImageMemoryRequirements,
         }
     }
 }
@@ -572,6 +537,77 @@ impl Default for VmaAllocatorCreateInfo {
 }
 
 #[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+pub struct VmaAllocatorInfo {
+    pub instance: VkInstance,
+    pub physicalDevice: VkPhysicalDevice,
+    pub device: VkDevice,
+}
+
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+pub struct VmaStatistics {
+    pub blockCount: u32,
+    pub allocationCount: u32,
+    pub blockBytes: VkDeviceSize,
+    pub allocationBytes: VkDeviceSize,
+}
+
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+pub struct VmaDetailedStatistics {
+    pub statistics: VmaStatistics,
+    pub unusedRangeCount: u32,
+    pub allocationSizeMin: VkDeviceSize,
+    pub allocationSizeMax: VkDeviceSize,
+    pub unusedRangeSizeMin: VkDeviceSize,
+    pub unusedRangeSizeMax: VkDeviceSize,
+}
+
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+pub struct VmaTotalStatistics {
+    pub memoryType: [VmaDetailedStatistics; VK_MAX_MEMORY_TYPES],
+    pub memoryHeap: [VmaDetailedStatistics; VK_MAX_MEMORY_HEAPS],
+    pub total: VmaDetailedStatistics,
+}
+
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+pub struct VmaBudget {
+    pub statistics: VmaStatistics,
+    pub usage: VkDeviceSize,
+    pub budget: VkDeviceSize,
+}
+
+#[repr(C)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
+pub struct VmaAllocationCreateInfo {
+    pub flags: VmaAllocationCreateFlags,
+    pub usage: VmaMemoryUsage,
+    pub requiredFlags: VkMemoryPropertyFlags,
+    pub preferredFlags: VkMemoryPropertyFlags,
+    pub memoryTypeBits: u32,
+    pub pool: VmaPool,
+    pub pUserData: *mut c_void,
+    pub priority: f32,
+}
+impl Default for VmaAllocationCreateInfo {
+    fn default() -> Self {
+        Self {
+            flags: Default::default(),
+            usage: VmaMemoryUsage::UNKNOWN,
+            requiredFlags: Default::default(),
+            preferredFlags: Default::default(),
+            memoryTypeBits: 0,
+            pool: Default::default(),
+            pUserData: ptr::null_mut(),
+            priority: 0f32,
+        }
+    }
+}
+
+#[repr(C)]
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VmaPoolCreateInfo {
     pub memoryTypeIndex: u32,
@@ -598,14 +634,70 @@ impl Default for VmaPoolCreateInfo {
     }
 }
 
-#[deprecated(
-    note = "This is a part of the old interface. It is recommended to use structure VmaDefragmentationInfo2 and function vmaDefragmentationBegin() instead."
-)]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VmaAllocationInfo {
+    pub memoryType: u32,
+    pub deviceMemory: VkDeviceMemory,
+    pub offset: VkDeviceSize,
+    pub size: VkDeviceSize,
+    pub pMappedData: *mut c_void,
+    pub pUserData: *mut c_void,
+    pub pName: *const c_char,
+}
+impl Default for VmaAllocationInfo {
+    fn default() -> Self {
+        Self {
+            memoryType: 0,
+            deviceMemory: Default::default(),
+            offset: Default::default(),
+            size: Default::default(),
+            pMappedData: ptr::null_mut(),
+            pUserData: ptr::null_mut(),
+            pName: ptr::null(),
+        }
+    }
+}
+
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VmaDefragmentationInfo {
-    pub maxBytesToMove: VkDeviceSize,
-    pub maxAllocationsToMove: u32,
+    pub flags: VmaDefragmentationFlags,
+    pub pool: VmaPool,
+    pub maxBytesPerPass: VkDeviceSize,
+    pub maxAllocationsPerPass: u32,
+}
+
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VmaDefragmentationMove {
+    pub operation: VmaDefragmentationMoveOperation,
+    pub srcAllocation: VmaAllocation,
+    pub dstTmpAllocation: VmaAllocation,
+}
+impl Default for VmaDefragmentationMove {
+    fn default() -> Self {
+        Self {
+            operation: VmaDefragmentationMoveOperation::COPY,
+            srcAllocation: Default::default(),
+            dstTmpAllocation: Default::default(),
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VmaDefragmentationPassMoveInfo {
+    pub moveCount: u32,
+    pub pMoves: *mut VmaDefragmentationMove,
+}
+impl Default for VmaDefragmentationPassMoveInfo {
+    fn default() -> Self {
+        Self {
+            moveCount: 0,
+            pMoves: ptr::null_mut(),
+        }
+    }
 }
 
 #[repr(C)]
@@ -619,70 +711,130 @@ pub struct VmaDefragmentationStats {
 
 #[repr(C)]
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct VmaDefragmentationInfo2 {
-    pub flags: VmaDefragmentationFlags,
-    pub allocationCount: u32,
-    pub pAllocations: *mut VmaAllocation,
-    pub pAllocationsChanged: *mut VkBool32,
-    pub poolCount: u32,
-    pub pPools: *mut VmaPool,
-    pub maxCpuBytesToMove: VkDeviceSize,
-    pub maxCpuAllocationsToMove: u32,
-    pub maxGpuBytesToMove: VkDeviceSize,
-    pub maxGpuAllocationsToMove: u32,
-    pub commandBuffer: VkCommandBuffer,
+pub struct VmaVirtualBlockCreateInfo {
+    pub size: VkDeviceSize,
+    pub flags: VmaVirtualBlockCreateFlags,
+    pub pAllocationCallbacks: *const VkAllocationCallbacks,
 }
-impl Default for VmaDefragmentationInfo2 {
+impl Default for VmaVirtualBlockCreateInfo {
     fn default() -> Self {
         Self {
+            size: Default::default(),
             flags: Default::default(),
-            allocationCount: 0,
-            pAllocations: ptr::null_mut(),
-            pAllocationsChanged: ptr::null_mut(),
-            poolCount: 0,
-            pPools: ptr::null_mut(),
-            maxCpuBytesToMove: Default::default(),
-            maxCpuAllocationsToMove: 0,
-            maxGpuBytesToMove: Default::default(),
-            maxGpuAllocationsToMove: 0,
-            commandBuffer: Default::default(),
+            pAllocationCallbacks: ptr::null(),
         }
     }
 }
 
 #[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub struct VmaAllocatorInfo {
-    pub instance: VkInstance,
-    pub physicalDevice: VkPhysicalDevice,
-    pub device: VkDevice,
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub struct VmaBudget {
-    pub blockBytes: VkDeviceSize,
-    pub allocationBytes: VkDeviceSize,
-    pub usage: VkDeviceSize,
-    pub budget: VkDeviceSize,
-}
-
-#[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub struct VmaPoolStats {
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VmaVirtualAllocationCreateInfo {
     pub size: VkDeviceSize,
-    pub unusedSize: VkDeviceSize,
-    pub allocationCount: usize,
-    pub unusedRangeCount: usize,
-    pub blockCount: usize,
+    pub alignment: VkDeviceSize,
+    pub flags: VmaVirtualAllocationCreateFlags,
+    pub pUserData: *mut c_void,
+}
+impl Default for VmaVirtualAllocationCreateInfo {
+    fn default() -> Self {
+        Self {
+            size: Default::default(),
+            alignment: Default::default(),
+            flags: Default::default(),
+            pUserData: ptr::null_mut(),
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VmaVirtualAllocationInfo {
+    pub offset: VkDeviceSize,
+    pub size: VkDeviceSize,
+    pub pUserData: *mut c_void,
+}
+impl Default for VmaVirtualAllocationInfo {
+    fn default() -> Self {
+        Self {
+            offset: Default::default(),
+            size: Default::default(),
+            pUserData: ptr::null_mut(),
+        }
+    }
 }
 
 extern "C" {
+    pub fn vmaCreateAllocator(
+        pCreateInfo: *const VmaAllocatorCreateInfo,
+        pAllocator: *mut VmaAllocator,
+    ) -> VkResult;
+    pub fn vmaDestroyAllocator(allocator: VmaAllocator);
+    pub fn vmaGetAllocatorInfo(allocator: VmaAllocator, pAllocatorInfo: *mut VmaAllocatorInfo);
+    pub fn vmaGetPhysicalDeviceProperties(
+        allocator: VmaAllocator,
+        ppPhysicalDeviceProperties: *mut *const VkPhysicalDeviceProperties,
+    );
+    pub fn vmaGetMemoryProperties(
+        allocator: VmaAllocator,
+        ppPhysicalDeviceMemoryProperties: *mut *const VkPhysicalDeviceMemoryProperties,
+    );
+    pub fn vmaGetMemoryTypeProperties(
+        allocator: VmaAllocator,
+        memoryTypeIndex: u32,
+        pFlags: *mut VkMemoryPropertyFlags,
+    );
+    pub fn vmaSetCurrentFrameIndex(allocator: VmaAllocator, frameIndex: u32);
+    pub fn vmaCalculateStatistics(allocator: VmaAllocator, pStats: *mut VmaTotalStatistics);
+    pub fn vmaGetHeapBudgets(allocator: VmaAllocator, pBudgets: *mut VmaBudget);
+    pub fn vmaFindMemoryTypeIndex(
+        allocator: VmaAllocator,
+        memoryTypeBits: u32,
+        pAllocationCreateInfo: *const VmaAllocationCreateInfo,
+        pMemoryTypeIndex: *mut u32,
+    ) -> VkResult;
+    pub fn vmaFindMemoryTypeIndexForBufferInfo(
+        allocator: VmaAllocator,
+        pBufferCreateInfo: *const VkBufferCreateInfo,
+        pAllocationCreateInfo: *const VmaAllocationCreateInfo,
+        pMemoryTypeIndex: *mut u32,
+    ) -> VkResult;
+    pub fn vmaFindMemoryTypeIndexForImageInfo(
+        allocator: VmaAllocator,
+        pImageCreateInfo: *const VkImageCreateInfo,
+        pAllocationCreateInfo: *const VmaAllocationCreateInfo,
+        pMemoryTypeIndex: *mut u32,
+    ) -> VkResult;
+    pub fn vmaCreatePool(
+        allocator: VmaAllocator,
+        pCreateInfo: *const VmaPoolCreateInfo,
+        pPool: *mut VmaPool,
+    ) -> VkResult;
+    pub fn vmaDestroyPool(allocator: VmaAllocator, pool: VmaPool);
+    pub fn vmaGetPoolStatistics(
+        allocator: VmaAllocator,
+        pool: VmaPool,
+        pPoolStats: *mut VmaStatistics,
+    );
+    pub fn vmaCalculatePoolStatistics(
+        allocator: VmaAllocator,
+        pool: VmaPool,
+        pPoolStats: *mut VmaDetailedStatistics,
+    );
+    pub fn vmaCheckPoolCorruption(allocator: VmaAllocator, pool: VmaPool) -> VkResult;
+    pub fn vmaGetPoolName(allocator: VmaAllocator, pool: VmaPool, ppName: *mut *const c_char);
+    pub fn vmaSetPoolName(allocator: VmaAllocator, pool: VmaPool, pName: *const c_char);
     pub fn vmaAllocateMemory(
         allocator: VmaAllocator,
         pVkMemoryRequirements: *const VkMemoryRequirements,
         pCreateInfo: *const VmaAllocationCreateInfo,
         pAllocation: *mut VmaAllocation,
+        pAllocationInfo: *mut VmaAllocationInfo,
+    ) -> VkResult;
+    pub fn vmaAllocateMemoryPages(
+        allocator: VmaAllocator,
+        pVkMemoryRequirements: *const VkMemoryRequirements,
+        pCreateInfo: *const VmaAllocationCreateInfo,
+        allocationCount: usize,
+        pAllocations: *mut VmaAllocation,
         pAllocationInfo: *mut VmaAllocationInfo,
     ) -> VkResult;
     pub fn vmaAllocateMemoryForBuffer(
@@ -699,19 +851,85 @@ extern "C" {
         pAllocation: *mut VmaAllocation,
         pAllocationInfo: *mut VmaAllocationInfo,
     ) -> VkResult;
-    pub fn vmaAllocateMemoryPages(
+    pub fn vmaFreeMemory(allocator: VmaAllocator, allocation: VmaAllocation);
+    pub fn vmaFreeMemoryPages(
         allocator: VmaAllocator,
-        pVkMemoryRequirements: *const VkMemoryRequirements,
-        pCreateInfo: *const VmaAllocationCreateInfo,
         allocationCount: usize,
-        pAllocation: *mut VmaAllocation,
+        pAllocations: *const VmaAllocation,
+    );
+    pub fn vmaGetAllocationInfo(
+        allocator: VmaAllocator,
+        allocation: VmaAllocation,
         pAllocationInfo: *mut VmaAllocationInfo,
+    );
+    pub fn vmaSetAllocationUserData(
+        allocator: VmaAllocator,
+        allocation: VmaAllocation,
+        pUserData: *mut c_void,
+    );
+    pub fn vmaSetAllocationName(
+        allocator: VmaAllocator,
+        allocation: VmaAllocation,
+        pName: *const c_char,
+    );
+    pub fn vmaGetAllocationMemoryProperties(
+        allocator: VmaAllocator,
+        allocation: VmaAllocation,
+        pFlags: *mut VkMemoryPropertyFlags,
+    );
+    pub fn vmaMapMemory(
+        allocator: VmaAllocator,
+        allocation: VmaAllocation,
+        ppData: *mut *mut c_void,
     ) -> VkResult;
-    // pub fn vmaBeginDefragmentationPass(
-    //     allocator: VmaAllocator,
-    //     context: VmaDefragmentationContext,
-    //     pInfo: *mut VmaDefragmentationPassInfo,
-    // )->VkResult;
+    pub fn vmaUnmapMemory(allocator: VmaAllocator, allocation: VmaAllocation);
+    pub fn vmaFlushAllocation(
+        allocator: VmaAllocator,
+        allocation: VmaAllocation,
+        offset: VkDeviceSize,
+        size: VkDeviceSize,
+    ) -> VkResult;
+    pub fn vmaInvalidateAllocation(
+        allocator: VmaAllocator,
+        allocation: VmaAllocation,
+        offset: VkDeviceSize,
+        size: VkDeviceSize,
+    ) -> VkResult;
+    pub fn vmaFlushAllocations(
+        allocator: VmaAllocator,
+        allocationCount: u32,
+        allocations: *const VmaAllocation,
+        offsets: *const VkDeviceSize,
+        sizes: *const VkDeviceSize,
+    ) -> VkResult;
+    pub fn vmaInvalidateAllocations(
+        allocator: VmaAllocator,
+        allocationCount: u32,
+        allocations: *const VmaAllocation,
+        offsets: *const VkDeviceSize,
+        sizes: *const VkDeviceSize,
+    ) -> VkResult;
+    pub fn vmaCheckCorruption(allocator: VmaAllocator, memoryTypeBits: u32) -> VkResult;
+    pub fn vmaBeginDefragmentation(
+        allocator: VmaAllocator,
+        pInfo: *const VmaDefragmentationInfo,
+        pContext: *mut VmaDefragmentationContext,
+    ) -> VkResult;
+    pub fn vmaEndDefragmentation(
+        allocator: VmaAllocator,
+        context: VmaDefragmentationContext,
+        pStats: *mut VmaDefragmentationStats,
+    ) -> VkResult;
+    pub fn vmaBeginDefragmentationPass(
+        allocator: VmaAllocator,
+        context: VmaDefragmentationContext,
+        pPassInfo: *mut VmaDefragmentationPassMoveInfo,
+    ) -> VkResult;
+    pub fn vmaEndDefragmentationPass(
+        allocator: VmaAllocator,
+        context: VmaDefragmentationContext,
+        pPassInfo: *mut VmaDefragmentationPassMoveInfo,
+    ) -> VkResult;
     pub fn vmaBindBufferMemory(
         allocator: VmaAllocator,
         allocation: VmaAllocation,
@@ -736,18 +954,6 @@ extern "C" {
         image: VkImage,
         pNext: *const c_void,
     ) -> VkResult;
-    pub fn vmaBuildStatsString(
-        allocator: VmaAllocator,
-        ppStatsString: *mut *mut c_char,
-        detailedMap: VkBool32,
-    );
-    pub fn vmaCalculateStats(allocator: VmaAllocator, pStats: *mut VmaStats);
-    pub fn vmaCheckCorruption(allocator: VmaAllocator, memoryTypeBits: u32) -> VkResult;
-    pub fn vmaCheckPoolCorruption(allocator: VmaAllocator, pool: VmaPool) -> VkResult;
-    pub fn vmaCreateAllocator(
-        pCreateInfo: *const VmaAllocatorCreateInfo,
-        pAllocator: *mut VmaAllocator,
-    ) -> VkResult;
     pub fn vmaCreateBuffer(
         allocator: VmaAllocator,
         pBufferCreateInfo: *const VkBufferCreateInfo,
@@ -756,6 +962,22 @@ extern "C" {
         pAllocation: *mut VmaAllocation,
         pAllocationInfo: *mut VmaAllocationInfo,
     ) -> VkResult;
+    pub fn vmaCreateBufferWithAlignment(
+        allocator: VmaAllocator,
+        pBufferCreateInfo: *const VkBufferCreateInfo,
+        pAllocationCreateInfo: *const VmaAllocationCreateInfo,
+        minAlignment: VkDeviceSize,
+        pBuffer: *mut VkBuffer,
+        pAllocation: *mut VmaAllocation,
+        pAllocationInfo: *mut VmaAllocationInfo,
+    ) -> VkResult;
+    pub fn vmaCreateAliasingBuffer(
+        allocator: VmaAllocator,
+        allocation: VmaAllocation,
+        pBufferCreateInfo: *const VkBufferCreateInfo,
+        pBuffer: *mut VkBuffer,
+    ) -> VkResult;
+    pub fn vmaDestroyBuffer(allocator: VmaAllocator, buffer: VkBuffer, allocation: VmaAllocation);
     pub fn vmaCreateImage(
         allocator: VmaAllocator,
         pImageCreateInfo: *const VkImageCreateInfo,
@@ -764,163 +986,52 @@ extern "C" {
         pAllocation: *mut VmaAllocation,
         pAllocationInfo: *mut VmaAllocationInfo,
     ) -> VkResult;
-    pub fn vmaCreateLostAllocation(allocator: VmaAllocator, pAllocation: *mut VmaAllocation);
-    pub fn vmaCreatePool(
+    pub fn vmaCreateAliasingImage(
         allocator: VmaAllocator,
-        pCreateInfo: *const VmaPoolCreateInfo,
-        pPool: *mut VmaPool,
-    ) -> VkResult;
-    #[deprecated(
-        note = "This is a part of the old interface. It is recommended to use structure VmaDefragmentationInfo2 and function vmaDefragmentationBegin() instead."
-    )]
-    #[allow(deprecated)]
-    pub fn vmaDefragment(
-        allocator: VmaAllocator,
-        pAllocations: *const VmaAllocation,
-        allocationCount: usize,
-        pAllocationsChanged: *mut VkBool32,
-        pDefragmentationInfo: *const VmaDefragmentationInfo,
-        pDefragmentationStats: *mut VmaDefragmentationStats,
-    ) -> VkResult;
-    pub fn vmaDefragmentationBegin(
-        allocator: VmaAllocator,
-        pInfo: *const VmaDefragmentationInfo2,
-        pStats: *mut VmaDefragmentationStats,
-        pContext: *mut VmaDefragmentationContext,
-    ) -> VkResult;
-    pub fn vmaDefragmentationEnd(
-        allocator: VmaAllocator,
-        context: VmaDefragmentationContext,
-    ) -> VkResult;
-    pub fn vmaDestroyAllocator(allocator: VmaAllocator);
-    pub fn vmaDestroyBuffer(allocator: VmaAllocator, buffer: VkBuffer, allocation: VmaAllocation);
-    pub fn vmaDestroyImage(allocator: VmaAllocator, image: VkImage, allocation: VmaAllocation);
-    pub fn vmaDestroyPool(allocator: VmaAllocator, pool: VmaPool);
-    // pub fn vmaEndDefragmentationPass(
-    //     allocator: VmaAllocator,
-    //     context: VmaDefragmentationContext,
-    // )->VkResult;
-    pub fn vmaFindMemoryTypeIndex(
-        allocator: VmaAllocator,
-        memoryTypeBits: u32,
-        pAllocationCreateInfo: *const VmaAllocationCreateInfo,
-        pMemoryTypeIndex: *mut u32,
-    ) -> VkResult;
-
-    pub fn vmaFindMemoryTypeIndexForBufferInfo(
-        allocator: VmaAllocator,
-        pBufferCreateInfo: *const VkBufferCreateInfo,
-        pAllocationCreateInfo: *const VmaAllocationCreateInfo,
-        pMemoryTypeIndex: *mut u32,
-    ) -> VkResult;
-
-    pub fn vmaFindMemoryTypeIndexForImageInfo(
-        allocator: VmaAllocator,
+        allocation: VmaAllocation,
         pImageCreateInfo: *const VkImageCreateInfo,
-        pAllocationCreateInfo: *const VmaAllocationCreateInfo,
-        pMemoryTypeIndex: *mut u32,
+        pImage: *mut VkImage,
     ) -> VkResult;
-
-    pub fn vmaFlushAllocation(
-        allocator: VmaAllocator,
-        allocation: VmaAllocation,
-        offset: VkDeviceSize,
-        size: VkDeviceSize,
+    pub fn vmaDestroyImage(allocator: VmaAllocator, image: VkImage, allocation: VmaAllocation);
+    pub fn vmaCreateVirtualBlock(
+        pCreateInfo: *const VmaVirtualBlockCreateInfo,
+        pVirtualBlock: *mut VmaVirtualBlock,
     ) -> VkResult;
-
-    pub fn vmaFlushAllocations(
-        allocator: VmaAllocator,
-        allocationCount: u32,
-        allocations: *const VmaAllocation,
-        offsets: *const VkDeviceSize,
-        sizes: *const VkDeviceSize,
-    ) -> VkResult;
-
-    pub fn vmaFreeMemory(allocator: VmaAllocator, allocation: VmaAllocation);
-
-    pub fn vmaFreeMemoryPages(
-        allocator: VmaAllocator,
-        allocationCount: usize,
-        pAllocations: *const VmaAllocation,
+    pub fn vmaDestroyVirtualBlock(virtualBlock: VmaVirtualBlock);
+    pub fn vmaIsVirtualBlockEmpty(virtualBlock: VmaVirtualBlock) -> VkBool32;
+    pub fn vmaGetVirtualAllocationInfo(
+        virtualBlock: VmaVirtualBlock,
+        allocation: VmaVirtualAllocation,
+        pVirtualAllocInfo: *mut VmaVirtualAllocationInfo,
     );
-
-    pub fn vmaFreeStatsString(allocator: VmaAllocator, pStatsString: *mut c_char);
-
-    pub fn vmaGetAllocationInfo(
-        allocator: VmaAllocator,
-        allocation: VmaAllocation,
-        pAllocationInfo: *mut VmaAllocationInfo,
-    );
-
-    pub fn vmaGetAllocatorInfo(allocator: VmaAllocator, pAllocatorInfo: *mut VmaAllocatorInfo);
-
-    pub fn vmaGetBudget(allocator: VmaAllocator, pBudget: *mut VmaBudget);
-
-    pub fn vmaGetMemoryProperties(
-        allocator: VmaAllocator,
-        ppPhysicalDeviceMemoryProperties: *mut *const VkPhysicalDeviceMemoryProperties,
-    );
-
-    pub fn vmaGetMemoryTypeProperties(
-        allocator: VmaAllocator,
-        memoryTypeIndex: u32,
-        pFlags: *mut VkMemoryPropertyFlags,
-    );
-
-    pub fn vmaGetPhysicalDeviceProperties(
-        allocator: VmaAllocator,
-        ppPhysicalDeviceProperties: *mut *const VkPhysicalDeviceProperties,
-    );
-
-    pub fn vmaGetPoolName(allocator: VmaAllocator, pool: VmaPool, ppName: *mut *const c_char);
-
-    pub fn vmaGetPoolStats(allocator: VmaAllocator, pool: VmaPool, pPoolStats: *mut VmaPoolStats);
-
-    pub fn vmaInvalidateAllocation(
-        allocator: VmaAllocator,
-        allocation: VmaAllocation,
-        offset: VkDeviceSize,
-        size: VkDeviceSize,
+    pub fn vmaVirtualAllocate(
+        virtualBlock: VmaVirtualBlock,
+        pCreateInfo: *const VmaVirtualAllocationCreateInfo,
+        pAllocation: *mut VmaVirtualAllocation,
+        pOffset: *mut VkDeviceSize,
     ) -> VkResult;
-
-    pub fn vmaInvalidateAllocations(
-        allocator: VmaAllocator,
-        allocationCount: u32,
-        allocations: *const VmaAllocation,
-        offsets: *const VkDeviceSize,
-        sizes: *const VkDeviceSize,
-    ) -> VkResult;
-
-    pub fn vmaMakePoolAllocationsLost(
-        allocator: VmaAllocator,
-        pool: VmaPool,
-        pLostAllocationCount: *mut usize,
-    );
-
-    pub fn vmaMapMemory(
-        allocator: VmaAllocator,
-        allocation: VmaAllocation,
-        ppData: *mut *mut c_void,
-    ) -> VkResult;
-
-    pub fn vmaResizeAllocation(
-        allocator: VmaAllocator,
-        allocation: VmaAllocation,
-        newSize: VkDeviceSize,
-    ) -> VkResult;
-
-    pub fn vmaSetAllocationUserData(
-        allocator: VmaAllocator,
-        allocation: VmaAllocation,
+    pub fn vmaVirtualFree(virtualBlock: VmaVirtualBlock, allocation: VmaVirtualAllocation);
+    pub fn vmaClearVirtualBlock(virtualBlock: VmaVirtualBlock);
+    pub fn vmaSetVirtualAllocationUserData(
+        virtualBlock: VmaVirtualBlock,
+        allocation: VmaVirtualAllocation,
         pUserData: *mut c_void,
     );
-
-    pub fn vmaSetCurrentFrameIndex(allocator: VmaAllocator, frameIndex: u32);
-
-    pub fn vmaSetPoolName(allocator: VmaAllocator, pool: VmaPool, pName: *const c_char);
-
-    pub fn vmaTouchAllocation(allocator: VmaAllocator, allocation: VmaAllocation) -> VkBool32;
-
-    pub fn vmaUnmapMemory(allocator: VmaAllocator, allocation: VmaAllocation);
-
+    pub fn vmaGetVirtualBlockStatistics(virtualBlock: VmaVirtualBlock, pStats: *mut VmaStatistics);
+    pub fn vmaCalculateVirtualBlockStatistics(
+        virtualBlock: VmaVirtualBlock,
+        pStats: *mut VmaDetailedStatistics,
+    );
+    pub fn vmaBuildVirtualBlockStatsString(
+        virtualBlock: VmaVirtualBlock,
+        ppStatsString: *mut *mut c_char,
+        detailedMap: VkBool32,
+    );
+    pub fn vmaFreeVirtualBlockStatsString(virtualBlock: VmaVirtualBlock, pStatsString: *mut c_char);
+    pub fn vmaBuildStatsString(
+        allocator: VmaAllocator,
+        ppStatsString: *mut *mut c_char,
+        detailedMap: VkBool32,
+    );
+    pub fn vmaFreeStatsString(allocator: VmaAllocator, pStatsString: *mut c_char);
 }
