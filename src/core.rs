@@ -460,6 +460,7 @@ bitmasks! {
         _RESERVED = 0,
     },
     VkEventCreateFlags = enum VkEventCreateFlagBits{
+        #[cfg(feature = "VK_VERSION_1_3")]
         DEVICE_ONLY_BIT = 0x00000001,
     },
     VkSemaphoreCreateFlags = enum VkSemaphoreCreateFlagBits{
