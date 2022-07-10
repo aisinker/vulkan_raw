@@ -8,6 +8,7 @@ extern crate bitflags;
 
 pub type VkSampleMask = u32;
 pub type VkFlags = u32;
+pub type VkFlags64 = u64;
 pub type VkDeviceSize = u64;
 pub type VkDeviceAddress = u64;
 
@@ -147,7 +148,37 @@ macro_rules! bitmasks {
                 $(#[$flags_attr])*
                 #[repr(transparent)]
                 #[derive(Default)]
-                pub struct $flag_bits_name: u32 {
+                pub struct $flag_bits_name: VkFlags {
+                    $(
+                        $(#[$inner $($args)*])*
+                        const $bit_name = $value;
+                    )*
+                }
+            }
+            pub type $flags_name = $flag_bits_name;
+        )*
+    };
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+macro_rules! bitmasks64 {
+    (
+        $(
+            $(#[$flags_attr:meta])*
+            $flags_name:ident = enum $flag_bits_name:ident{
+                $(
+                    $(#[$inner:ident $($args:tt)*])*
+                    $bit_name:ident = $value:literal
+                ),*$(,)?
+            }
+        ),*$(,)?
+    )=>{
+        $(
+            bitflags! {
+                $(#[$flags_attr])*
+                #[repr(transparent)]
+                #[derive(Default)]
+                pub struct $flag_bits_name: VkFlags64 {
                     $(
                         $(#[$inner $($args)*])*
                         const $bit_name = $value;

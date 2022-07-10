@@ -63,6 +63,9 @@ bitmasks! {
         ACCELERATION_STRUCTURE_READ_BIT_KHR = 0x00200000,
         #[cfg(feature = "VK_KHR_acceleration_structure")]
         ACCELERATION_STRUCTURE_WRITE_BIT_KHR = 0x00400000,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        NONE = 0,
     },
     VkBufferUsageFlags = enum VkBufferUsageFlagBits{
         TRANSFER_SRC_BIT = 0x00000001,
@@ -162,6 +165,11 @@ bitmasks! {
         RAY_TRACING_SKIP_AABBS_BIT_KHR = 0x00002000,
         #[cfg(feature = "VK_KHR_ray_tracing_pipeline")]
         RAY_TRACING_SHADER_GROUP_HANDLE_CAPTURE_REPLAY_BIT_KHR = 0x00080000,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT = 0x00000100,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        EARLY_RETURN_ON_FAILURE_BIT = 0x00000200,
     },
     VkColorComponentFlags = enum VkColorComponentFlagBits{
         R_BIT = 0x00000001,
@@ -235,6 +243,9 @@ bitmasks! {
         PLANE_0_BIT = 0x00000010,
         PLANE_1_BIT = 0x00000020,
         PLANE_2_BIT = 0x00000040,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        NONE = 0,
     },
     VkSparseImageFormatFlags = enum VkSparseImageFormatFlagBits{
         SINGLE_MIPTAIL_BIT = 0x00000001,
@@ -268,6 +279,9 @@ bitmasks! {
 
         #[cfg(feature = "VK_KHR_ray_tracing_pipeline")]
         RAY_TRACING_SHADER_BIT_KHR = 0x00200000,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        NONE = 0,
     },
     VkCommandPoolCreateFlags = enum VkCommandPoolCreateFlagBits{
         TRANSIENT_BIT = 0x00000001,
@@ -400,7 +414,10 @@ bitmasks! {
         _RESERVED = 0,
     },
     VkPipelineShaderStageCreateFlags = enum VkPipelineShaderStageCreateFlagBits{
-        _RESERVED = 0,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ALLOW_VARYING_SUBGROUP_SIZE_BIT = 0x00000001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        REQUIRE_FULL_SUBGROUPS_BIT = 0x00000002,
     },
     VkPipelineVertexInputStateCreateFlags = enum VkPipelineVertexInputStateCreateFlagBits{
         _RESERVED = 0,
@@ -430,7 +447,8 @@ bitmasks! {
         _RESERVED = 0,
     },
     VkPipelineCacheCreateFlags = enum VkPipelineCacheCreateFlagBits{
-        _RESERVED = 0,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        EXTERNALLY_SYNCHRONIZED_BIT = 0x00000001,
     },
     VkPipelineLayoutCreateFlags = enum VkPipelineLayoutCreateFlagBits{
         _RESERVED = 0,
@@ -442,7 +460,7 @@ bitmasks! {
         _RESERVED = 0,
     },
     VkEventCreateFlags = enum VkEventCreateFlagBits{
-        _RESERVED = 0,
+        DEVICE_ONLY_BIT = 0x00000001,
     },
     VkSemaphoreCreateFlags = enum VkSemaphoreCreateFlagBits{
         _RESERVED = 0,
@@ -467,6 +485,137 @@ bitmasks! {
     },
     VkFenceImportFlags = enum VkFenceImportFlagBits{
         TEMPORARY_BIT = 0x00000001,
+    },
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+bitmasks! {
+    VkPipelineCreationFeedbackFlags = enum VkPipelineCreationFeedbackFlagBits {
+        VALID_BIT = 0x00000001,
+        APPLICATION_PIPELINE_CACHE_HIT_BIT = 0x00000002,
+        BASE_PIPELINE_ACCELERATION_BIT = 0x00000004,
+    },
+    VkPrivateDataSlotCreateFlags = enum VkPrivateDataSlotCreateFlagBits{
+        _RESERVED = 0,
+    },
+    VkRenderingFlags = enum VkRenderingFlagBits{
+        CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT = 0x00000001,
+        SUSPENDING_BIT = 0x00000002,
+        RESUMING_BIT = 0x00000004,
+    },
+    VkSubmitFlags = enum VkSubmitFlagBits{
+        PROTECTED_BIT = 0x00000001,
+    },
+    VkToolPurposeFlags = enum VkToolPurposeFlagBits{
+        VALIDATION_BIT = 0x00000001,
+        PROFILING_BIT = 0x00000002,
+        TRACING_BIT = 0x00000004,
+        ADDITIONAL_FEATURES_BIT = 0x00000008,
+        MODIFYING_FEATURES_BIT = 0x00000010,
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        DEBUG_REPORTING_BIT_EXT = 0x00000020,
+        #[cfg(feature = "VK_EXT_debug_utils")]
+        DEBUG_MARKERS_BIT_EXT = 0x00000040,
+    },
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+bitmasks64! {
+    VkAccessFlags2 = enum VkAccessFlagBits2{
+        NONE = 0u64,
+        INDIRECT_COMMAND_READ_BIT = 0x00000001u64,
+        INDEX_READ_BIT = 0x00000002u64,
+        VERTEX_ATTRIBUTE_READ_BIT = 0x00000004u64,
+        UNIFORM_READ_BIT = 0x00000008u64,
+        INPUT_ATTACHMENT_READ_BIT = 0x00000010u64,
+        SHADER_READ_BIT = 0x00000020u64,
+        SHADER_WRITE_BIT = 0x00000040u64,
+        COLOR_ATTACHMENT_READ_BIT = 0x00000080u64,
+        COLOR_ATTACHMENT_WRITE_BIT = 0x00000100u64,
+        DEPTH_STENCIL_ATTACHMENT_READ_BIT = 0x00000200u64,
+        DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = 0x00000400u64,
+        TRANSFER_READ_BIT = 0x00000800u64,
+        TRANSFER_WRITE_BIT = 0x00001000u64,
+        HOST_READ_BIT = 0x00002000u64,
+        HOST_WRITE_BIT = 0x00004000u64,
+        MEMORY_READ_BIT = 0x00008000u64,
+        MEMORY_WRITE_BIT = 0x00010000u64,
+
+        SHADER_SAMPLED_READ_BIT = 0x100000000u64,
+        SHADER_STORAGE_READ_BIT = 0x200000000u64,
+        SHADER_STORAGE_WRITE_BIT = 0x400000000u64,
+
+        #[cfg(feature = "VK_KHR_acceleration_structure")]
+        ACCELERATION_STRUCTURE_READ_BIT_KHR = 0x00200000,
+        #[cfg(feature = "VK_KHR_acceleration_structure")]
+        ACCELERATION_STRUCTURE_WRITE_BIT_KHR = 0x00400000,
+    },
+    VkFormatFeatureFlags2 = enum VkFormatFeatureFlagBits2{
+        SAMPLED_IMAGE_BIT = 0x00000001u64,
+        STORAGE_IMAGE_BIT = 0x00000002u64,
+        STORAGE_IMAGE_ATOMIC_BIT = 0x00000004u64,
+        UNIFORM_TEXEL_BUFFER_BIT = 0x00000008u64,
+        STORAGE_TEXEL_BUFFER_BIT = 0x00000010u64,
+        STORAGE_TEXEL_BUFFER_ATOMIC_BIT = 0x00000020u64,
+        VERTEX_BUFFER_BIT = 0x00000040u64,
+        COLOR_ATTACHMENT_BIT = 0x00000080u64,
+        COLOR_ATTACHMENT_BLEND_BIT = 0x00000100u64,
+        DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000200u64,
+        BLIT_SRC_BIT = 0x00000400u64,
+        BLIT_DST_BIT = 0x00000800u64,
+        SAMPLED_IMAGE_FILTER_LINEAR_BIT = 0x00001000u64,
+        SAMPLED_IMAGE_FILTER_CUBIC_BIT = 0x00002000u64,
+        SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT = 0x00002000u64,
+        TRANSFER_SRC_BIT = 0x00004000u64,
+        TRANSFER_DST_BIT = 0x00008000u64,
+        SAMPLED_IMAGE_FILTER_MINMAX_BIT = 0x00010000u64,
+        MIDPOINT_CHROMA_SAMPLES_BIT = 0x00020000u64,
+        SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT = 0x00040000u64,
+        SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT = 0x00080000u64,
+        SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT = 0x00100000u64,
+        SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT = 0x00200000u64,
+        DISJOINT_BIT = 0x00400000u64,
+        COSITED_CHROMA_SAMPLES_BIT = 0x00800000u64,
+        STORAGE_READ_WITHOUT_FORMAT_BIT = 0x80000000u64,
+        STORAGE_WRITE_WITHOUT_FORMAT_BIT = 0x100000000u64,
+        SAMPLED_IMAGE_DEPTH_COMPARISON_BIT = 0x200000000u64,
+
+        #[cfg(feature = "VK_KHR_acceleration_structure")]
+        ACCELERATION_STRUCTURE_VERTEX_BUFFER_BIT_KHR = 0x20000000u64,
+    },
+    VkPipelineStageFlags2 = enum VkPipelineStageFlagBits2{
+        NONE = 0u64,
+        TOP_OF_PIPE_BIT = 0x00000001u64,
+        DRAW_INDIRECT_BIT = 0x00000002u64,
+        VERTEX_INPUT_BIT = 0x00000004u64,
+        VERTEX_SHADER_BIT = 0x00000008u64,
+        TESSELLATION_CONTROL_SHADER_BIT = 0x00000010u64,
+        TESSELLATION_EVALUATION_SHADER_BIT = 0x00000020u64,
+        GEOMETRY_SHADER_BIT = 0x00000040u64,
+        FRAGMENT_SHADER_BIT = 0x00000080u64,
+        EARLY_FRAGMENT_TESTS_BIT = 0x00000100u64,
+        LATE_FRAGMENT_TESTS_BIT = 0x00000200u64,
+        COLOR_ATTACHMENT_OUTPUT_BIT = 0x00000400u64,
+        COMPUTE_SHADER_BIT = 0x00000800u64,
+        ALL_TRANSFER_BIT = 0x00001000u64,
+        TRANSFER_BIT = 0x00001000u64,
+        BOTTOM_OF_PIPE_BIT = 0x00002000u64,
+        HOST_BIT = 0x00004000u64,
+        ALL_GRAPHICS_BIT = 0x00008000u64,
+        ALL_COMMANDS_BIT = 0x00010000u64,
+        COPY_BIT = 0x100000000u64,
+        RESOLVE_BIT = 0x200000000u64,
+        BLIT_BIT = 0x400000000u64,
+        CLEAR_BIT = 0x800000000u64,
+        INDEX_INPUT_BIT = 0x1000000000u64,
+        VERTEX_ATTRIBUTE_INPUT_BIT = 0x2000000000u64,
+        PRE_RASTERIZATION_SHADERS_BIT = 0x4000000000u64,
+
+        #[cfg(feature = "VK_KHR_acceleration_structure")]
+        ACCELERATION_STRUCTURE_BUILD_BIT_KHR = 0x02000000u64,
+
+        #[cfg(feature = "VK_KHR_ray_tracing_pipeline")]
+        RAY_TRACING_SHADER_BIT_KHR = 0x00200000u64,
     },
 }
 
@@ -637,11 +786,6 @@ enums! {
         MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO = 1000257003,
         DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO = 1000257004,
 
-        #[cfg(feature = "VK_VERSION_1_3")]
-        DEVICE_BUFFER_MEMORY_REQUIREMENTS = 1000413002,
-        #[cfg(feature = "VK_VERSION_1_3")]
-        DEVICE_IMAGE_MEMORY_REQUIREMENTS = 1000413003,
-
         #[cfg(feature = "VK_EXT_debug_utils")]
         DEBUG_UTILS_OBJECT_NAME_INFO_EXT = 1000128000,
         #[cfg(feature = "VK_EXT_debug_utils")]
@@ -738,6 +882,111 @@ enums! {
 
         #[cfg(feature = "VK_KHR_ray_query")]
         PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR = 1000348013,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_VULKAN_1_3_FEATURES = 53,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES = 54,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PIPELINE_CREATION_FEEDBACK_CREATE_INFO = 1000192000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES = 1000215000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_TOOL_PROPERTIES = 1000245000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES = 1000276000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES = 1000295000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEVICE_PRIVATE_DATA_CREATE_INFO = 1000295001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PRIVATE_DATA_SLOT_CREATE_INFO = 1000295002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES = 1000297000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        MEMORY_BARRIER_2 = 1000314000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        BUFFER_MEMORY_BARRIER_2 = 1000314001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        IMAGE_MEMORY_BARRIER_2 = 1000314002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEPENDENCY_INFO = 1000314003,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        SUBMIT_INFO_2 = 1000314004,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        SEMAPHORE_SUBMIT_INFO = 1000314005,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        COMMAND_BUFFER_SUBMIT_INFO = 1000314006,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES = 1000314007,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES = 1000325000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES = 1000335000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        COPY_BUFFER_INFO_2 = 1000337000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        COPY_IMAGE_INFO_2 = 1000337001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        COPY_BUFFER_TO_IMAGE_INFO_2 = 1000337002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        COPY_IMAGE_TO_BUFFER_INFO_2 = 1000337003,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        BLIT_IMAGE_INFO_2 = 1000337004,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        RESOLVE_IMAGE_INFO_2 = 1000337005,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        BUFFER_COPY_2 = 1000337006,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        IMAGE_COPY_2 = 1000337007,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        IMAGE_BLIT_2 = 1000337008,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        BUFFER_IMAGE_COPY_2 = 1000337009,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        IMAGE_RESOLVE_2 = 1000337010,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES = 1000225000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO = 1000225001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES = 1000225002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES = 1000138000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES = 1000138001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK = 1000138002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO = 1000138003,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES = 1000066000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        RENDERING_INFO = 1000044000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        RENDERING_ATTACHMENT_INFO = 1000044001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PIPELINE_RENDERING_CREATE_INFO = 1000044002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES = 1000044003,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        COMMAND_BUFFER_INHERITANCE_RENDERING_INFO = 1000044004,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES = 1000280000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES = 1000280001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES = 1000281001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        FORMAT_PROPERTIES_3 = 1000360000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES = 1000413000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PHYSICAL_DEVICE_MAINTENANCE_4_PROPERTIES = 1000413001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEVICE_BUFFER_MEMORY_REQUIREMENTS = 1000413002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEVICE_IMAGE_MEMORY_REQUIREMENTS = 1000413003,
     },
     enum VkImageLayout{
         UNDEFINED = 0,
@@ -758,6 +1007,11 @@ enums! {
 
         #[cfg(feature = "VK_KHR_swapchain")]
         PRESENT_SRC_KHR = 1000001002,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        READ_ONLY_OPTIMAL = 1000314000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ATTACHMENT_OPTIMAL = 1000314001,
     },
     enum VkAttachmentLoadOp{
         LOAD = 0,
@@ -767,6 +1021,8 @@ enums! {
     enum VkAttachmentStoreOp{
         STORE = 0,
         DONT_CARE = 1,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        NONE = 1000301000,
     },
     enum VkImageType{
         IT_1D = 0, // VK_IMAGE_TYPE_1D
@@ -814,6 +1070,9 @@ enums! {
 
         #[cfg(feature = "VK_KHR_acceleration_structure")]
         ACCELERATION_STRUCTURE_KHR = 1000150000,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        INLINE_UNIFORM_BLOCK = 1000138000,
     },
     enum VkQueryType{
         OCCLUSION = 0,
@@ -1201,6 +1460,47 @@ enums! {
         G16_B16_R16_3PLANE_422_UNORM = 1000156031,
         G16_B16R16_2PLANE_422_UNORM = 1000156032,
         G16_B16_R16_3PLANE_444_UNORM = 1000156033,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        G8_B8R8_2PLANE_444_UNORM = 1000330000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16 = 1000330001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16 = 1000330002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        G16_B16R16_2PLANE_444_UNORM = 1000330003,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        A4R4G4B4_UNORM_PACK16 = 1000340000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        A4B4G4R4_UNORM_PACK16 = 1000340001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_4x4_SFLOAT_BLOCK = 1000066000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_5x4_SFLOAT_BLOCK = 1000066001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_5x5_SFLOAT_BLOCK = 1000066002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_6x5_SFLOAT_BLOCK = 1000066003,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_6x6_SFLOAT_BLOCK = 1000066004,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_8x5_SFLOAT_BLOCK = 1000066005,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_8x6_SFLOAT_BLOCK = 1000066006,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_8x8_SFLOAT_BLOCK = 1000066007,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_10x5_SFLOAT_BLOCK = 1000066008,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_10x6_SFLOAT_BLOCK = 1000066009,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_10x8_SFLOAT_BLOCK = 1000066010,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_10x10_SFLOAT_BLOCK = 1000066011,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_12x10_SFLOAT_BLOCK = 1000066012,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        ASTC_12x12_SFLOAT_BLOCK = 1000066013,
     },
     enum VkSubpassContents{
         INLINE = 0,
@@ -1252,6 +1552,9 @@ enums! {
         THREAD_DONE_KHR = 1000268001,
         #[cfg(feature = "VK_KHR_deferred_host_operations")]
         THREAD_IDLE_KHR = 1000268000,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PIPELINE_COMPILE_REQUIRED = 1000297000,
     },
     enum VkDynamicState{
         VIEWPORT = 0,
@@ -1266,6 +1569,37 @@ enums! {
 
         #[cfg(feature = "VK_KHR_ray_tracing_pipeline")]
         RAY_TRACING_PIPELINE_STACK_SIZE_KHR = 1000347000,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        CULL_MODE = 1000267000,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        FRONT_FACE = 1000267001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PRIMITIVE_TOPOLOGY = 1000267002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        VIEWPORT_WITH_COUNT = 1000267003,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        SCISSOR_WITH_COUNT = 1000267004,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        VERTEX_INPUT_BINDING_STRIDE = 1000267005,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEPTH_TEST_ENABLE = 1000267006,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEPTH_WRITE_ENABLE = 1000267007,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEPTH_COMPARE_OP = 1000267008,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEPTH_BOUNDS_TEST_ENABLE = 1000267009,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        STENCIL_TEST_ENABLE = 1000267010,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        STENCIL_OP = 1000267011,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        RASTERIZER_DISCARD_ENABLE = 1000377001,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        DEPTH_BIAS_ENABLE = 1000377002,
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PRIMITIVE_RESTART_ENABLE = 1000377004,
     },
     enum VkDescriptorUpdateTemplateType{
         DESCRIPTOR_SET = 0,
@@ -1314,6 +1648,9 @@ enums! {
 
         #[cfg(feature = "VK_KHR_acceleration_structure")]
         ACCELERATION_STRUCTURE_KHR = 1000150000,
+
+        #[cfg(feature = "VK_VERSION_1_3")]
+        PRIVATE_DATA_SLOT = 1000295000,
     },
     enum VkSemaphoreType{
         BINARY = 0,
@@ -1471,6 +1808,13 @@ handle!(
     VkDescriptorUpdateTemplate,
     NonDispatchableHandle,
     VkObjectType::DESCRIPTOR_UPDATE_TEMPLATE
+);
+
+#[cfg(feature = "VK_VERSION_1_3")]
+handle!(
+    VkPrivateDataSlot,
+    NonDispatchableHandle,
+    VkObjectType::PRIVATE_DATA_SLOT
 );
 
 pub type PFN_vkVoidFunction = extern "C" fn();
@@ -6602,7 +6946,285 @@ impl Debug for VkPhysicalDeviceVulkan12Properties {
 
 #[cfg(feature = "VK_VERSION_1_3")]
 #[repr(C)]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkBlitImageInfo2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcImage: VkImage,
+    pub srcImageLayout: VkImageLayout,
+    pub dstImage: VkImage,
+    pub dstImageLayout: VkImageLayout,
+    pub regionCount: u32,
+    pub pRegions: *const VkImageBlit2,
+    pub filter: VkFilter,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkBlitImageInfo2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::BLIT_IMAGE_INFO_2,
+            pNext: ptr::null(),
+            srcImage: VkImage::none(),
+            srcImageLayout: VkImageLayout::UNDEFINED,
+            dstImage: VkImage::none(),
+            dstImageLayout: VkImageLayout::UNDEFINED,
+            regionCount: 0,
+            pRegions: ptr::null(),
+            filter: VkFilter::NEAREST,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkBufferCopy2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcOffset: VkDeviceSize,
+    pub dstOffset: VkDeviceSize,
+    pub size: VkDeviceSize,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkBufferCopy2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::BUFFER_COPY_2,
+            pNext: ptr::null(),
+            srcOffset: Default::default(),
+            dstOffset: Default::default(),
+            size: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkBufferImageCopy2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub bufferOffset: VkDeviceSize,
+    pub bufferRowLength: u32,
+    pub bufferImageHeight: u32,
+    pub imageSubresource: VkImageSubresourceLayers,
+    pub imageOffset: VkOffset3D,
+    pub imageExtent: VkExtent3D,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkBufferImageCopy2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::BUFFER_IMAGE_COPY_2,
+            pNext: ptr::null(),
+            bufferOffset: Default::default(),
+            bufferRowLength: Default::default(),
+            bufferImageHeight: Default::default(),
+            imageSubresource: Default::default(),
+            imageOffset: Default::default(),
+            imageExtent: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkBufferMemoryBarrier2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcStageMask: VkPipelineStageFlags2,
+    pub srcAccessMask: VkAccessFlags2,
+    pub dstStageMask: VkPipelineStageFlags2,
+    pub dstAccessMask: VkAccessFlags2,
+    pub srcQueueFamilyIndex: u32,
+    pub dstQueueFamilyIndex: u32,
+    pub buffer: VkBuffer,
+    pub offset: VkDeviceSize,
+    pub size: VkDeviceSize,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkBufferMemoryBarrier2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::BUFFER_MEMORY_BARRIER_2,
+            pNext: ptr::null(),
+            srcStageMask: Default::default(),
+            srcAccessMask: Default::default(),
+            dstStageMask: Default::default(),
+            dstAccessMask: Default::default(),
+            srcQueueFamilyIndex: Default::default(),
+            dstQueueFamilyIndex: Default::default(),
+            buffer: Default::default(),
+            offset: Default::default(),
+            size: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkCommandBufferSubmitInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub commandBuffer: VkCommandBuffer,
+    pub deviceMask: u32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkCommandBufferSubmitInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::COMMAND_BUFFER_SUBMIT_INFO,
+            pNext: ptr::null(),
+            commandBuffer: Default::default(),
+            deviceMask: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkCopyBufferInfo2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcBuffer: VkBuffer,
+    pub dstBuffer: VkBuffer,
+    pub regionCount: u32,
+    pub pRegions: *const VkBufferCopy2,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkCopyBufferInfo2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::COPY_BUFFER_INFO_2,
+            pNext: ptr::null(),
+            srcBuffer: Default::default(),
+            dstBuffer: Default::default(),
+            regionCount: Default::default(),
+            pRegions: ptr::null(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkCopyBufferToImageInfo2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcBuffer: VkBuffer,
+    pub dstImage: VkImage,
+    pub dstImageLayout: VkImageLayout,
+    pub regionCount: u32,
+    pub pRegions: *const VkBufferImageCopy2,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkCopyBufferToImageInfo2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::COPY_BUFFER_TO_IMAGE_INFO_2,
+            pNext: ptr::null(),
+            srcBuffer: Default::default(),
+            dstImage: Default::default(),
+            dstImageLayout: VkImageLayout::UNDEFINED,
+            regionCount: Default::default(),
+            pRegions: ptr::null(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkCopyImageInfo2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcImage: VkImage,
+    pub srcImageLayout: VkImageLayout,
+    pub dstImage: VkImage,
+    pub dstImageLayout: VkImageLayout,
+    pub regionCount: u32,
+    pub pRegions: *const VkImageCopy2,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkCopyImageInfo2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::COPY_IMAGE_INFO_2,
+            pNext: ptr::null(),
+            srcImage: Default::default(),
+            srcImageLayout: VkImageLayout::UNDEFINED,
+            dstImage: Default::default(),
+            dstImageLayout: VkImageLayout::UNDEFINED,
+            regionCount: Default::default(),
+            pRegions: ptr::null(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkCopyImageToBufferInfo2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcImage: VkImage,
+    pub srcImageLayout: VkImageLayout,
+    pub dstBuffer: VkBuffer,
+    pub regionCount: u32,
+    pub pRegions: *const VkBufferImageCopy2,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkCopyImageToBufferInfo2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::COPY_IMAGE_TO_BUFFER_INFO_2,
+            pNext: ptr::null(),
+            srcImage: Default::default(),
+            srcImageLayout: VkImageLayout::UNDEFINED,
+            dstBuffer: Default::default(),
+            regionCount: Default::default(),
+            pRegions: ptr::null(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkDependencyInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub dependencyFlags: VkDependencyFlags,
+    pub memoryBarrierCount: u32,
+    pub pMemoryBarriers: *const VkMemoryBarrier2,
+    pub bufferMemoryBarrierCount: u32,
+    pub pBufferMemoryBarriers: *const VkBufferMemoryBarrier2,
+    pub imageMemoryBarrierCount: u32,
+    pub pImageMemoryBarriers: *const VkImageMemoryBarrier2,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkDependencyInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::DEPENDENCY_INFO,
+            pNext: ptr::null(),
+            dependencyFlags: Default::default(),
+            memoryBarrierCount: Default::default(),
+            pMemoryBarriers: ptr::null(),
+            bufferMemoryBarrierCount: Default::default(),
+            pBufferMemoryBarriers: ptr::null(),
+            imageMemoryBarrierCount: Default::default(),
+            pImageMemoryBarriers: ptr::null(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceBufferMemoryRequirements {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -6622,7 +7244,7 @@ impl Default for VkDeviceBufferMemoryRequirements {
 
 #[cfg(feature = "VK_VERSION_1_3")]
 #[repr(C)]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VkDeviceImageMemoryRequirements {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
@@ -6638,6 +7260,1114 @@ impl Default for VkDeviceImageMemoryRequirements {
             pNext: ptr::null(),
             pCreateInfo: ptr::null(),
             planeAspect: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkImageBlit2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcSubresource: VkImageSubresourceLayers,
+    pub srcOffsets: [VkOffset3D; 2],
+    pub dstSubresource: VkImageSubresourceLayers,
+    pub dstOffsets: [VkOffset3D; 2],
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkImageBlit2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::IMAGE_BLIT_2,
+            pNext: ptr::null(),
+            srcSubresource: Default::default(),
+            srcOffsets: Default::default(),
+            dstSubresource: Default::default(),
+            dstOffsets: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkImageCopy2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcSubresource: VkImageSubresourceLayers,
+    pub srcOffset: VkOffset3D,
+    pub dstSubresource: VkImageSubresourceLayers,
+    pub dstOffset: VkOffset3D,
+    pub extent: VkExtent3D,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkImageCopy2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::IMAGE_COPY_2,
+            pNext: ptr::null(),
+            srcSubresource: Default::default(),
+            srcOffset: Default::default(),
+            dstSubresource: Default::default(),
+            dstOffset: Default::default(),
+            extent: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkImageMemoryBarrier2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcStageMask: VkPipelineStageFlags2,
+    pub srcAccessMask: VkAccessFlags2,
+    pub dstStageMask: VkPipelineStageFlags2,
+    pub dstAccessMask: VkAccessFlags2,
+    pub oldLayout: VkImageLayout,
+    pub newLayout: VkImageLayout,
+    pub srcQueueFamilyIndex: u32,
+    pub dstQueueFamilyIndex: u32,
+    pub image: VkImage,
+    pub subresourceRange: VkImageSubresourceRange,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkImageMemoryBarrier2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::IMAGE_MEMORY_BARRIER_2,
+            pNext: ptr::null(),
+            srcStageMask: Default::default(),
+            srcAccessMask: Default::default(),
+            dstStageMask: Default::default(),
+            dstAccessMask: Default::default(),
+            oldLayout: VkImageLayout::UNDEFINED,
+            newLayout: VkImageLayout::UNDEFINED,
+            srcQueueFamilyIndex: Default::default(),
+            dstQueueFamilyIndex: Default::default(),
+            image: Default::default(),
+            subresourceRange: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkImageResolve2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcSubresource: VkImageSubresourceLayers,
+    pub srcOffset: VkOffset3D,
+    pub dstSubresource: VkImageSubresourceLayers,
+    pub dstOffset: VkOffset3D,
+    pub extent: VkExtent3D,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkImageResolve2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::IMAGE_RESOLVE_2,
+            pNext: ptr::null(),
+            srcSubresource: Default::default(),
+            srcOffset: Default::default(),
+            dstSubresource: Default::default(),
+            dstOffset: Default::default(),
+            extent: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceToolProperties {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub name: [c_char; VK_MAX_EXTENSION_NAME_SIZE],
+    pub version: [c_char; VK_MAX_EXTENSION_NAME_SIZE],
+    pub purposes: VkToolPurposeFlags,
+    pub description: [c_char; VK_MAX_DESCRIPTION_SIZE],
+    pub layer: [c_char; VK_MAX_EXTENSION_NAME_SIZE],
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceToolProperties {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_TOOL_PROPERTIES,
+            pNext: ptr::null_mut(),
+            name: [0; VK_MAX_EXTENSION_NAME_SIZE],
+            version: [0; VK_MAX_EXTENSION_NAME_SIZE],
+            purposes: Default::default(),
+            description: [0; VK_MAX_DESCRIPTION_SIZE],
+            layer: [0; VK_MAX_EXTENSION_NAME_SIZE],
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPipelineCreationFeedback {
+    pub flags: VkPipelineCreationFeedbackFlags,
+    pub duration: u64,
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPrivateDataSlotCreateInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub flags: VkPrivateDataSlotCreateFlags,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPrivateDataSlotCreateInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PRIVATE_DATA_SLOT_CREATE_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Debug)]
+pub struct VkRenderingAttachmentInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub imageView: VkImageView,
+    pub imageLayout: VkImageLayout,
+    pub resolveMode: VkResolveModeFlagBits,
+    pub resolveImageView: VkImageView,
+    pub resolveImageLayout: VkImageLayout,
+    pub loadOp: VkAttachmentLoadOp,
+    pub storeOp: VkAttachmentStoreOp,
+    pub clearValue: VkClearValue,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkRenderingAttachmentInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::RENDERING_ATTACHMENT_INFO,
+            pNext: ptr::null(),
+            imageView: Default::default(),
+            imageLayout: VkImageLayout::UNDEFINED,
+            resolveMode: Default::default(),
+            resolveImageView: Default::default(),
+            resolveImageLayout: VkImageLayout::UNDEFINED,
+            loadOp: VkAttachmentLoadOp::LOAD,
+            storeOp: VkAttachmentStoreOp::STORE,
+            clearValue: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkRenderingInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub flags: VkRenderingFlags,
+    pub renderArea: VkRect2D,
+    pub layerCount: u32,
+    pub viewMask: u32,
+    pub colorAttachmentCount: u32,
+    pub pColorAttachments: *const VkRenderingAttachmentInfo,
+    pub pDepthAttachment: *const VkRenderingAttachmentInfo,
+    pub pStencilAttachment: *const VkRenderingAttachmentInfo,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkRenderingInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::RENDERING_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            renderArea: Default::default(),
+            layerCount: Default::default(),
+            viewMask: Default::default(),
+            colorAttachmentCount: Default::default(),
+            pColorAttachments: ptr::null(),
+            pDepthAttachment: ptr::null(),
+            pStencilAttachment: ptr::null(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkResolveImageInfo2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcImage: VkImage,
+    pub srcImageLayout: VkImageLayout,
+    pub dstImage: VkImage,
+    pub dstImageLayout: VkImageLayout,
+    pub regionCount: u32,
+    pub pRegions: *const VkImageResolve2,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkResolveImageInfo2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::RESOLVE_IMAGE_INFO_2,
+            pNext: ptr::null(),
+            srcImage: Default::default(),
+            srcImageLayout: VkImageLayout::UNDEFINED,
+            dstImage: Default::default(),
+            dstImageLayout: VkImageLayout::UNDEFINED,
+            regionCount: Default::default(),
+            pRegions: ptr::null(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkSemaphoreSubmitInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub semaphore: VkSemaphore,
+    pub value: u64,
+    pub stageMask: VkPipelineStageFlags2,
+    pub deviceIndex: u32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkSemaphoreSubmitInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::SEMAPHORE_SUBMIT_INFO,
+            pNext: ptr::null(),
+            semaphore: Default::default(),
+            value: Default::default(),
+            stageMask: Default::default(),
+            deviceIndex: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkSubmitInfo2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub flags: VkSubmitFlags,
+    pub waitSemaphoreInfoCount: u32,
+    pub pWaitSemaphoreInfos: *const VkSemaphoreSubmitInfo,
+    pub commandBufferInfoCount: u32,
+    pub pCommandBufferInfos: *const VkCommandBufferSubmitInfo,
+    pub signalSemaphoreInfoCount: u32,
+    pub pSignalSemaphoreInfos: *const VkSemaphoreSubmitInfo,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkSubmitInfo2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::SUBMIT_INFO_2,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            waitSemaphoreInfoCount: Default::default(),
+            pWaitSemaphoreInfos: ptr::null(),
+            commandBufferInfoCount: Default::default(),
+            pCommandBufferInfos: ptr::null(),
+            signalSemaphoreInfoCount: Default::default(),
+            pSignalSemaphoreInfos: ptr::null(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkCommandBufferInheritanceRenderingInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub flags: VkRenderingFlags,
+    pub viewMask: u32,
+    pub colorAttachmentCount: u32,
+    pub pColorAttachmentFormats: *const VkFormat,
+    pub depthAttachmentFormat: VkFormat,
+    pub stencilAttachmentFormat: VkFormat,
+    pub rasterizationSamples: VkSampleCountFlagBits,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkCommandBufferInheritanceRenderingInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::COMMAND_BUFFER_INHERITANCE_RENDERING_INFO,
+            pNext: ptr::null(),
+            flags: Default::default(),
+            viewMask: Default::default(),
+            colorAttachmentCount: Default::default(),
+            pColorAttachmentFormats: ptr::null(),
+            depthAttachmentFormat: VkFormat::UNDEFINED,
+            stencilAttachmentFormat: VkFormat::UNDEFINED,
+            rasterizationSamples: VkSampleCountFlagBits::SC_1_BIT,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkDescriptorPoolInlineUniformBlockCreateInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub maxInlineUniformBlockBindings: u32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkDescriptorPoolInlineUniformBlockCreateInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO,
+            pNext: ptr::null(),
+            maxInlineUniformBlockBindings: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkDevicePrivateDataCreateInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub privateDataSlotRequestCount: u32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkDevicePrivateDataCreateInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::DEVICE_PRIVATE_DATA_CREATE_INFO,
+            pNext: ptr::null(),
+            privateDataSlotRequestCount: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkFormatProperties3 {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub linearTilingFeatures: VkFormatFeatureFlags2,
+    pub optimalTilingFeatures: VkFormatFeatureFlags2,
+    pub bufferFeatures: VkFormatFeatureFlags2,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkFormatProperties3 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::FORMAT_PROPERTIES_3,
+            pNext: ptr::null_mut(),
+            linearTilingFeatures: Default::default(),
+            optimalTilingFeatures: Default::default(),
+            bufferFeatures: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPipelineRenderingCreateInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub viewMask: u32,
+    pub colorAttachmentCount: u32,
+    pub pColorAttachmentFormats: *const VkFormat,
+    pub depthAttachmentFormat: VkFormat,
+    pub stencilAttachmentFormat: VkFormat,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPipelineRenderingCreateInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PIPELINE_RENDERING_CREATE_INFO,
+            pNext: ptr::null(),
+            viewMask: Default::default(),
+            colorAttachmentCount: Default::default(),
+            pColorAttachmentFormats: ptr::null(),
+            depthAttachmentFormat: VkFormat::UNDEFINED,
+            stencilAttachmentFormat: VkFormat::UNDEFINED,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPipelineCreationFeedbackCreateInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub pPipelineCreationFeedback: *mut VkPipelineCreationFeedback,
+    pub pipelineStageCreationFeedbackCount: u32,
+    pub pPipelineStageCreationFeedbacks: *mut VkPipelineCreationFeedback,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPipelineCreationFeedbackCreateInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+            pNext: ptr::null(),
+            pPipelineCreationFeedback: ptr::null_mut(),
+            pipelineStageCreationFeedbackCount: Default::default(),
+            pPipelineStageCreationFeedbacks: ptr::null_mut(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceDynamicRenderingFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub dynamicRendering: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceDynamicRenderingFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+            pNext: ptr::null_mut(),
+            dynamicRendering: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceImageRobustnessFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub robustImageAccess: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceImageRobustnessFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES,
+            pNext: ptr::null_mut(),
+            robustImageAccess: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceInlineUniformBlockFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub inlineUniformBlock: VkBool32,
+    pub descriptorBindingInlineUniformBlockUpdateAfterBind: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceInlineUniformBlockFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES,
+            pNext: ptr::null_mut(),
+            inlineUniformBlock: VkBool32::FALSE,
+            descriptorBindingInlineUniformBlockUpdateAfterBind: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceMaintenance4Features {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub maintenance4: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceMaintenance4Features {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES,
+            pNext: ptr::null_mut(),
+            maintenance4: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDevicePipelineCreationCacheControlFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub pipelineCreationCacheControl: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDevicePipelineCreationCacheControlFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES,
+            pNext: ptr::null_mut(),
+            pipelineCreationCacheControl: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDevicePrivateDataFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub privateData: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDevicePrivateDataFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES,
+            pNext: ptr::null_mut(),
+            privateData: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub shaderDemoteToHelperInvocation: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES,
+            pNext: ptr::null_mut(),
+            shaderDemoteToHelperInvocation: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceShaderIntegerDotProductFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub shaderIntegerDotProduct: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceShaderIntegerDotProductFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES,
+            pNext: ptr::null_mut(),
+            shaderIntegerDotProduct: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceShaderTerminateInvocationFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub shaderTerminateInvocation: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceShaderTerminateInvocationFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES,
+            pNext: ptr::null_mut(),
+            shaderTerminateInvocation: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceSubgroupSizeControlFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub subgroupSizeControl: VkBool32,
+    pub computeFullSubgroups: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceSubgroupSizeControlFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES,
+            pNext: ptr::null_mut(),
+            subgroupSizeControl: VkBool32::FALSE,
+            computeFullSubgroups: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceSynchronization2Features {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub synchronization2: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceSynchronization2Features {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+            pNext: ptr::null_mut(),
+            synchronization2: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceTextureCompressionASTCHDRFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub textureCompressionASTC_HDR: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceTextureCompressionASTCHDRFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES,
+            pNext: ptr::null_mut(),
+            textureCompressionASTC_HDR: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceVulkan13Features {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub robustImageAccess: VkBool32,
+    pub inlineUniformBlock: VkBool32,
+    pub descriptorBindingInlineUniformBlockUpdateAfterBind: VkBool32,
+    pub pipelineCreationCacheControl: VkBool32,
+    pub privateData: VkBool32,
+    pub shaderDemoteToHelperInvocation: VkBool32,
+    pub shaderTerminateInvocation: VkBool32,
+    pub subgroupSizeControl: VkBool32,
+    pub computeFullSubgroups: VkBool32,
+    pub synchronization2: VkBool32,
+    pub textureCompressionASTC_HDR: VkBool32,
+    pub shaderZeroInitializeWorkgroupMemory: VkBool32,
+    pub dynamicRendering: VkBool32,
+    pub shaderIntegerDotProduct: VkBool32,
+    pub maintenance4: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceVulkan13Features {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+            pNext: ptr::null_mut(),
+            robustImageAccess: VkBool32::FALSE,
+            inlineUniformBlock: VkBool32::FALSE,
+            descriptorBindingInlineUniformBlockUpdateAfterBind: VkBool32::FALSE,
+            pipelineCreationCacheControl: VkBool32::FALSE,
+            privateData: VkBool32::FALSE,
+            shaderDemoteToHelperInvocation: VkBool32::FALSE,
+            shaderTerminateInvocation: VkBool32::FALSE,
+            subgroupSizeControl: VkBool32::FALSE,
+            computeFullSubgroups: VkBool32::FALSE,
+            synchronization2: VkBool32::FALSE,
+            textureCompressionASTC_HDR: VkBool32::FALSE,
+            shaderZeroInitializeWorkgroupMemory: VkBool32::FALSE,
+            dynamicRendering: VkBool32::FALSE,
+            shaderIntegerDotProduct: VkBool32::FALSE,
+            maintenance4: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub shaderZeroInitializeWorkgroupMemory: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES,
+            pNext: ptr::null_mut(),
+            shaderZeroInitializeWorkgroupMemory: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceInlineUniformBlockProperties {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub maxInlineUniformBlockSize: u32,
+    pub maxPerStageDescriptorInlineUniformBlocks: u32,
+    pub maxPerStageDescriptorUpdateAfterBindInlineUniformBlocks: u32,
+    pub maxDescriptorSetInlineUniformBlocks: u32,
+    pub maxDescriptorSetUpdateAfterBindInlineUniformBlocks: u32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceInlineUniformBlockProperties {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES,
+            pNext: ptr::null_mut(),
+            maxInlineUniformBlockSize: Default::default(),
+            maxPerStageDescriptorInlineUniformBlocks: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindInlineUniformBlocks: Default::default(),
+            maxDescriptorSetInlineUniformBlocks: Default::default(),
+            maxDescriptorSetUpdateAfterBindInlineUniformBlocks: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceMaintenance4Properties {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub maxBufferSize: VkDeviceSize,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceMaintenance4Properties {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_MAINTENANCE_4_PROPERTIES,
+            pNext: ptr::null_mut(),
+            maxBufferSize: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceShaderIntegerDotProductProperties {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub integerDotProduct8BitUnsignedAccelerated: VkBool32,
+    pub integerDotProduct8BitSignedAccelerated: VkBool32,
+    pub integerDotProduct8BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProduct4x8BitPackedUnsignedAccelerated: VkBool32,
+    pub integerDotProduct4x8BitPackedSignedAccelerated: VkBool32,
+    pub integerDotProduct4x8BitPackedMixedSignednessAccelerated: VkBool32,
+    pub integerDotProduct16BitUnsignedAccelerated: VkBool32,
+    pub integerDotProduct16BitSignedAccelerated: VkBool32,
+    pub integerDotProduct16BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProduct32BitUnsignedAccelerated: VkBool32,
+    pub integerDotProduct32BitSignedAccelerated: VkBool32,
+    pub integerDotProduct32BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProduct64BitUnsignedAccelerated: VkBool32,
+    pub integerDotProduct64BitSignedAccelerated: VkBool32,
+    pub integerDotProduct64BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating8BitUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating8BitSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating16BitUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating16BitSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating32BitUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating32BitSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating64BitUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating64BitSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceShaderIntegerDotProductProperties {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES,
+            pNext: ptr::null_mut(),
+            integerDotProduct8BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct8BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct8BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProduct4x8BitPackedUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct4x8BitPackedSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct4x8BitPackedMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProduct16BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct16BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct16BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProduct32BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct32BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct32BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProduct64BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct64BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct64BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating8BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating8BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated:
+                VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating16BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating16BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating32BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating32BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating64BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating64BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceSubgroupSizeControlProperties {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub minSubgroupSize: u32,
+    pub maxSubgroupSize: u32,
+    pub maxComputeWorkgroupSubgroups: u32,
+    pub requiredSubgroupSizeStages: VkShaderStageFlags,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceSubgroupSizeControlProperties {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES,
+            pNext: ptr::null_mut(),
+            minSubgroupSize: Default::default(),
+            maxSubgroupSize: Default::default(),
+            maxComputeWorkgroupSubgroups: Default::default(),
+            requiredSubgroupSizeStages: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceTexelBufferAlignmentProperties {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub storageTexelBufferOffsetAlignmentBytes: VkDeviceSize,
+    pub storageTexelBufferOffsetSingleTexelAlignment: VkBool32,
+    pub uniformTexelBufferOffsetAlignmentBytes: VkDeviceSize,
+    pub uniformTexelBufferOffsetSingleTexelAlignment: VkBool32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceTexelBufferAlignmentProperties {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES,
+            pNext: ptr::null_mut(),
+            storageTexelBufferOffsetAlignmentBytes: Default::default(),
+            storageTexelBufferOffsetSingleTexelAlignment: VkBool32::FALSE,
+            uniformTexelBufferOffsetAlignmentBytes: Default::default(),
+            uniformTexelBufferOffsetSingleTexelAlignment: VkBool32::FALSE,
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPhysicalDeviceVulkan13Properties {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub minSubgroupSize: u32,
+    pub maxSubgroupSize: u32,
+    pub maxComputeWorkgroupSubgroups: u32,
+    pub requiredSubgroupSizeStages: VkShaderStageFlags,
+    pub maxInlineUniformBlockSize: u32,
+    pub maxPerStageDescriptorInlineUniformBlocks: u32,
+    pub maxPerStageDescriptorUpdateAfterBindInlineUniformBlocks: u32,
+    pub maxDescriptorSetInlineUniformBlocks: u32,
+    pub maxDescriptorSetUpdateAfterBindInlineUniformBlocks: u32,
+    pub maxInlineUniformTotalSize: u32,
+    pub integerDotProduct8BitUnsignedAccelerated: VkBool32,
+    pub integerDotProduct8BitSignedAccelerated: VkBool32,
+    pub integerDotProduct8BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProduct4x8BitPackedUnsignedAccelerated: VkBool32,
+    pub integerDotProduct4x8BitPackedSignedAccelerated: VkBool32,
+    pub integerDotProduct4x8BitPackedMixedSignednessAccelerated: VkBool32,
+    pub integerDotProduct16BitUnsignedAccelerated: VkBool32,
+    pub integerDotProduct16BitSignedAccelerated: VkBool32,
+    pub integerDotProduct16BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProduct32BitUnsignedAccelerated: VkBool32,
+    pub integerDotProduct32BitSignedAccelerated: VkBool32,
+    pub integerDotProduct32BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProduct64BitUnsignedAccelerated: VkBool32,
+    pub integerDotProduct64BitSignedAccelerated: VkBool32,
+    pub integerDotProduct64BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating8BitUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating8BitSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating16BitUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating16BitSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating32BitUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating32BitSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating64BitUnsignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating64BitSignedAccelerated: VkBool32,
+    pub integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated: VkBool32,
+    pub storageTexelBufferOffsetAlignmentBytes: VkDeviceSize,
+    pub storageTexelBufferOffsetSingleTexelAlignment: VkBool32,
+    pub uniformTexelBufferOffsetAlignmentBytes: VkDeviceSize,
+    pub uniformTexelBufferOffsetSingleTexelAlignment: VkBool32,
+    pub maxBufferSize: VkDeviceSize,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPhysicalDeviceVulkan13Properties {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
+            pNext: ptr::null_mut(),
+            minSubgroupSize: Default::default(),
+            maxSubgroupSize: Default::default(),
+            maxComputeWorkgroupSubgroups: Default::default(),
+            requiredSubgroupSizeStages: Default::default(),
+            maxInlineUniformBlockSize: Default::default(),
+            maxPerStageDescriptorInlineUniformBlocks: Default::default(),
+            maxPerStageDescriptorUpdateAfterBindInlineUniformBlocks: Default::default(),
+            maxDescriptorSetInlineUniformBlocks: Default::default(),
+            maxDescriptorSetUpdateAfterBindInlineUniformBlocks: Default::default(),
+            maxInlineUniformTotalSize: Default::default(),
+            integerDotProduct8BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct8BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct8BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProduct4x8BitPackedUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct4x8BitPackedSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct4x8BitPackedMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProduct16BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct16BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct16BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProduct32BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct32BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct32BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProduct64BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProduct64BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProduct64BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating8BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating8BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated:
+                VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating16BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating16BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating32BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating32BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating64BitUnsignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating64BitSignedAccelerated: VkBool32::FALSE,
+            integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated: VkBool32::FALSE,
+            storageTexelBufferOffsetAlignmentBytes: Default::default(),
+            storageTexelBufferOffsetSingleTexelAlignment: VkBool32::FALSE,
+            uniformTexelBufferOffsetAlignmentBytes: Default::default(),
+            uniformTexelBufferOffsetSingleTexelAlignment: VkBool32::FALSE,
+            maxBufferSize: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkPipelineShaderStageRequiredSubgroupSizeCreateInfo {
+    pub sType: VkStructureType,
+    pub pNext: *mut c_void,
+    pub requiredSubgroupSize: u32,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkPipelineShaderStageRequiredSubgroupSizeCreateInfo {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
+            pNext: ptr::null_mut(),
+            requiredSubgroupSize: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkMemoryBarrier2 {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcStageMask: VkPipelineStageFlags2,
+    pub srcAccessMask: VkAccessFlags2,
+    pub dstStageMask: VkPipelineStageFlags2,
+    pub dstAccessMask: VkAccessFlags2,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkMemoryBarrier2 {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::MEMORY_BARRIER_2,
+            pNext: ptr::null(),
+            srcStageMask: Default::default(),
+            srcAccessMask: Default::default(),
+            dstStageMask: Default::default(),
+            dstAccessMask: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "VK_VERSION_1_3")]
+#[repr(C)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub struct VkWriteDescriptorSetInlineUniformBlock {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub dataSize: u32,
+    pub pData: *const c_void,
+}
+#[cfg(feature = "VK_VERSION_1_3")]
+impl Default for VkWriteDescriptorSetInlineUniformBlock {
+    fn default() -> Self {
+        Self {
+            sType: VkStructureType::WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK,
+            pNext: ptr::null(),
+            dataSize: Default::default(),
+            pData: ptr::null(),
         }
     }
 }
@@ -6708,6 +8438,9 @@ instance_level_functions! {
     fn vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice: VkPhysicalDevice, pQueueFamilyPropertyCount: *mut u32, pQueueFamilyProperties: *mut VkQueueFamilyProperties2);
     fn vkGetPhysicalDeviceSparseImageFormatProperties2(physicalDevice: VkPhysicalDevice, pFormatInfo: *const VkPhysicalDeviceSparseImageFormatInfo2, pPropertyCount: *mut u32, pProperties: *mut VkSparseImageFormatProperties2);
     fn vkEnumeratePhysicalDeviceGroups(instance: VkInstance, pPhysicalDeviceGroupCount: *mut u32, pPhysicalDeviceGroupProperties: *mut VkPhysicalDeviceGroupProperties)->VkResult;
+    // vulkan 1.3
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkGetPhysicalDeviceToolProperties(physicalDevice: VkPhysicalDevice, pToolCount: *mut u32, pToolProperties: *mut VkPhysicalDeviceToolProperties)->VkResult;
 
     #[cfg(feature = "VK_EXT_debug_utils")]
     fn vkSetDebugUtilsObjectNameEXT(device: VkDevice, pNameInfo: *const VkDebugUtilsObjectNameInfoEXT)->VkResult;
@@ -6907,9 +8640,77 @@ device_level_functions! {
     fn vkResetQueryPool(device: VkDevice, queryPool: VkQueryPool, firstQuery: u32, queryCount: u32);
     // vulkan 1.3
     #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdBeginRendering(commandBuffer: VkCommandBuffer, pRenderingInfo: *const VkRenderingInfo);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdBindVertexBuffers2(commandBuffer: VkCommandBuffer, firstBinding: u32, bindingCount: u32, pBuffers: *const VkBuffer, pOffsets: *const VkDeviceSize, pSizes: *const VkDeviceSize, pStrides: *const VkDeviceSize);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdBlitImage2(commandBuffer: VkCommandBuffer, pBlitImageInfo: *const VkBlitImageInfo2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdCopyBuffer2(commandBuffer: VkCommandBuffer, pCopyBufferInfo: *const VkCopyBufferInfo2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdCopyBufferToImage2(commandBuffer: VkCommandBuffer, pCopyBufferToImageInfo: *const VkCopyBufferToImageInfo2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdCopyImage2(commandBuffer: VkCommandBuffer, pCopyImageInfo: *const VkCopyImageInfo2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdCopyImageToBuffer2(commandBuffer: VkCommandBuffer, pCopyImageToBufferInfo: *const VkCopyImageToBufferInfo2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdEndRendering(commandBuffer: VkCommandBuffer);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdPipelineBarrier2(commandBuffer: VkCommandBuffer, pDependencyInfo: *const VkDependencyInfo);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdResetEvent2(commandBuffer: VkCommandBuffer, event: VkEvent, stageMask: VkPipelineStageFlags2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdResolveImage2(commandBuffer: VkCommandBuffer, pResolveImageInfo: *const VkResolveImageInfo2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetCullMode(commandBuffer: VkCommandBuffer, cullMode: VkCullModeFlags);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetDepthBiasEnable(commandBuffer: VkCommandBuffer, depthBiasEnable: VkBool32);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetDepthBoundsTestEnable(commandBuffer: VkCommandBuffer, depthBoundsTestEnable: VkBool32);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetDepthCompareOp(commandBuffer: VkCommandBuffer, depthCompareOp: VkCompareOp);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetDepthTestEnable(commandBuffer: VkCommandBuffer, depthTestEnable: VkBool32);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetDepthWriteEnable(commandBuffer: VkCommandBuffer, depthWriteEnable: VkBool32);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetEvent2(commandBuffer: VkCommandBuffer, event: VkEvent, pDependencyInfo: *const VkDependencyInfo);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetFrontFace(commandBuffer: VkCommandBuffer, frontFace: VkFrontFace);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetPrimitiveRestartEnable(commandBuffer: VkCommandBuffer, primitiveRestartEnable: VkBool32);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetPrimitiveTopology(commandBuffer: VkCommandBuffer, primitiveTopology: VkPrimitiveTopology);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetRasterizerDiscardEnable(commandBuffer: VkCommandBuffer, rasterizerDiscardEnable: VkBool32);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetScissorWithCount(commandBuffer: VkCommandBuffer, scissorCount: u32, pScissors: *const VkRect2D);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetStencilOp(commandBuffer: VkCommandBuffer, faceMask: VkStencilFaceFlags, failOp: VkStencilOp, passOp: VkStencilOp, depthFailOp: VkStencilOp, compareOp: VkCompareOp);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetStencilTestEnable(commandBuffer: VkCommandBuffer, stencilTestEnable: VkBool32);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdSetViewportWithCount(commandBuffer: VkCommandBuffer, viewportCount: u32, pViewports: *const VkViewport);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdWaitEvents2(commandBuffer: VkCommandBuffer, eventCount: u32, pEvents: *const VkEvent, pDependencyInfos: *const VkDependencyInfo);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCmdWriteTimestamp2(commandBuffer: VkCommandBuffer, stage: VkPipelineStageFlags2, queryPool: VkQueryPool, query: u32);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkCreatePrivateDataSlot(device: VkDevice, pCreateInfo: *const VkPrivateDataSlotCreateInfo, pAllocator: *const VkAllocationCallbacks, pPrivateDataSlot: *mut VkPrivateDataSlot)->VkResult;
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkDestroyPrivateDataSlot(device: VkDevice, privateDataSlot: VkPrivateDataSlot, pAllocator: *const VkAllocationCallbacks);
+    #[cfg(feature = "VK_VERSION_1_3")]
     fn vkGetDeviceBufferMemoryRequirements(device: VkDevice, pInfo: *const VkDeviceBufferMemoryRequirements, pMemoryRequirements: *mut VkMemoryRequirements2);
     #[cfg(feature = "VK_VERSION_1_3")]
     fn vkGetDeviceImageMemoryRequirements(device: VkDevice, pInfo: *const VkDeviceImageMemoryRequirements, pMemoryRequirements: *mut VkMemoryRequirements2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkGetDeviceImageSparseMemoryRequirements(device: VkDevice, pInfo: *const VkDeviceImageMemoryRequirements, pSparseMemoryRequirementCount: *mut u32, pSparseMemoryRequirements: *mut VkSparseImageMemoryRequirements2);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkGetPrivateData(device: VkDevice, objectType: VkObjectType, objectHandle: u64, privateDataSlot: VkPrivateDataSlot, pData: *mut u64);
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkQueueSubmit2(queue: VkQueue, submitCount: u32, pSubmits: *const VkSubmitInfo2, fence: VkFence)->VkResult;
+    #[cfg(feature = "VK_VERSION_1_3")]
+    fn vkSetPrivateData(device: VkDevice, objectType: VkObjectType, objectHandle: u64, privateDataSlot: VkPrivateDataSlot, data: u64)->VkResult;
 
     #[cfg(feature = "VK_KHR_external_fence_fd")]
     fn vkImportFenceFdKHR(device: VkDevice, pImportFenceFdInfo: *const VkImportFenceFdInfoKHR)->VkResult;

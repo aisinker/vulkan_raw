@@ -94,7 +94,7 @@ fn main() {
 
 ## Supported API
 
-- [x] Vulkan 1.2 core API
+- [x] Vulkan 1.3 core API
 - [x] VK_KHR_external_fence_fd(Revision: 1)
 - [x] VK_KHR_external_fence_win32(Revision: 1)
 - [x] VK_KHR_surface(Revision: 25)
@@ -105,6 +105,7 @@ fn main() {
 - [x] VK_KHR_acceleration_structure(Revision: 13)
 - [x] VK_KHR_ray_tracing_pipeline(Revision: 1)
 - [x] VK_KHR_ray_query(Revision: 1)
+- [ ] VK_KHR_ray_tracing_maintenance1(Revision: 1)
 - [x] VK_EXT_debug_utils(Revision: 2)
 - [x] VK_EXT_index_type_uint8(Revision: 1)
 - [x] VK_EXT_memory_budget(Revision: 1)
