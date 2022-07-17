@@ -1846,36 +1846,6 @@ pub type PFN_vkInternalFreeNotification = extern "C" fn(
     allocationScope: VkSystemAllocationScope,
 );
 
-// #[repr(C)]
-// #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-// pub struct VkBaseOutStructure {
-//     pub sType: VkStructureType,
-//     pub pNext: *mut VkBaseOutStructure,
-// }
-// impl Default for VkBaseOutStructure {
-//     fn default() -> Self {
-//         VkBaseOutStructure {
-//             sType: VkStructureType(-1),
-//             pNext: ptr::null_mut(),
-//         }
-//     }
-// }
-
-// #[repr(C)]
-// #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-// pub struct VkBaseInStructure {
-//     pub sType: VkStructureType,
-//     pub pNext: *const VkBaseInStructure,
-// }
-// impl Default for VkBaseInStructure {
-//     fn default() -> Self {
-//         VkBaseInStructure {
-//             sType: VkStructureType(-1),
-//             pNext: ptr::null(),
-//         }
-//     }
-// }
-
 #[repr(C)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkOffset2D {

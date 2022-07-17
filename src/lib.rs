@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use std::ffi::CStr;
 use std::fmt::{Debug, Display, Error, Formatter};
 
@@ -11,6 +13,18 @@ pub type VkFlags = u32;
 pub type VkFlags64 = u64;
 pub type VkDeviceSize = u64;
 pub type VkDeviceAddress = u64;
+
+#[repr(C)]
+pub struct VkBaseOutStructure {
+    pub sType: VkStructureType,
+    pub pNext: *mut VkBaseOutStructure,
+}
+
+#[repr(C)]
+pub struct VkBaseInStructure {
+    pub sType: VkStructureType,
+    pub pNext: *const VkBaseInStructure,
+}
 
 #[cfg(target_family = "windows")]
 pub type HANDLE = usize;
