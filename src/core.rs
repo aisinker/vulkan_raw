@@ -7380,7 +7380,7 @@ impl Default for VkPhysicalDeviceToolProperties {
 
 #[cfg(feature = "VK_VERSION_1_3")]
 #[repr(C)]
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct VkPipelineCreationFeedback {
     pub flags: VkPipelineCreationFeedbackFlags,
     pub duration: u64,
