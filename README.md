@@ -110,3 +110,4 @@ fn main() {
 - [x] VK_EXT_index_type_uint8(Revision: 1)
 - [x] VK_EXT_memory_budget(Revision: 1)
 - [ ] VK_EXT_graphics_pipeline_library(Revision: 1)
+- [ ] VK_EXT_robustness2(Revision: 1)
