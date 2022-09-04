@@ -111,3 +111,4 @@ fn main() {
 - [x] VK_EXT_memory_budget(Revision: 1)
 - [ ] VK_EXT_graphics_pipeline_library(Revision: 1)
 - [ ] VK_EXT_robustness2(Revision: 1)
+- [ ] VK_EXT_mesh_shader(Revision: 1)
